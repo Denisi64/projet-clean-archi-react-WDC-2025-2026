@@ -1,0 +1,11 @@
+{
+  "name": "@proj/repos-mariadb",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@prisma/client": "^6.17.0",
+    "@proj/application": "workspace:*"
+  }
+}

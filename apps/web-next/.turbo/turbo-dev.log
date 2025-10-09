@@ -1,0 +1,19 @@
+
+> web-next@0.1.0 dev /home/denisi/WebstormProjects/projet-clean-archi-react-WDC-2025-2026/apps/web-next
+> next dev --turbopack
+
+ [33m[1m⚠[22m[39m Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/denisi/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /home/denisi/WebstormProjects/projet-clean-archi-react-WDC-2025-2026/pnpm-lock.yaml
+
+   [1m[38;2;173;127;168m▲ Next.js 15.5.4[39m[22m (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.184.23.92:3000
+
+ [32m[1m✓[22m[39m Starting...
+ [32m[1m✓[22m[39m Ready in 958ms
+[?25h
+[41m[30m ELIFECYCLE [39m[49m [31mCommand failed.[39m

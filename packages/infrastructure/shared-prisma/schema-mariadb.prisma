@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../repos-mariadb/node_modules/@prisma/client"
+}
+
+datasource db {
+  provider = "mysql" // MariaDB utilise provider mysql
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}

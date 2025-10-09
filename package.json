@@ -1,0 +1,19 @@
+{
+  "name": "projet-clean-archi-react-WDC-2025-2026",
+  "private": true,
+  "packageManager": "pnpm@10.18.1",
+  "scripts": {
+    "dev:web": "pnpm exec turbo run dev --filter=./apps/web-next",
+    "dev:api": "pnpm exec turbo run dev --filter=./apps/api-nest",
+    "dev": "pnpm exec turbo run dev --parallel",
+    "build": "pnpm exec turbo run build",
+    "lint": "pnpm exec turbo run lint",
+    "test": "pnpm exec turbo run test"
+  },
+  "devDependencies": {
+    "@prisma/client": "6.17.0",
+    "prisma": "^6.17.0",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
+  }
+}
