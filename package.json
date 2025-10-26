@@ -8,10 +8,18 @@
     "dev": "pnpm exec turbo run dev --parallel",
     "build": "pnpm exec turbo run build",
     "lint": "pnpm exec turbo run lint",
-    "test": "pnpm exec turbo run test"
+    "test": "pnpm exec turbo run test",
+    "env:memory": "cp apps/api-nest/.env.memory apps/api-nest/.env",
+    "env:pg": "cp apps/api-nest/.env.pg apps/api-nest/.env",
+    "env:maria": "cp apps/api-nest/.env.maria apps/api-nest/.env",
+    "db:pg": "docker compose --profile pg up -d postgres",
+    "db:maria": "docker compose --profile maria up -d mariadb",
+    "db:down": "docker compose down"
   },
   "devDependencies": {
     "@prisma/client": "6.17.0",
+    "concurrently": "^9.2.1",
+    "pm2": "^6.0.13",
     "prisma": "^6.17.0",
     "turbo": "^2.5.8",
     "typescript": "^5.9.3"

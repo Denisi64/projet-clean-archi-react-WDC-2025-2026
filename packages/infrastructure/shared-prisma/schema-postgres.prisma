@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../repos-postgres/node_modules/@prisma/client"
+  output   = "../../repos-mariadb/node_modules/@prisma/client"
 }
 
 datasource db {

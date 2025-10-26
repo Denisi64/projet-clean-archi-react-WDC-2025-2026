@@ -1,1 +1,1 @@
-// infra adapter: repos-postgres
+// infra adapter: repos-mariadb
