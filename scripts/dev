@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ====== CONFIG ======
+ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+API_DIR="$ROOT_DIR/apps/api-nest"
+WEB_DIR="$ROOT_DIR/apps/web-next"
+PRISMA_DIR="$ROOT_DIR/prisma"
+
+POSTGRES_URL="postgresql://user:pass@localhost:5432/bank?schema=public"
+MARIADB_URL="mysql://user:pass@localhost:3306/bank"
+
+SESSION="stack-dev"
+
+usage() {
+  cat <<USAGE
+Usage:
+  $0 up   <nest|next> <postgres|mariadb|memory>   # lance 2 terminaux tmux (API+WEB) + DB
+  $0 dev  <nest|next> <postgres|mariadb|memory>   # alias de up
+  $0 stop                                         # kill la session tmux
+  $0 down                                         # stop + docker compose down
+  $0 attach                                       # se rattacher aux 2 terminaux
+USAGE
+  exit 1
+}
+
+say() { printf "\033[1;36m%s\033[0m\n" "$*"; }
+
+wait_port() {
+  local host=$1 port=$2 retries=${3:-60}
+  echo -n "→ Attente ${host}:${port} "
+  for _ in $(seq 1 "$retries"); do
+    if node -e "require('net').createConnection({host:'${host}',port:${port}},()=>process.exit(0)).on('error',()=>process.exit(1))" >/dev/null 2>&1; then
+      echo "OK"; return 0
+    fi
+    echo -n "."; sleep 1
+  done
+  echo "KO"; return 1
+}
+
+env_set() {
+  local file=$1 key=$2 val=$3
+  mkdir -p "$(dirname "$file")"
+  touch "$file"
+  if grep -qE "^${key}=" "$file"; then
+    sed -i "s|^${key}=.*|${key}=${val//|/\\|}|" "$file"
+  else
+    printf "%s=%s\n" "$key" "$val" >> "$file"
+  fi
+}
+env_unset() { local file=$1 key=$2; [[ -f "$file" ]] && sed -i "/^${key}=.*/d" "$file" || true; }
+
+write_envs() {
+  local target=$1 db=$2
+  # API
+  if [[ "$target" == "nest" ]]; then
+    local api_env="$API_DIR/.env"
+    env_set "$api_env" "NODE_ENV" "development"
+    env_set "$api_env" "PORT" "3001"
+    case "$db" in
+      postgres)
+        env_set "$api_env" "DATABASE_URL" "$POSTGRES_URL"
+        env_set "$api_env" "DB_DRIVER" "postgres"
+        ;;
+      mariadb)
+        env_set "$api_env" "DATABASE_URL" "$MARIADB_URL"
+        env_set "$api_env" "DB_DRIVER" "mariadb"
+        ;;
+      memory)
+        env_unset "$api_env" "DATABASE_URL"
+        env_set "$api_env" "DB_DRIVER" "memory"
+        ;;
+    esac
+  fi
+  # WEB
+  local web_env="$WEB_DIR/.env.local"
+  env_set "$web_env" "NODE_ENV" "development"
+  if [[ "$target" == "nest" ]]; then
+    env_set "$web_env" "BACKEND_TARGET" "nest"
+    env_set "$web_env" "NEST_API_URL" "http://localhost:3001"
+    # ne PAS laisser DATABASE_URL côté front quand on pointe Nest
+    env_unset "$web_env" "DATABASE_URL"
+  else
+    env_set "$web_env" "BACKEND_TARGET" "next"
+    env_unset "$web_env" "NEST_API_URL"
+    # si tu veux que Next parle directement à la DB :
+    case "$db" in
+      postgres) env_set "$web_env" "DATABASE_URL" "$POSTGRES_URL" ;;
+      mariadb)  env_set "$web_env" "DATABASE_URL" "$MARIADB_URL"  ;;
+      memory)   env_unset "$web_env" "DATABASE_URL"               ;;
+    esac
+  fi
+}
+
+switch_prisma_provider() {
+  local driver=$1
+  [[ -f "$PRISMA_DIR/schema.prisma" ]] || return 0
+  [[ ! -f "$PRISMA_DIR/schema.prisma.bak" ]] && cp "$PRISMA_DIR/schema.prisma" "$PRISMA_DIR/schema.prisma.bak"
+  case "$driver" in
+    postgres) sed -i 's/provider *= *"mysql"/provider = "postgresql"/' "$PRISMA_DIR/schema.prisma" ;;
+    mariadb)  sed -i 's/provider *= *"postgresql"/provider = "mysql"/' "$PRISMA_DIR/schema.prisma" ;;
+    memory)   : ;;
+  esac
+}
+
+docker_up_db() {
+  local db=$1
+  case "$db" in
+    postgres) say "→ Docker up Postgres"; docker compose up -d postgres; wait_port 127.0.0.1 5432 ;;
+    mariadb)  say "→ Docker up MariaDB";  docker compose up -d mariadb;  wait_port 127.0.0.1 3306 ;;
+    memory)   say "→ Mode memory : pas de DB Docker" ;;
+    *) echo "DB inconnue: $db"; exit 2;;
+  esac
+}
+
+prisma_sync() {
+  local db=$1 url=""
+  case "$db" in
+    postgres) url="$POSTGRES_URL" ;;
+    mariadb)  url="$MARIADB_URL"  ;;
+    memory)   echo "→ Prisma ignoré (memory)"; return 0 ;;
+  esac
+  say "→ Prisma generate"
+  (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma generate)
+  say "→ Prisma migrate deploy (retries si DB pas prête)"
+  local tries=8 i=1
+  while :; do
+    if (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma migrate deploy); then
+      break
+    fi
+    if (( i >= tries )); then
+      echo "→ migrate deploy KO après $tries → tentative finale db push"
+      (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma db push) && break
+      echo "✖ Prisma toujours KO. Vérifie logs DB / schema.prisma."
+      return 1
+    fi
+    echo "→ DB pas prête (tentative $i/$tries) → attente $((i*2))s…"
+    sleep $((i*2)); ((i++))
+  done
+}
+
+kill_tmux() { tmux has-session -t "$SESSION" 2>/dev/null && tmux kill-session -t "$SESSION" || true; }
+
+start_tmux() {
+  local target=$1 db=$2
+  kill_tmux
+  tmux new-session -d -s "$SESSION" -c "$API_DIR" -n api
+
+  # Pane 0: API
+  if [[ "$target" == "nest" ]]; then
+    local db_url="" driver="memory"
+    case "$db" in
+      postgres) db_url="$POSTGRES_URL"; driver="postgres" ;;
+      mariadb)  db_url="$MARIADB_URL";  driver="mariadb"  ;;
+      memory)   db_url="";              driver="memory"   ;;
+    esac
+
+    tmux send-keys -t "$SESSION":api.0 'export PORT=3001' C-m
+    tmux send-keys -t "$SESSION":api.0 "export DB_DRIVER=$driver" C-m
+    if [[ -n "$db_url" ]]; then
+      tmux send-keys -t "$SESSION":api.0 "export DATABASE_URL=\"$db_url\"" C-m
+      tmux send-keys -t "$SESSION":api.0 'echo "[API] DB_DRIVER=$DB_DRIVER DATABASE_URL=$DATABASE_URL"' C-m
+    else
+      tmux send-keys -t "$SESSION":api.0 'unset DATABASE_URL; echo "[API] DB_DRIVER=$DB_DRIVER (DATABASE_URL unset)"' C-m
+    fi
+    tmux send-keys -t "$SESSION":api.0 "npx --yes nodemon --watch src --ext ts,tsx --exec 'npx --yes ts-node --transpile-only src/main.ts'" C-m
+  else
+    tmux send-keys -t "$SESSION":api.0 'echo "Target=next → pas dAPI" && bash' C-m
+  fi
+
+
+  # Pane 1: WEB (Next)
+  tmux split-window -h -t "$SESSION":api -c "$WEB_DIR"
+  tmux send-keys -t "$SESSION":api.1 'export NODE_ENV=development' C-m
+  if [[ "$target" == "nest" ]]; then
+    tmux send-keys -t "$SESSION":api.1 'export BACKEND_TARGET=nest NEST_API_URL=http://localhost:3001; echo "[WEB] BACKEND_TARGET=$BACKEND_TARGET NEST_API_URL=$NEST_API_URL"' C-m
+  else
+    tmux send-keys -t "$SESSION":api.1 'export BACKEND_TARGET=next; unset NEST_API_URL' C-m
+    case "$db" in
+      postgres) tmux send-keys -t "$SESSION":api.1 'export DATABASE_URL="postgresql://user:pass@localhost:5432/bank?schema=public"' C-m ;;
+      mariadb)  tmux send-keys -t "$SESSION":api.1 'export DATABASE_URL="mysql://user:pass@localhost:3306/bank"' C-m ;;
+      memory)   tmux send-keys -t "$SESSION":api.1 'unset DATABASE_URL' C-m ;;
+    esac
+    tmux send-keys -t "$SESSION":api.1 'echo "[WEB] BACKEND_TARGET=$BACKEND_TARGET DATABASE_URL=$DATABASE_URL"' C-m
+  fi
+  tmux send-keys -t "$SESSION":api.1 'npx --yes next dev -p 3000' C-m
+
+  echo
+  echo "────────── READY ──────────"
+  [[ "$target" == "nest" ]] && echo "API   → http://localhost:3001/health/db"
+  echo "WEB   → http://localhost:3000"
+  echo
+  echo "Attach → $0 attach"
+  echo "Stop   → $0 stop"
+  echo "Down   → $0 down"
+}
+
+run_stack() {
+  local target="$1" db="$2"
+  unset DOCKER_HOST || true
+  export DOCKER_CONTEXT=system
+  sudo systemctl start docker || true
+
+  # avant de démarrer
+  unset DB_DRIVER || true
+  unset DATABASE_URL || true
+
+  # Ports propres
+  fuser -k 3000/tcp 2>/dev/null || true
+  fuser -k 3001/tcp 2>/dev/null || true
+
+  write_envs "$target" "$db"
+  [[ "$db" != "memory" ]] && switch_prisma_provider "$db"
+  [[ "$db" != "memory" ]] && docker_up_db "$db" && prisma_sync "$db"
+
+  rm -rf "$WEB_DIR/.next" 2>/dev/null || true
+
+  start_tmux "$target" "$db"
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  up|dev)
+    target="${1:-}"; db="${2:-}"
+    [[ -z "${target:-}" || -z "${db:-}" ]] && usage
+    run_stack "$target" "$db"
+    ;;
+  stop)
+    kill_tmux; echo "✓ tmux stoppé."
+    ;;
+  down)
+    "$0" stop
+    docker compose down || true
+    echo "✓ docker down."
+    ;;
+  attach)
+    tmux attach -t "$SESSION"
+    ;;
+  *)
+    usage ;;
+esac

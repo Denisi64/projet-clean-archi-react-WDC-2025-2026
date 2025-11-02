@@ -1,4 +1,18 @@
 import { NextResponse } from 'next/server';
+import {prisma} from "@/src/lib/prisma";
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+function driverFrom(url?: string) {
+    if (!url) return 'memory';
+    try {
+        const p = new URL(url).protocol.replace(':', '');
+        if (p.startsWith('postgres')) return 'postgres';
+        if (p.startsWith('mysql')) return 'mariadb';
+        return p;
+    } catch { return 'unknown'; }
+}
 
 export async function GET() {
     const target = (process.env.BACKEND_TARGET || 'next').toLowerCase();
@@ -10,13 +24,15 @@ export async function GET() {
             const json = await r.json();
             return NextResponse.json(json);
         } catch (e: any) {
-            return NextResponse.json(
-                { backend: 'nest', ok: false, message: String(e?.message || e) },
-                { status: 502 }
-            );
+            return NextResponse.json({ backend: 'nest', ok: false, message: String(e?.message || e) }, { status: 502 });
         }
     }
 
-    // Mode next direct (mock)
-    return NextResponse.json({ backend: 'next', driver: 'memory', ok: true });
+    // Mode NEXT: check direct DB
+    try {
+        const rows = await prisma.$queryRaw<{ ok: number }[]>`SELECT 1 as ok`;
+        return NextResponse.json({ backend: 'next', driver: driverFrom(process.env.DATABASE_URL), ok: Array.isArray(rows) && rows.length > 0 });
+    } catch (e: any) {
+        return NextResponse.json({ backend: 'next', driver: driverFrom(process.env.DATABASE_URL), ok: false, message: String(e?.message || e) }, { status: 500 });
+    }
 }

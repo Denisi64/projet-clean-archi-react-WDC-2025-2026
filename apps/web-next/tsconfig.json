@@ -9,6 +9,9 @@
       "dom.iterable",
       "esnext"
     ],
+    "paths": {
+      "@/*": ["*"]
+    },
     "allowJs": true,
     "noEmit": true,
     "incremental": true,
@@ -25,7 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src"
   ],
   "exclude": [
     "node_modules"
