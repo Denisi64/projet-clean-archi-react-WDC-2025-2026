@@ -7,6 +7,10 @@ API_DIR="$ROOT_DIR/apps/api-nest"
 WEB_DIR="$ROOT_DIR/apps/web-next"
 PRISMA_DIR="$ROOT_DIR/prisma"
 
+# Dossiers migrations Prisma
+MIGRATIONS_PG="$PRISMA_DIR/migrations_pg"
+MIGRATIONS_MY="$PRISMA_DIR/migrations_mysql"
+
 POSTGRES_URL="postgresql://user:pass@localhost:5432/bank?schema=public"
 MARIADB_URL="mysql://user:pass@localhost:3306/bank"
 
@@ -114,23 +118,43 @@ docker_up_db() {
 }
 
 prisma_sync() {
-  local db=$1 url=""
+  local db=$1 url="" migr_dir="" shadow=""
   case "$db" in
-    postgres) url="$POSTGRES_URL" ;;
-    mariadb)  url="$MARIADB_URL"  ;;
-    memory)   echo "→ Prisma ignoré (memory)"; return 0 ;;
+    postgres)
+      url="$POSTGRES_URL"
+      migr_dir="$MIGRATIONS_PG"
+      shadow="postgresql://user:pass@localhost:5432/postgres?schema=public"
+      ;;
+    mariadb)
+      url="$MARIADB_URL"
+      migr_dir="$MIGRATIONS_MY"
+      shadow="mysql://root:pass@localhost:3306/prisma_shadow"
+      ;;
+    memory)
+      echo "→ Prisma ignoré (memory)"; return 0 ;;
+    *) echo "DB inconnue: $db"; return 2 ;;
   esac
+
+  mkdir -p "$migr_dir"
+
   say "→ Prisma generate"
-  (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma generate)
+  (cd "$ROOT_DIR" \
+    && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
+       npx --yes prisma generate)
+
   say "→ Prisma migrate deploy (retries si DB pas prête)"
   local tries=8 i=1
   while :; do
-    if (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma migrate deploy); then
+    if (cd "$ROOT_DIR" \
+        && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
+           npx --yes prisma migrate deploy); then
       break
     fi
     if (( i >= tries )); then
       echo "→ migrate deploy KO après $tries → tentative finale db push"
-      (cd "$ROOT_DIR" && DATABASE_URL="$url" npx --yes prisma db push) && break
+      (cd "$ROOT_DIR" \
+        && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
+           npx --yes prisma db push) && break
       echo "✖ Prisma toujours KO. Vérifie logs DB / schema.prisma."
       return 1
     fi

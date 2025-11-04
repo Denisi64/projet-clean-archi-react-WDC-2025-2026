@@ -16,6 +16,9 @@
     "db:maria": "docker compose --profile maria up -d mariadb",
     "db:down": "docker compose down"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "devDependencies": {
     "@nestjs/cli": "^11.0.10",
     "@prisma/client": "6.17.0",
