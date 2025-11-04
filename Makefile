@@ -41,6 +41,15 @@ db-provider-mariadb:
 	@sed -i -E 's/provider *= *"postgresql"/provider = "mysql"/' $(SCHEMA) || true
 	@grep -q 'provider *= *"mysql"' $(SCHEMA) || (echo "ERREUR: provider non mis à jour"; exit 1)
 
+
+
+.PHONY: db-shadow-mariadb
+db-shadow-mariadb:
+	@docker compose up -d mariadb
+	@docker exec -it projet-clean-archi-react-wdc-2025-2026-mariadb-1 sh -lc \
+	  'mariadb -uroot -p"$$MARIADB_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS prisma_shadow;"'
+	@echo "✓ shadow DB prisma_shadow OK"
+
 # --- Ecrit prisma/.env
 db-env-postgres:
 	@mkdir -p prisma
@@ -94,7 +103,7 @@ db-reset-postgres: db-provider-postgres db-env-postgres db-lock-clean
 	@PRISMA_MIGRATIONS_DIR=$(MIGR_PG) $(PRISMA) db seed        --schema=$(SCHEMA)
 	@echo "✅ Postgres reset + init + deploy + seed OK."
 
-db-reset-mariadb: db-provider-mariadb db-env-mariadb db-lock-clean
+db-reset-mariadb: db-provider-mariadb db-env-mariadb db-lock-clean db-shadow-mariadb
 	@mkdir -p $(MIGR_MY)
 	@PRISMA_MIGRATIONS_DIR=$(MIGR_MY) $(PRISMA) migrate reset  --schema=$(SCHEMA) --force --skip-seed
 	@PRISMA_MIGRATIONS_DIR=$(MIGR_MY) $(PRISMA) migrate dev    --name init --schema=$(SCHEMA)
