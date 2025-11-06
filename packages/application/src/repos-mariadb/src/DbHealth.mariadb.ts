@@ -10,7 +10,7 @@ export class MariadbDbHealthAdapter implements DbHealthPort {
             await prisma.$queryRaw`SELECT 1`;
             return { ok: true };
         } catch (e:any) {
-            return { ok: false, message: e?.message ?? 'mariadb error' };
+            return { ok: false, message: e?.message ?? 'mariadb errors' };
         }
     }
 }

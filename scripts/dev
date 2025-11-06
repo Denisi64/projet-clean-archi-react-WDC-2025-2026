@@ -97,15 +97,43 @@ write_envs() {
 }
 
 switch_prisma_provider() {
-  local driver=$1
-  [[ -f "$PRISMA_DIR/schema.prisma" ]] || return 0
-  [[ ! -f "$PRISMA_DIR/schema.prisma.bak" ]] && cp "$PRISMA_DIR/schema.prisma" "$PRISMA_DIR/schema.prisma.bak"
+  local driver="${1:-}"
+  local schema="" migdir=""
+
   case "$driver" in
-    postgres) sed -i 's/provider *= *"mysql"/provider = "postgresql"/' "$PRISMA_DIR/schema.prisma" ;;
-    mariadb)  sed -i 's/provider *= *"postgresql"/provider = "mysql"/' "$PRISMA_DIR/schema.prisma" ;;
-    memory)   : ;;
+    postgres|pg)
+      schema="$PRISMA_DIR/schema.prisma"
+      migdir="$MIGRATIONS_PG"
+      ;;
+    mariadb|mysql)
+      schema="$PRISMA_DIR/schema.maria.prisma"
+      migdir="$MIGRATIONS_MY"
+      ;;
+    memory)
+      echo "→ switch_prisma_provider(memory): aucun schéma (pas de DB)."
+      return 0
+      ;;
+    *)
+      echo "✖ switch_prisma_provider: driver inconnu '$driver' (postgres|mariadb|memory)"; return 2
+      ;;
   esac
+
+  [[ -f "$schema" ]] || { echo "✖ schéma introuvable: $schema"; return 2; }
+  mkdir -p "$migdir"
+
+  export PRISMA_SCHEMA="$schema"
+  export PRISMA_MIGRATIONS_DIR="$migdir"
+
+  echo "→ Prisma schema: $PRISMA_SCHEMA"
+  echo "→ Migrations dir: $PRISMA_MIGRATIONS_DIR"
+
+  # Log du provider du datasource
+  echo -n "→ Prisma provider (datasource db): "
+  sed -n '/^[[:space:]]*datasource[[:space:]]\+db[[:space:]]*{/,/}/p' "$PRISMA_SCHEMA" \
+    | sed -n 's/^[[:space:]]*provider[[:space:]]*=[[:space:]]*"\([^"]*\)".*/provider = "\1"/p' \
+    | head -n1
 }
+
 
 docker_up_db() {
   local db=$1
@@ -118,49 +146,41 @@ docker_up_db() {
 }
 
 prisma_sync() {
-  local db=$1 url="" migr_dir="" shadow=""
+  local db=$1
   case "$db" in
-    postgres)
-      url="$POSTGRES_URL"
-      migr_dir="$MIGRATIONS_PG"
-      shadow="postgresql://user:pass@localhost:5432/postgres?schema=public"
+    postgres|pg)
+      export DATABASE_URL="$POSTGRES_URL"
+      export SHADOW_DATABASE_URL="postgresql://user:pass@localhost:5432/postgres?schema=public"
       ;;
-    mariadb)
-      url="$MARIADB_URL"
-      migr_dir="$MIGRATIONS_MY"
-      shadow="mysql://root:pass@localhost:3306/prisma_shadow"
+    mariadb|mysql)
+      export DATABASE_URL="$MARIADB_URL"
+      export SHADOW_DATABASE_URL="mysql://root:pass@localhost:3306/prisma_shadow"
       ;;
     memory)
       echo "→ Prisma ignoré (memory)"; return 0 ;;
     *) echo "DB inconnue: $db"; return 2 ;;
   esac
 
-  mkdir -p "$migr_dir"
+  [[ -f "${PRISMA_SCHEMA:-}" ]] || { echo "✖ PRISMA_SCHEMA non défini ou introuvable"; return 2; }
+  mkdir -p "${PRISMA_MIGRATIONS_DIR:-$PRISMA_DIR/migrations}"
 
-  say "→ Prisma generate"
-  (cd "$ROOT_DIR" \
-    && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
-       npx --yes prisma generate)
+  command -v pnpm >/dev/null 2>&1 || { echo "✖ pnpm manquant"; exit 2; }
+  [ -d "$ROOT_DIR/node_modules" ] || (cd "$ROOT_DIR" && pnpm install)
 
-  say "→ Prisma migrate deploy (retries si DB pas prête)"
-  local tries=8 i=1
-  while :; do
-    if (cd "$ROOT_DIR" \
-        && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
-           npx --yes prisma migrate deploy); then
-      break
-    fi
-    if (( i >= tries )); then
-      echo "→ migrate deploy KO après $tries → tentative finale db push"
-      (cd "$ROOT_DIR" \
-        && PRISMA_MIGRATIONS_DIR="$migr_dir" DATABASE_URL="$url" SHADOW_DATABASE_URL="$shadow" \
-           npx --yes prisma db push) && break
-      echo "✖ Prisma toujours KO. Vérifie logs DB / schema.prisma."
-      return 1
-    fi
-    echo "→ DB pas prête (tentative $i/$tries) → attente $((i*2))s…"
-    sleep $((i*2)); ((i++))
-  done
+  say "→ Prisma generate (root)"
+  ( cd "$ROOT_DIR" && \
+    PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
+    pnpm -w prisma generate --schema "$PRISMA_SCHEMA" )
+
+  say "→ Prisma migrate deploy"
+  ( cd "$ROOT_DIR" && \
+    PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
+    pnpm -w prisma migrate deploy --schema "$PRISMA_SCHEMA" ) || {
+      echo "→ migrate deploy KO → tentative finale db push"
+      ( cd "$ROOT_DIR" && \
+        PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
+        pnpm -w prisma db push --schema "$PRISMA_SCHEMA" )
+    }
 }
 
 kill_tmux() { tmux has-session -t "$SESSION" 2>/dev/null && tmux kill-session -t "$SESSION" || true; }
@@ -234,11 +254,14 @@ run_stack() {
   fuser -k 3001/tcp 2>/dev/null || true
 
   write_envs "$target" "$db"
+
   [[ "$db" != "memory" ]] && switch_prisma_provider "$db"
+
   [[ "$db" != "memory" ]] && docker_up_db "$db" && prisma_sync "$db"
 
   rm -rf "$WEB_DIR/.next" 2>/dev/null || true
-
+# éviter que l’API charge un vieux client local
+rm -rf "$API_DIR/node_modules/@prisma" 2>/dev/null || true
   start_tmux "$target" "$db"
 }
 
