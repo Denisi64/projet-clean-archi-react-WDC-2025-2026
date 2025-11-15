@@ -72,7 +72,7 @@ db-reset-postgres: db-env-postgres migr-link-postgres db-lock-clean
 db-reset-mariadb: db-env-mariadb migr-link-mariadb db-lock-clean
 	@docker compose up -d mariadb >/dev/null 2>&1 || true
 	# Shadow facultatif (si besoin)
-	@docker compose exec -T mariadb sh -lc 'mysql -uroot -ppass -e "CREATE DATABASE IF NOT EXISTS prisma_shadow;"' || true
+	@docker compose exec -T mariadb sh -lc 'mariadb -uroot -ppass -e "CREATE DATABASE IF NOT EXISTS prisma_shadow;"' || true
 	$(PRISMA) migrate reset  --schema="$(SCHEMA_MY)" --force --skip-seed
 	$(PRISMA) migrate dev    --name init --schema="$(SCHEMA_MY)"
 	$(PRISMA) migrate deploy --schema="$(SCHEMA_MY)"

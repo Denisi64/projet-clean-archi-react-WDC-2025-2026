@@ -182,6 +182,23 @@ prisma_sync() {
         pnpm -w prisma db push --schema "$PRISMA_SCHEMA" )
     }
 }
+prisma_seed() {
+  local db=$1
+
+  case "$db" in
+    postgres|pg|mariadb|mysql)
+      # PRISMA_SCHEMA et DATABASE_URL sont déjà définis par prisma_sync
+      say "→ Prisma db seed ($db)"
+      ( cd "$ROOT_DIR" && pnpm -w prisma db seed --schema "$PRISMA_SCHEMA" )
+      ;;
+    memory)
+      echo "→ Pas de seed (memory)"
+      ;;
+    *)
+      echo "DB inconnue pour seed: $db"
+      ;;
+  esac
+}
 
 kill_tmux() { tmux has-session -t "$SESSION" 2>/dev/null && tmux kill-session -t "$SESSION" || true; }
 
@@ -258,6 +275,8 @@ run_stack() {
   [[ "$db" != "memory" ]] && switch_prisma_provider "$db"
 
   [[ "$db" != "memory" ]] && docker_up_db "$db" && prisma_sync "$db"
+
+  [[ "$db" != "memory" ]] && prisma_seed "$db"
 
   rm -rf "$WEB_DIR/.next" 2>/dev/null || true
 # éviter que l’API charge un vieux client local

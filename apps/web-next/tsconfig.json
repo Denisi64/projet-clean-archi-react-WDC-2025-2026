@@ -10,7 +10,9 @@
       "esnext"
     ],
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["src/*"],
+      "@/server/*": ["src/server/*"],
+      "@/features/*": ["src/features/*"]
     },
     "allowJs": true,
     "noEmit": true,
@@ -29,7 +31,8 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "src"
+    "src",
+    "src/**/*"
   ],
   "exclude": [
     "node_modules"

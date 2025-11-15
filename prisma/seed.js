@@ -1,30 +1,53 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
+    const hash = await bcrypt.hash('demo12345', 10); // mdp = demo12345
+
     const [client, advisor] = await Promise.all([
         prisma.user.upsert({
             where: { email: 'client@avenir.bank' },
-            update: {},
-            create: { email: 'client@avenir.bank', name: 'Client Démo', password: 'hashed:demo', role: 'CLIENT' },
+            update: {
+                password: hash,                // 🔥 on met à jour le password si le user existe déjà
+            },
+            create: {
+                email: 'client@avenir.bank',
+                name: 'Client Démo',
+                password: hash,
+                role: 'CLIENT',
+            },
         }),
         prisma.user.upsert({
             where: { email: 'advisor@avenir.bank' },
-            update: {},
-            create: { email: 'advisor@avenir.bank', name: 'Conseiller Démo', password: 'hashed:demo', role: 'ADVISOR' },
+            update: {
+                password: hash,                // idem ici
+            },
+            create: {
+                email: 'advisor@avenir.bank',
+                name: 'Conseiller Démo',
+                password: hash,
+                role: 'ADVISOR',
+            },
         }),
     ]);
 
     const current = await prisma.account.upsert({
         where: { iban: 'FR7630006000011234567890189' },
         update: {},
-        create: { userId: client.id, iban: 'FR7630006000011234567890189', name: 'Compte Courant', type: 'CURRENT', balance: '5000.00' },
+        create: {
+            userId: client.id, iban: 'FR7630006000011234567890189',
+            name: 'Compte Courant', type: 'CURRENT', balance: '5000.00'
+        },
     });
 
     const savings = await prisma.account.upsert({
         where: { iban: 'FR7630006000019999999999999' },
         update: {},
-        create: { userId: client.id, iban: 'FR7630006000019999999999999', name: 'Livret Avenir', type: 'SAVINGS', balance: '2500.00' },
+        create: {
+            userId: client.id, iban: 'FR7630006000019999999999999',
+            name: 'Livret Avenir', type: 'SAVINGS', balance: '2500.00'
+        },
     });
 
     const rate = await prisma.tauxEpargne.upsert({
@@ -65,11 +88,13 @@ async function main() {
 
     await prisma.interestAccrual.create({ data: { accountId: savings.id, rateId: rate.id, amount: '0.86' } });
 
-    console.log('✅ Seed OK');
+    console.log('✅ Seed OK (users: client@avenir.bank / advisor@avenir.bank, mdp: demo12345)');
 }
 
-main().then(() => prisma.$disconnect()).catch(async (e) => {
-    console.error('❌ Seed errors:', e);
-    await prisma.$disconnect();
-    process.exit(1);
-});
+main()
+    .then(() => prisma.$disconnect())
+    .catch(async (e) => {
+        console.error('❌ Seed errors:', e);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
