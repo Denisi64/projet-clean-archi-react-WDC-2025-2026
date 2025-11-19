@@ -1,5 +1,5 @@
 import * as jwt from "jsonwebtoken";
-import { TokenManager } from "../domain/auth/ports/TokenManager";
+import { TokenManager } from "../../domain/auth/ports/TokenManager";
 
 export class JwtTokenManager implements TokenManager {
     constructor(private secret: string) {}

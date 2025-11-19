@@ -27,8 +27,6 @@ export async function GET() {
             return NextResponse.json({ backend: 'nest', ok: false, message: String(e?.message || e) }, { status: 502 });
         }
     }
-
-    // Mode NEXT: check direct DB
     try {
         const rows = await prisma.$queryRaw<{ ok: number }[]>`SELECT 1 as ok`;
         return NextResponse.json({ backend: 'next', driver: driverFrom(process.env.DATABASE_URL), ok: Array.isArray(rows) && rows.length > 0 });
