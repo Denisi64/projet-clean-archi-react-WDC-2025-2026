@@ -11,7 +11,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.66.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "nodemailer": "^6.9.15"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

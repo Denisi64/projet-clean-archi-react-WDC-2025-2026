@@ -25,7 +25,13 @@ export default function LoginForm() {
             await login(data);
             window.location.assign("/");
         } catch (e: any) {
-            setError(e?.message === "INVALID_CREDENTIALS" ? "Identifiants invalides." : "Erreur. Réessayez.");
+            if (e?.message === "INVALID_CREDENTIALS") {
+                setError("Identifiants invalides.");
+            } else if (e?.message === "ACCOUNT_INACTIVE") {
+                setError("Compte non confirmé. Consulte tes emails.");
+            } else {
+                setError("Erreur. Réessayez.");
+            }
         }
     }
 

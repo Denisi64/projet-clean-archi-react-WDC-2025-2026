@@ -7,17 +7,9 @@ export type RegisterUserInput = {
     lastName: string;
 };
 
-export type AuthUser = {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    // ajoute d'autres champs si ton backend en renvoie (role, etc.)
-};
-
 export type RegisterUserResult = {
-    accessToken: string;
-    user: AuthUser;
+    ok: boolean;
+    confirmationExpiresAt?: string;
 };
 
 export async function registerUser(
@@ -30,13 +22,16 @@ export async function registerUser(
     });
 
     if (!res.ok) {
-        let message = 'Registration failed';
+        let message = 'Inscription impossible';
         try {
             const data = await res.json();
-            if (data?.message) {
+            if (data?.code === 'EMAIL_ALREADY_USED') message = 'Email déjà utilisé.';
+            else if (data?.message) {
                 message = Array.isArray(data.message)
                     ? data.message.join(', ')
                     : data.message;
+            } else if (data?.code) {
+                message = data.code;
             }
         } catch {
             // rien

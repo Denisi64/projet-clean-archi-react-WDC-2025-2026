@@ -61,6 +61,14 @@ write_envs() {
     local api_env="$API_DIR/.env"
     env_set "$api_env" "NODE_ENV" "development"
     env_set "$api_env" "PORT" "3001"
+
+    # SMTP / confirmation mail
+    env_set "$api_env" "SMTP_HOST" "mailhog"
+    env_set "$api_env" "SMTP_PORT" "1025"
+    env_set "$api_env" "SMTP_FROM" "no-reply@avenir.bank"
+    env_set "$api_env" "FRONT_APP_URL" "http://localhost:3000"
+    env_set "$api_env" "CONFIRMATION_TOKEN_TTL_HOURS" "24"
+
     case "$db" in
       postgres)
         env_set "$api_env" "DATABASE_URL" "$POSTGRES_URL"
@@ -76,9 +84,15 @@ write_envs() {
         ;;
     esac
   fi
+
   # WEB
   local web_env="$WEB_DIR/.env.local"
   env_set "$web_env" "NODE_ENV" "development"
+  env_set "$web_env" "SMTP_HOST" "mailhog"
+  env_set "$web_env" "SMTP_PORT" "1025"
+  env_set "$web_env" "SMTP_FROM" "no-reply@avenir.bank"
+  env_set "$web_env" "FRONT_APP_URL" "http://localhost:3000"
+  env_set "$web_env" "CONFIRMATION_TOKEN_TTL_HOURS" "24"
   if [[ "$target" == "nest" ]]; then
     env_set "$web_env" "BACKEND_TARGET" "nest"
     env_set "$web_env" "NEST_API_URL" "http://localhost:3001"
@@ -138,12 +152,24 @@ switch_prisma_provider() {
 docker_up_db() {
   local db=$1
   case "$db" in
-    postgres) say "→ Docker up Postgres"; docker compose up -d postgres; wait_port 127.0.0.1 5432 ;;
-    mariadb)  say "→ Docker up MariaDB";  docker compose up -d mariadb;  wait_port 127.0.0.1 3306 ;;
-    memory)   say "→ Mode memory : pas de DB Docker" ;;
-    *) echo "DB inconnue: $db"; exit 2;;
+    postgres)
+      say "→ Docker up Postgres + MailHog"
+      docker compose up -d postgres mailhog
+      wait_port 127.0.0.1 5432
+      ;;
+    mariadb)
+      say "→ Docker up MariaDB + MailHog"
+      docker compose up -d mariadb mailhog
+      wait_port 127.0.0.1 3306
+      ;;
+    memory)
+      say "→ Mode memory : pas de DB Docker (ni MailHog)"
+      ;;
+    *)
+      echo "DB inconnue: $db"; exit 2;;
   esac
 }
+
 
 prisma_sync() {
   local db=$1

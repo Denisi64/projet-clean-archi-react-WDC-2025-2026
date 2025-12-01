@@ -7,6 +7,7 @@ import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswor
 import { JwtTokenManager } from "@/server/infrastructure/auth/JwtTokenManager";
 import { LoginUserUseCase } from "@/server/application/auth/LoginUserUseCase";
 import { InvalidCredentialsError } from "@/server/domain/auth/errors/InvalidCredentialsError";
+import { InactiveAccountError } from "@/server/domain/auth/errors/InactiveAccountError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -40,6 +41,9 @@ async function handleUseCase(req: NextRequest) {
     } catch (e: any) {
         if (e instanceof InvalidCredentialsError) {
             return NextResponse.json({ code: "INVALID_CREDENTIALS" }, { status: 401 });
+        }
+        if (e instanceof InactiveAccountError) {
+            return NextResponse.json({ code: "ACCOUNT_INACTIVE" }, { status: 403 });
         }
         if (isDev) console.error("[login] Unexpected:", e?.name, e?.message);
         return NextResponse.json(

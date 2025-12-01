@@ -10,24 +10,32 @@ async function main() {
             where: { email: 'client@avenir.bank' },
             update: {
                 password: hash,                // 🔥 on met à jour le password si le user existe déjà
+                isActive: true,
+                confirmationToken: null,
+                confirmationTokenExpiresAt: null,
             },
             create: {
                 email: 'client@avenir.bank',
                 name: 'Client Démo',
                 password: hash,
                 role: 'CLIENT',
+                isActive: true,
             },
         }),
         prisma.user.upsert({
             where: { email: 'advisor@avenir.bank' },
             update: {
                 password: hash,                // idem ici
+                isActive: true,
+                confirmationToken: null,
+                confirmationTokenExpiresAt: null,
             },
             create: {
                 email: 'advisor@avenir.bank',
                 name: 'Conseiller Démo',
                 password: hash,
                 role: 'ADVISOR',
+                isActive: true,
             },
         }),
     ]);

@@ -1,42 +1,45 @@
 // src/server/application/auth/RegisterUserUseCase.ts
 
+import { randomBytes } from "crypto";
 import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
 import { PasswordHasher } from "../../domain/auth/ports/PasswordHasher";
-import { TokenManager } from "../../domain/auth/ports/TokenManager";
 import { EmailAlreadyInUseError } from "../../domain/auth/errors/EmailAlreadyInUseError";
+import { EmailService } from "../../domain/auth/ports/EmailService";
 
-type Input = {
-    email: string;
-    password: string;
-    remember?: boolean;
-};
-
-type Output = { token: string; userId: string; ttl: number };
+type Input = { email: string; password: string; name?: string };
+type Output = { success: true; expiresAt: Date };
 
 export class RegisterUserUseCase {
     constructor(
-        private repo: AuthRepository,
-        private hasher: PasswordHasher,
-        private tokens: TokenManager
+        private readonly repo: AuthRepository,
+        private readonly hasher: PasswordHasher,
+        private readonly emailService: EmailService,
+        private readonly ttlHours: number,
     ) {}
 
-    async execute({ email, password, remember }: Input): Promise<Output> {
+    async execute({ email, password, name }: Input): Promise<Output> {
         const existing = await this.repo.findByEmail(email);
         if (existing) {
             throw new EmailAlreadyInUseError(email);
         }
 
         const passwordHash = await this.hasher.hash(password);
+        const token = randomBytes(32).toString("hex");
+        const hours = Number.isFinite(this.ttlHours) ? this.ttlHours : 24;
+        const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+        const displayName = name?.trim() || email.split("@")[0];
 
-        const created = await this.repo.createUser({
+        await this.repo.createUser({
             email,
             passwordHash,
+            name: displayName,
+            isActive: false,
+            confirmationToken: token,
+            confirmationTokenExpiresAt: expiresAt,
         });
 
-        const expiresIn = remember ? "30d" : "1d";
-        const token = await this.tokens.issue({ sub: created.id }, { expiresIn });
-        const ttl = remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24;
+        await this.emailService.sendConfirmationEmail(email, token);
 
-        return { token, userId: created.id, ttl };
+        return { success: true, expiresAt };
     }
 }

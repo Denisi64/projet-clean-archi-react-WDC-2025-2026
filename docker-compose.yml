@@ -15,3 +15,9 @@ services:
       MARIADB_ROOT_PASSWORD: pass
       MARIADB_DATABASE: bank
     ports: ["3306:3306"]
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Interface web

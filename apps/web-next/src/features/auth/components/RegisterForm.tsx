@@ -14,11 +14,13 @@ type RegisterFormProps = {
 export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
+        setSuccess(null);
         setLoading(true);
 
         const formData = new FormData(e.currentTarget);
@@ -31,15 +33,18 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
         };
 
         try {
-            const { accessToken, user } = await registerUser(payload);
-
-            // TODO: branche ton système d'auth global ici
-            if (typeof window !== 'undefined') {
-                window.localStorage.setItem('accessToken', accessToken);
-                window.localStorage.setItem('currentUser', JSON.stringify(user));
+            const { confirmationExpiresAt } = await registerUser(payload);
+            const eta = confirmationExpiresAt
+                ? new Date(confirmationExpiresAt).toLocaleString()
+                : null;
+            setSuccess(
+                eta
+                    ? `Compte créé. Vérifie tes emails et confirme ton compte avant le ${eta}.`
+                    : 'Compte créé. Vérifie tes emails et confirme ton compte.',
+            );
+            if (onSuccessRedirectTo) {
+                router.prefetch(onSuccessRedirectTo);
             }
-
-            router.push(onSuccessRedirectTo);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message);
@@ -63,6 +68,11 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
             {error && (
                 <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
                     {error}
+                </p>
+            )}
+            {success && (
+                <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-md px-3 py-2">
+                    {success}
                 </p>
             )}
 
