@@ -1,0 +1,293 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+
+enum Role {
+  CLIENT
+  DIRECTOR
+  ADVISOR
+}
+
+enum AccountType {
+  CURRENT
+  SAVINGS
+}
+
+enum OperationKind {
+  DEBIT
+  CREDIT
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  OPEN
+  FILLED
+  CANCELED
+}
+
+enum CreditStatus {
+  PENDING
+  ACTIVE
+  REPAID
+  CANCELED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      Role      @default(CLIENT)
+  isActive  Boolean   @default(false)
+  confirmationToken           String?   @unique
+  confirmationTokenExpiresAt  DateTime?
+  bannedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  portfolios    Portfolio[]
+  orders        Order[]
+  credits       Credit[]
+  discussions   Discussion[]             @relation("DiscussionOwner")
+  messages      Message[]                @relation("UserMessages")
+  participants  DiscussionParticipant[]
+  notifications Notification[]
+  emailTokens   EmailConfirmationToken[]
+  Discussion    Discussion[]
+
+  @@index([role])
+  @@index([isActive])
+}
+
+model EmailConfirmationToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  iban     String      @unique
+  name     String
+  type     AccountType @default(CURRENT)
+  balance  Decimal     @default(0) @db.Decimal(19, 4)
+  isActive Boolean     @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Épargne
+  interestAccruals InterestAccrual[]
+
+  // Mouvements
+  operations Operation[]
+
+  @@index([userId])
+  @@index([type])
+}
+
+model Transfer {
+  id              String   @id @default(cuid())
+  sourceAccountId String
+  destAccountId   String
+  amount          Decimal  @db.Decimal(19, 4)
+  createdAt       DateTime @default(now())
+
+  // Optionnel: statut, méta
+  note String?
+
+  // Les deux opérations (débit/crédit) pointeront ici
+  operations Operation[]
+
+  @@index([sourceAccountId])
+  @@index([destAccountId])
+}
+
+model Operation {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  kind      OperationKind // DEBIT ou CREDIT
+  amount    Decimal       @db.Decimal(19, 4)
+  createdAt DateTime      @default(now())
+
+  // Relie le couple débit/crédit
+  transferId String?
+  transfer   Transfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
+
+  // Pour traçabilité
+  metadata String?
+
+  @@index([accountId])
+  @@index([transferId])
+  @@index([createdAt])
+}
+
+model TauxEpargne {
+  id              String            @id @default(cuid())
+  // Taux global courant (ex: 0.0125 = 1.25%)
+  rate            Decimal           @db.Decimal(9, 6)
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  InterestAccrual InterestAccrual[]
+}
+
+model InterestAccrual {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  rateId String
+  rate   TauxEpargne @relation(fields: [rateId], references: [id], onDelete: Restrict)
+
+  amount      Decimal  @db.Decimal(19, 4)
+  accruedDate DateTime @default(now())
+}
+
+model Action {
+  id          String   @id @default(cuid())
+  symbol      String   @unique
+  name        String
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders     Order[]
+  portfolios Portfolio[]
+}
+
+model Order {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  actionId String
+  action   Action @relation(fields: [actionId], references: [id], onDelete: Restrict)
+
+  side       OrderSide
+  quantity   Decimal     @db.Decimal(19, 4)
+  limitPrice Decimal?    @db.Decimal(19, 4)
+  status     OrderStatus @default(OPEN)
+
+  fee Decimal @default(1) @db.Decimal(19, 4)
+
+  createdAt DateTime  @default(now())
+  filledAt  DateTime?
+
+  @@index([userId])
+  @@index([actionId])
+  @@index([status])
+}
+
+model Portfolio {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  actionId String
+  action   Action @relation(fields: [actionId], references: [id], onDelete: Restrict)
+
+  quantity Decimal @default(0) @db.Decimal(19, 4)
+  avgPrice Decimal @default(0) @db.Decimal(19, 4)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, actionId])
+}
+
+model Credit {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  principal  Decimal      @db.Decimal(19, 4)
+  annualRate Decimal      @db.Decimal(9, 6)
+  termMonths Int
+  monthlyDue Decimal      @db.Decimal(19, 4)
+  status     CreditStatus @default(PENDING)
+
+  createdAt   DateTime  @default(now())
+  activatedAt DateTime?
+  repaidAt    DateTime?
+}
+
+model Discussion {
+  id      String @id @default(cuid())
+  ownerId String // par ex. client initiateur
+  owner   User   @relation("DiscussionOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Le premier conseiller qui répond devient responsable
+  assignedAdvisorId String?
+  assignedAdvisor   User?   @relation(fields: [assignedAdvisorId], references: [id])
+
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants DiscussionParticipant[]
+
+  @@index([assignedAdvisorId])
+}
+
+model DiscussionParticipant {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, discussionId])
+}
+
+model Message {
+  id           String     @id @default(cuid())
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  content                String
+  createdAt              DateTime @default(now())
+  transferredToAdvisorId String?
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
