@@ -9,7 +9,7 @@ async function main() {
         prisma.user.upsert({
             where: { email: 'client@avenir.bank' },
             update: {
-                password: hash,                // 🔥 on met à jour le password si le user existe déjà
+                password: hash,
                 isActive: true,
                 confirmationToken: null,
                 confirmationTokenExpiresAt: null,

@@ -1,95 +1,114 @@
-import Image from "next/image";
+import Link from "next/link";
+import { cookies } from "next/headers";
 import styles from "./page.module.css";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+type Account = {
+    id: string;
+    name: string;
+    iban: string;
+    type: "CURRENT" | "SAVINGS";
+    balance: string;
+    isActive: boolean;
+    createdAt: string;
+};
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+function formatCurrency(amount: string) {
+    return new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 2,
+    }).format(Number(amount));
+}
+
+async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Account[] }> {
+    const cookieHeader = cookies()
+        .getAll()
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ");
+
+    if (!cookieHeader) {
+        return { authenticated: false, accounts: [] };
+    }
+
+    const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${base}/api/accounts/me`, {
+        method: "GET",
+        cache: "no-store",
+        headers: { cookie: cookieHeader },
+    }).catch(() => null);
+
+    if (!res || res.status === 401) {
+        return { authenticated: false, accounts: [] };
+    }
+    if (!res.ok) {
+        return { authenticated: true, accounts: [] };
+    }
+
+    const data = (await res.json()) as { accounts?: Account[] };
+    return { authenticated: true, accounts: data.accounts ?? [] };
+}
+
+export default async function Home() {
+    const { authenticated, accounts } = await loadAccounts();
+
+    return (
+        <main className={styles.page}>
+            <div className={styles.shell}>
+                <section className={styles.panel}>
+                    <div className={styles.title}>Mes comptes bancaires</div>
+                    <div className={styles.subtitle}>
+                        Chaque utilisateur reçoit un compte courant dès l'inscription. Cette section affiche IBAN, solde et statut.
+                    </div>
+                    <div className={styles.actions}>
+                        <Link className={styles.link} href="/register">Créer un compte</Link>
+                        <Link className={styles.link} href="/login">Se connecter</Link>
+                        {authenticated && (
+                            <form action="/api/auth/logout" method="post">
+                                <button type="submit" className={styles.link}>Se déconnecter</button>
+                            </form>
+                        )}
+                    </div>
+
+                    {!authenticated && (
+                        <div className={styles.empty}>
+                            Connectez-vous pour récupérer vos comptes. Après confirmation d'email, rechargez la page.
+                        </div>
+                    )}
+
+                    {authenticated && accounts.length === 0 && (
+                        <div className={styles.empty}>
+                            Aucun compte trouvé pour ce profil. Créez un nouvel utilisateur puis reconnectez-vous.
+                        </div>
+                    )}
+
+                    {accounts.length > 0 && (
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>IBAN</th>
+                                    <th>Type</th>
+                                    <th>Solde</th>
+                                    <th>Statut</th>
+                                    <th>Ouvert le</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {accounts.map((acc) => (
+                                    <tr key={acc.id}>
+                                        <td>{acc.name}</td>
+                                        <td>{acc.iban}</td>
+                                        <td>{acc.type === "CURRENT" ? "Courant" : "Épargne"}</td>
+                                        <td>{formatCurrency(acc.balance)}</td>
+                                        <td>{acc.isActive ? "Actif" : "Inactif"}</td>
+                                        <td>{new Date(acc.createdAt).toLocaleDateString("fr-FR")}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </section>
+            </div>
+        </main>
+    );
 }
