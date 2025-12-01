@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
-    const hash = await bcrypt.hash('demo12345', 10); // mdp = demo12345
+    const hash = await bcrypt.hash('demo12345', 10);
 
     const [client, advisor] = await Promise.all([
         prisma.user.upsert({
@@ -25,7 +25,7 @@ async function main() {
         prisma.user.upsert({
             where: { email: 'advisor@avenir.bank' },
             update: {
-                password: hash,                // idem ici
+                password: hash,
                 isActive: true,
                 confirmationToken: null,
                 confirmationTokenExpiresAt: null,
@@ -96,13 +96,13 @@ async function main() {
 
     await prisma.interestAccrual.create({ data: { accountId: savings.id, rateId: rate.id, amount: '0.86' } });
 
-    console.log('✅ Seed OK (users: client@avenir.bank / advisor@avenir.bank, mdp: demo12345)');
+    console.log('Seed OK (users: client@avenir.bank / advisor@avenir.bank, mdp: demo12345)');
 }
 
 main()
     .then(() => prisma.$disconnect())
     .catch(async (e) => {
-        console.error('❌ Seed errors:', e);
+        console.error('Seed errors:', e);
         await prisma.$disconnect();
         process.exit(1);
     });
