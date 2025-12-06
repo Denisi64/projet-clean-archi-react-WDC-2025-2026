@@ -1,32 +1,27 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { PrismaAccountRepository } from "../../../../../../../api-nest/src/infrastructure/repositories/PrismaAccountRepository";
-import { CloseAccountUseCase } from "../../../../../../../api-nest/src/application/accounts/CloseAccountUseCase";
-import { AccountNotFoundError } from "../../../../../../../api-nest/src/domain/accounts/errors/AccountNotFoundError";
+import { z } from "zod";
+import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
+import { CloseAccountUseCase } from "@/server/application/accounts/CloseAccountUseCase";
+import { AccountNotFoundError } from "@/server/domain/accounts/errors/AccountNotFoundError";
+import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 
 const prisma = new PrismaClient();
 const accountRepo = new PrismaAccountRepository(prisma);
 const closeAccountUC = new CloseAccountUseCase(accountRepo);
+const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-function getUserIdFromSession(req: NextRequest): string | null {
-    const session = req.cookies.get("session")?.value;
-    if (!session) return null;
-    try {
-        const payload = jwt.verify(session, process.env.JWT_SECRET ?? "dev-secret") as any;
-        return typeof payload?.sub === "string" ? payload.sub : null;
-    } catch (e: any) {
-        if (isDev) console.warn("[accounts close] invalid session:", e?.message);
-        return null;
-    }
-}
+const closeParamsSchema = z.object({
+    id: z.string().min(1),
+});
 
 async function handleUseCase(req: NextRequest, accountId: string) {
-    const userId = getUserIdFromSession(req);
+    const session = req.cookies.get("session")?.value;
+    const userId = session ? await tokenVerifier.verify(session) : null;
     if (!userId) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
@@ -71,6 +66,13 @@ async function handleProxy(req: NextRequest, accountId: string) {
     }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-    return target === "next" ? handleUseCase(req, params.id) : handleProxy(req, params.id);
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const parsed = closeParamsSchema.safeParse(await params);
+    if (!parsed.success) {
+        return target === "next"
+            ? NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 })
+            : handleProxy(req, "");
+    }
+    const { id } = parsed.data;
+    return target === "next" ? handleUseCase(req, id) : handleProxy(req, id);
 }

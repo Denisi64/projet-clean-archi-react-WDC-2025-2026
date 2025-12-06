@@ -25,7 +25,8 @@ type Transfer = {
 };
 
 async function loadTransfers(accountId?: string): Promise<{ authenticated: boolean; transfers: Transfer[] }> {
-    const cookieHeader = cookies()
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
         .getAll()
         .map((c) => `${c.name}=${c.value}`)
         .join("; ");
@@ -56,7 +57,8 @@ async function loadTransfers(accountId?: string): Promise<{ authenticated: boole
 }
 
 async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Account[] }> {
-    const cookieHeader = cookies()
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
         .getAll()
         .map((c) => `${c.name}=${c.value}`)
         .join("; ");

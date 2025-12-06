@@ -62,3 +62,14 @@ docker-compose.yml   # services DB + mailhog
 | `./scripts/dev down`             | stoppe tout              |
 | `./scripts/dev attach`           | se rattacher à tmux      |
 | `./scripts/dev stop`             | ferme tmux, garde Docker |
+
+## Épargne – appliquer les intérêts (admin)
+Taux annuel via `SAVINGS_INTEREST_RATE` (défaut 0.02). Token admin via `ADMIN_TOKEN` (défaut `dev-admin`).
+
+```
+# Backend Next (port 3000)
+curl -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin"
+
+# Backend Nest (port 3001)
+curl -X POST http://localhost:3001/admin/savings/apply-interest -H "x-admin-token: dev-admin"
+```

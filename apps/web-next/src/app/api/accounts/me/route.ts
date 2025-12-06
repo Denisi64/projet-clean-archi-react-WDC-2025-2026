@@ -1,24 +1,13 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
 import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
+import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
-const jwtSecret = process.env.JWT_SECRET ?? "dev-secret";
-
-function getUserIdFromSession(token: string | undefined): string | null {
-    if (!token) return null;
-    try {
-        const payload = jwt.verify(token, jwtSecret) as any;
-        return typeof payload?.sub === "string" ? payload.sub : null;
-    } catch (e: any) {
-        if (isDev) console.warn("[accounts] invalid session:", e?.message);
-        return null;
-    }
-}
+const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 
 async function handleUseCase(req: NextRequest) {
     if (!process.env.DATABASE_URL) {
@@ -27,7 +16,7 @@ async function handleUseCase(req: NextRequest) {
     }
 
     const session = req.cookies.get("session")?.value;
-    const userId = getUserIdFromSession(session);
+    const userId = session ? await tokenVerifier.verify(session) : null;
     if (!userId) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
