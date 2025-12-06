@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import styles from "./page.module.css";
+import { AccountCreator } from "./components/AccountCreator";
+import { AccountRow } from "./components/AccountRow";
+import { TransferForm } from "./components/TransferForm";
 
 type Account = {
     id: string;
@@ -11,14 +14,6 @@ type Account = {
     isActive: boolean;
     createdAt: string;
 };
-
-function formatCurrency(amount: string) {
-    return new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 2,
-    }).format(Number(amount));
-}
 
 async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Account[] }> {
     const cookieHeader = cookies()
@@ -62,6 +57,7 @@ export default async function Home() {
                     <div className={styles.actions}>
                         <Link className={styles.link} href="/register">Créer un compte</Link>
                         <Link className={styles.link} href="/login">Se connecter</Link>
+                        <Link className={styles.link} href="/transfers">Historique des transferts</Link>
                         {authenticated && (
                             <form action="/api/auth/logout" method="post">
                                 <button type="submit" className={styles.link}>Se déconnecter</button>
@@ -91,21 +87,33 @@ export default async function Home() {
                                     <th>Solde</th>
                                     <th>Statut</th>
                                     <th>Ouvert le</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {accounts.map((acc) => (
-                                    <tr key={acc.id}>
-                                        <td>{acc.name}</td>
-                                        <td>{acc.iban}</td>
-                                        <td>{acc.type === "CURRENT" ? "Courant" : "Épargne"}</td>
-                                        <td>{formatCurrency(acc.balance)}</td>
-                                        <td>{acc.isActive ? "Actif" : "Inactif"}</td>
-                                        <td>{new Date(acc.createdAt).toLocaleDateString("fr-FR")}</td>
-                                    </tr>
+                                    <AccountRow key={acc.id} account={acc} />
                                 ))}
                             </tbody>
                         </table>
+                    )}
+
+                    {authenticated && (
+                        <div className={styles.grid2}>
+                            <div className={styles.card}>
+                                <div className={styles.title}>Ajouter un compte</div>
+                                <AccountCreator />
+                            </div>
+                            {accounts.length > 0 && (
+                                <div className={styles.card}>
+                                    <div className={styles.title}>Effectuer un transfert</div>
+                                    <div className={styles.subtitle}>
+                                        Transferts internes uniquement (IBAN d'un compte Avenir Bank). Le solde s'actualise automatiquement.
+                                    </div>
+                                    <TransferForm accounts={accounts} />
+                                </div>
+                            )}
+                        </div>
                     )}
                 </section>
             </div>

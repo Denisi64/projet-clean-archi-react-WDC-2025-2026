@@ -16,6 +16,8 @@
   border-radius: 12px;
   padding: 20px;
   background: #ffffff;
+  display: grid;
+  gap: 16px;
 }
 
 .title {
@@ -40,6 +42,7 @@
   border: 1px solid var(--border);
   padding: 10px;
   text-align: left;
+  vertical-align: top;
 }
 
 .table th {
@@ -53,6 +56,15 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--muted);
+}
+
+.nameCell {
+  display: grid;
+  gap: 8px;
+}
+
+.name {
+  font-weight: 600;
 }
 
 .actions {
@@ -69,4 +81,67 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #f8fafc;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.input, .select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font: inherit;
+  width: 100%;
+}
+
+.rowActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.inlineForm {
+  display: grid;
+  gap: 8px;
+}
+
+.inlineButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 14px;
 }

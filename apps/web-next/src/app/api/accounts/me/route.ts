@@ -3,8 +3,12 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
+import { PrismaAccountRepository } from "../../../../../../api-nest/src/infrastructure/repositories/PrismaAccountRepository";
+import { GetUserAccountsUseCase } from "../../../../../../api-nest/src/application/accounts/GetUserAccountsUseCase";
 
 const prisma = new PrismaClient();
+const accountRepo = new PrismaAccountRepository(prisma);
+const getAccountsUC = new GetUserAccountsUseCase(accountRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -26,19 +30,11 @@ async function handleUseCase(req: NextRequest) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const accounts = await prisma.account.findMany({
-        where: { userId },
-        orderBy: { createdAt: "asc" },
-    });
+    const accounts = await getAccountsUC.execute(userId);
 
     return NextResponse.json({
         accounts: accounts.map((acc) => ({
-            id: acc.id,
-            name: acc.name,
-            iban: acc.iban,
-            type: acc.type,
-            balance: acc.balance.toString(),
-            isActive: acc.isActive,
+            ...acc,
             createdAt: acc.createdAt.toISOString(),
         })),
     });
