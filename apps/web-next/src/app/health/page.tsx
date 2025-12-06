@@ -1,4 +1,3 @@
-// apps/web-next/app/health/page.tsx
 import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
