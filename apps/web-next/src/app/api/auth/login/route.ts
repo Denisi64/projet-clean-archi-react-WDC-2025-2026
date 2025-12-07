@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
 import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
@@ -12,13 +13,25 @@ import { InactiveAccountError } from "@/server/domain/auth/errors/InactiveAccoun
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
+const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(1),
+    remember: z.boolean().optional(),
+});
+
 async function handleUseCase(req: NextRequest) {
     if (!process.env.DATABASE_URL) {
         if (isDev) console.error("[login] DATABASE_URL missing (BACKEND_TARGET=next)");
         return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
     }
 
-    const { email, password, remember } = await req.json();
+    const raw = await req.json().catch(() => null);
+    const parsed = loginSchema.safeParse(raw);
+    if (!parsed.success) {
+        return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
+
+    const { email, password, remember } = parsed.data;
 
     try {
         const uc = new LoginUserUseCase(

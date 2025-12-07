@@ -1,31 +1,21 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { PrismaTransferRepository } from "../../../../../../api-nest/src/infrastructure/repositories/PrismaTransferRepository";
-import { ListTransfersForUserUseCase } from "../../../../../../api-nest/src/application/accounts/ListTransfersForUserUseCase";
+import { PrismaTransferRepository } from "@/server/infrastructure/accounts/PrismaTransferRepository";
+import { ListTransfersForUserUseCase } from "@/server/application/accounts/ListTransfersForUserUseCase";
+import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 
 const prisma = new PrismaClient();
 const repo = new PrismaTransferRepository(prisma);
 const listTransfersUC = new ListTransfersForUserUseCase(repo);
+const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-function getUserIdFromSession(req: NextRequest): string | null {
-    const session = req.cookies.get("session")?.value;
-    if (!session) return null;
-    try {
-        const payload = jwt.verify(session, process.env.JWT_SECRET ?? "dev-secret") as any;
-        return typeof payload?.sub === "string" ? payload.sub : null;
-    } catch (e: any) {
-        if (isDev) console.warn("[transfer history] invalid session:", e?.message);
-        return null;
-    }
-}
-
 async function handleUseCase(req: NextRequest) {
-    const userId = getUserIdFromSession(req);
+    const session = req.cookies.get("session")?.value;
+    const userId = session ? await tokenVerifier.verify(session) : null;
     if (!userId) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }

@@ -1,45 +1,45 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { TransferBetweenAccountsUseCase } from "../../../../../api-nest/src/application/accounts/TransferBetweenAccountsUseCase";
-import { PrismaTransferRepository } from "../../../../../api-nest/src/infrastructure/repositories/PrismaTransferRepository";
-import { AccountNotFoundError } from "../../../../../api-nest/src/domain/accounts/errors/AccountNotFoundError";
-import { AccountInactiveError } from "../../../../../api-nest/src/domain/accounts/errors/AccountInactiveError";
-import { SameAccountTransferError } from "../../../../../api-nest/src/domain/accounts/errors/SameAccountTransferError";
-import { InvalidTransferAmountError } from "../../../../../api-nest/src/domain/accounts/errors/InvalidTransferAmountError";
-import { InsufficientFundsError } from "../../../../../api-nest/src/domain/accounts/errors/InsufficientFundsError";
+import { z } from "zod";
+import { TransferBetweenAccountsUseCase } from "@/server/application/accounts/TransferBetweenAccountsUseCase";
+import { PrismaTransferRepository } from "@/server/infrastructure/accounts/PrismaTransferRepository";
+import { AccountNotFoundError } from "@/server/domain/accounts/errors/AccountNotFoundError";
+import { AccountInactiveError } from "@/server/domain/accounts/errors/AccountInactiveError";
+import { SameAccountTransferError } from "@/server/domain/accounts/errors/SameAccountTransferError";
+import { InvalidTransferAmountError } from "@/server/domain/accounts/errors/InvalidTransferAmountError";
+import { InsufficientFundsError } from "@/server/domain/accounts/errors/InsufficientFundsError";
+import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 
 const prisma = new PrismaClient();
 const transferUC = new TransferBetweenAccountsUseCase(new PrismaTransferRepository(prisma));
+const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-function getUserIdFromSession(req: NextRequest): string | null {
-    const session = req.cookies.get("session")?.value;
-    if (!session) return null;
-    try {
-        const payload = jwt.verify(session, process.env.JWT_SECRET ?? "dev-secret") as any;
-        return typeof payload?.sub === "string" ? payload.sub : null;
-    } catch (e: any) {
-        if (isDev) console.warn("[transfer] invalid session:", e?.message);
-        return null;
-    }
-}
+const transferSchema = z.object({
+    sourceAccountId: z.string().min(1),
+    destinationIban: z.string().trim().min(5),
+    amount: z.union([z.string(), z.number()]).transform((v) => String(v)),
+    note: z.string().max(255).optional(),
+});
 
 async function handleUseCase(req: NextRequest) {
-    const userId = getUserIdFromSession(req);
+    const session = req.cookies.get("session")?.value;
+    const userId = session ? await tokenVerifier.verify(session) : null;
     if (!userId) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     try {
-        const body = await req.json().catch(() => ({}));
-        const sourceAccountId = typeof body?.sourceAccountId === "string" ? body.sourceAccountId.trim() : "";
-        const destinationIban = typeof body?.destinationIban === "string" ? body.destinationIban.trim() : "";
-        const amount = typeof body?.amount === "number" || typeof body?.amount === "string" ? String(body.amount) : "";
-        const note = typeof body?.note === "string" ? body.note : undefined;
+        const raw = await req.json().catch(() => null);
+        const parsed = transferSchema.safeParse(raw);
+        if (!parsed.success) {
+            return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
+        }
+
+        const { sourceAccountId, destinationIban, amount, note } = parsed.data;
 
         const result = await transferUC.execute({
             userId,

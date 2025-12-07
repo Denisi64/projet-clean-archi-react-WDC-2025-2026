@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
 import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
 import { RegisterUserUseCase } from "@/server/application/auth/RegisterUserUseCase";
@@ -12,18 +13,26 @@ const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 const ttlHours = Number(process.env.CONFIRMATION_TOKEN_TTL_HOURS ?? "24");
 
+const registerSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+    firstName: z.string().trim().min(1).optional(),
+    lastName: z.string().trim().min(1).optional(),
+});
+
 async function handleUseCase(req: NextRequest) {
     if (!process.env.DATABASE_URL) {
         if (isDev) console.error("[register] DATABASE_URL missing (BACKEND_TARGET=next)");
         return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
     }
 
-    const body = await req.json();
-    const { email, password, firstName, lastName } = body ?? {};
-
-    if (!email || !password) {
+    const raw = await req.json().catch(() => null);
+    const parsed = registerSchema.safeParse(raw);
+    if (!parsed.success) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
+
+    const { email, password, firstName, lastName } = parsed.data;
 
     try {
         const uc = new RegisterUserUseCase(

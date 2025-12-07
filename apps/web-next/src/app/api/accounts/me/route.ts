@@ -1,36 +1,29 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-import { PrismaAccountRepository } from "../../../../../../api-nest/src/infrastructure/repositories/PrismaAccountRepository";
-import { GetUserAccountsUseCase } from "../../../../../../api-nest/src/application/accounts/GetUserAccountsUseCase";
+import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
+import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
+import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 
-const prisma = new PrismaClient();
-const accountRepo = new PrismaAccountRepository(prisma);
-const getAccountsUC = new GetUserAccountsUseCase(accountRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
-
-function getUserIdFromSession(token: string | undefined): string | null {
-    if (!token) return null;
-    try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET ?? "dev-secret") as any;
-        return typeof payload?.sub === "string" ? payload.sub : null;
-    } catch (e: any) {
-        if (isDev) console.warn("[accounts] invalid session:", e?.message);
-        return null;
-    }
-}
+const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 
 async function handleUseCase(req: NextRequest) {
+    if (!process.env.DATABASE_URL) {
+        if (isDev) console.error("[accounts] DATABASE_URL missing (BACKEND_TARGET=next)");
+        return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
+    }
+
     const session = req.cookies.get("session")?.value;
-    const userId = getUserIdFromSession(session);
+    const userId = session ? await tokenVerifier.verify(session) : null;
     if (!userId) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const accounts = await getAccountsUC.execute(userId);
+    const repo = new PrismaAccountRepository();
+    const uc = new GetUserAccountsUseCase(repo);
+    const accounts = await uc.execute(userId);
 
     return NextResponse.json({
         accounts: accounts.map((acc) => ({

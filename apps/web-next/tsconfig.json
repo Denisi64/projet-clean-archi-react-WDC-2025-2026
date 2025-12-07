@@ -10,9 +10,15 @@
       "esnext"
     ],
     "paths": {
-      "@/*": ["src/*"],
-      "@/server/*": ["src/server/*"],
-      "@/features/*": ["src/features/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/server/*": [
+        "src/server/*"
+      ],
+      "@/features/*": [
+        "src/features/*"
+      ]
     },
     "allowJs": true,
     "noEmit": true,
@@ -30,12 +36,12 @@
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts",
     "src",
-    "src/**/*"
+    "src/**/*",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next"
   ]
 }
-
