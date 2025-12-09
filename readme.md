@@ -72,4 +72,27 @@ curl -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-
 
 # Backend Nest (port 3001)
 curl -X POST http://localhost:3001/admin/savings/apply-interest -H "x-admin-token: dev-admin"
+
+# Exemple cron local (intérêts tous les jours à 01h00, backend Next)
+# 0 1 * * * curl -s -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin" >/tmp/interest.log 2>&1
 ```
+
+## Crédit – conseiller (octroi)
+Token conseiller via `ADVISOR_TOKEN` (défaut `dev-advisor`). Taux assurance appliqué sur le capital et réparti dans les mensualités (annuité constante).
+
+```
+# Backend Next (port 3000)
+curl -X POST http://localhost:3000/api/advisor/credits \
+  -H "x-advisor-token: dev-advisor" \
+  -H "content-type: application/json" \
+  -d '{"userId":"<clientId>","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
+
+# Backend Nest (port 3001)
+curl -X POST http://localhost:3001/advisor/credits \
+  -H "x-advisor-token: dev-advisor" \
+  -H "content-type: application/json" \
+  -d '{"userId":"<clientId>","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
+```
+
+## Langues (UI)
+- Paramètre `?lang=fr` ou `?lang=en` sur les pages (ex: `http://localhost:3000/?lang=en`) pour basculer l’interface. Front par défaut en français.

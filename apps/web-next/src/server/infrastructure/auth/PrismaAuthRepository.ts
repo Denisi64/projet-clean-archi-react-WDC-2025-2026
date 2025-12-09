@@ -18,9 +18,17 @@ export class PrismaAuthRepository implements AuthRepository {
             email: u.email,
             passwordHash,
             isActive: !!u.isActive,
+            name: u.name,
+            role: u.role,
             confirmationToken: u.confirmationToken ?? null,
             confirmationTokenExpiresAt: u.confirmationTokenExpiresAt ?? null,
         };
+    }
+
+    async findById(id: string): Promise<AuthUser | null> {
+        const u = await prisma.user.findUnique({ where: { id } });
+        if (!u) return null;
+        return this.mapUser(u);
     }
 
     async findByEmail(email: string): Promise<AuthUser | null> {

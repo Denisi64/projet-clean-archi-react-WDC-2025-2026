@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import { AccountCreator } from "./components/AccountCreator";
 import { AccountRow } from "./components/AccountRow";
 import { TransferForm } from "./components/TransferForm";
+import { getLocale, t } from "./i18n";
 
 type Account = {
     id: string;
@@ -13,6 +14,13 @@ type Account = {
     balance: string;
     isActive: boolean;
     createdAt: string;
+};
+
+type CurrentUser = {
+    id: string;
+    email: string;
+    name?: string;
+    role?: string;
 };
 
 async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Account[] }> {
@@ -44,37 +52,71 @@ async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Accou
     return { authenticated: true, accounts: data.accounts ?? [] };
 }
 
-export default async function Home() {
-    const { authenticated, accounts } = await loadAccounts();
+async function loadCurrentUser(): Promise<CurrentUser | null> {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ");
+    if (!cookieHeader) return null;
+
+    const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${base}/api/auth/me`, {
+        method: "GET",
+        cache: "no-store",
+        headers: { cookie: cookieHeader },
+    }).catch(() => null);
+    if (!res || !res.ok) return null;
+    const data = (await res.json()) as { user?: CurrentUser };
+    return data.user ?? null;
+}
+
+function deriveDbLabel(): string {
+    const driver = process.env.DB_DRIVER;
+    if (driver) return driver;
+    const url = process.env.DATABASE_URL ?? "";
+    if (url.startsWith("postgres")) return "postgres";
+    if (url.startsWith("mysql")) return "mysql/mariadb";
+    return "inconnue";
+}
+
+export default async function Home({ searchParams }: { searchParams: { lang?: string } }) {
+    const [{ authenticated, accounts }, currentUser] = await Promise.all([loadAccounts(), loadCurrentUser()]);
+    const backend = process.env.BACKEND_TARGET ?? "nest";
+    const dbLabel = deriveDbLabel();
+    const locale = getLocale(searchParams?.lang);
 
     return (
         <main className={styles.page}>
             <div className={styles.shell}>
                 <section className={styles.panel}>
-                    <div className={styles.title}>Mes comptes bancaires</div>
                     <div className={styles.subtitle}>
-                        Chaque utilisateur reçoit un compte courant dès l'inscription. Cette section affiche IBAN, solde et statut.
+                        {t(locale, "welcome", { backend, db: dbLabel })}{" "}
+                        {currentUser ? `— ${t(locale, "helloUser", { name: currentUser.name ?? currentUser.email, role: currentUser.role ?? "client" })}` : ""}
                     </div>
+                    <div className={styles.title}>{t(locale, "title")}</div>
+                    <div className={styles.subtitle}>{t(locale, "subtitle")}</div>
                     <div className={styles.actions}>
-                        <Link className={styles.link} href="/register">Créer un compte</Link>
-                        <Link className={styles.link} href="/login">Se connecter</Link>
-                        <Link className={styles.link} href="/transfers">Historique des transferts</Link>
+                        <Link className={styles.link} href="/register">{t(locale, "createAccount")}</Link>
+                        <Link className={styles.link} href="/login">{t(locale, "login")}</Link>
+                        <Link className={styles.link} href="/transfers">{t(locale, "transfers")}</Link>
+                        <Link className={styles.link} href="/advisor/credits">Crédits (conseiller)</Link>
                         {authenticated && (
                             <form action="/api/auth/logout" method="post">
-                                <button type="submit" className={styles.link}>Se déconnecter</button>
+                                <button type="submit" className={styles.link}>{t(locale, "logout")}</button>
                             </form>
                         )}
                     </div>
 
                     {!authenticated && (
                         <div className={styles.empty}>
-                            Connectez-vous pour récupérer vos comptes. Après confirmation d'email, rechargez la page.
+                            {t(locale, "notAuth")}
                         </div>
                     )}
 
                     {authenticated && accounts.length === 0 && (
                         <div className={styles.empty}>
-                            Aucun compte trouvé pour ce profil. Créez un nouvel utilisateur puis reconnectez-vous.
+                            {t(locale, "noAccounts")}
                         </div>
                     )}
 
@@ -102,15 +144,13 @@ export default async function Home() {
                     {authenticated && (
                         <div className={styles.grid2}>
                             <div className={styles.card}>
-                                <div className={styles.title}>Ajouter un compte</div>
+                                <div className={styles.title}>{t(locale, "addAccount")}</div>
                                 <AccountCreator />
                             </div>
                             {accounts.length > 0 && (
                                 <div className={styles.card}>
-                                    <div className={styles.title}>Effectuer un transfert</div>
-                                    <div className={styles.subtitle}>
-                                        Transferts internes uniquement (IBAN d'un compte Avenir Bank). Le solde s'actualise automatiquement.
-                                    </div>
+                                    <div className={styles.title}>{t(locale, "transfer")}</div>
+                                    <div className={styles.subtitle}>{t(locale, "transferInfo")}</div>
                                     <TransferForm accounts={accounts} />
                                 </div>
                             )}
