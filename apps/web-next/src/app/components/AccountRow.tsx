@@ -139,7 +139,7 @@ export function AccountRow({ account }: Props) {
             </TableCell>
             <TableCell>{formatCurrency(account.balance)}</TableCell>
             <TableCell>
-                <Badge variant={account.isActive ? "success" : "secondary"}>
+                <Badge variant={account.isActive ? "default" : "destructive"}>
                     {account.isActive ? "Actif" : "Clôturé"}
                 </Badge>
             </TableCell>
