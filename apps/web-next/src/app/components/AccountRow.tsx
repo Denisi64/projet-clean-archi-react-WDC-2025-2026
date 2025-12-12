@@ -2,10 +2,10 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../page.module.css";
-import { Input } from "../design/atoms/Input";
-import { Button } from "../design/atoms/Button";
-import { Tag } from "../design/atoms/Tag";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
+import { TableCell, TableRow } from "../../components/ui/table";
 
 type Account = {
     id: string;
@@ -96,55 +96,59 @@ export function AccountRow({ account }: Props) {
     }
 
     return (
-        <tr>
-            <td>
-                <div className={styles.nameCell}>
-                    <div className={styles.name}>{account.name}</div>
-                    {editing && (
-                        <form className={styles.inlineForm} onSubmit={handleRename}>
+        <TableRow>
+            <TableCell className="font-medium">
+                <div className="flex flex-col gap-1">
+                    {!editing ? (
+                        <span>{account.name}</span>
+                    ) : (
+                        <form className="flex items-center gap-2" onSubmit={handleRename}>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 minLength={2}
                                 maxLength={80}
                                 aria-label="Nouveau nom du compte"
+                                className="h-8 w-40"
                             />
-                            <div className={styles.inlineButtons}>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? "Enregistrement..." : "Enregistrer"}
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    type="button"
-                                    onClick={() => {
-                                        setEditing(false);
-                                        setName(account.name);
-                                    }}
-                                    disabled={loading}
-                                >
-                                    Annuler
-                                </Button>
-                            </div>
+                            <Button type="submit" size="sm" disabled={loading}>
+                                OK
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                type="button"
+                                onClick={() => {
+                                    setEditing(false);
+                                    setName(account.name);
+                                }}
+                                disabled={loading}
+                            >
+                                X
+                            </Button>
                         </form>
                     )}
-                    {error && <p className={styles.error}>{error}</p>}
+                    {error && <p className="text-xs text-destructive">{error}</p>}
                 </div>
-            </td>
-            <td>{account.iban}</td>
-            <td>
-                <Tag variant="info">{account.type === "CURRENT" ? "Courant" : "Épargne"}</Tag>
-            </td>
-            <td>{formatCurrency(account.balance)}</td>
-            <td>
-                <Tag variant={account.isActive ? "success" : "muted"}>
+            </TableCell>
+            <TableCell>{account.iban}</TableCell>
+            <TableCell>
+                <Badge variant={account.type === "CURRENT" ? "outline" : "secondary"}>
+                    {account.type === "CURRENT" ? "Courant" : "Épargne"}
+                </Badge>
+            </TableCell>
+            <TableCell>{formatCurrency(account.balance)}</TableCell>
+            <TableCell>
+                <Badge variant={account.isActive ? "success" : "secondary"}>
                     {account.isActive ? "Actif" : "Clôturé"}
-                </Tag>
-            </td>
-            <td>{new Date(account.createdAt).toLocaleDateString("fr-FR")}</td>
-            <td>
-                <div className={styles.rowActions}>
+                </Badge>
+            </TableCell>
+            <TableCell>{new Date(account.createdAt).toLocaleDateString("fr-FR")}</TableCell>
+            <TableCell>
+                <div className="flex items-center gap-2">
                     <Button
-                        variant="secondary"
+                        variant="outline"
+                        size="sm"
                         type="button"
                         onClick={() => {
                             setError(null);
@@ -160,15 +164,16 @@ export function AccountRow({ account }: Props) {
                         {editing ? "Fermer" : "Renommer"}
                     </Button>
                     <Button
-                        variant="danger"
+                        variant="destructive"
+                        size="sm"
                         type="button"
                         onClick={handleClose}
                         disabled={!account.isActive || closing}
                     >
-                        {closing ? "Clôture..." : "Clôturer"}
+                        {closing ? "..." : "Clôturer"}
                     </Button>
                 </div>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 }
