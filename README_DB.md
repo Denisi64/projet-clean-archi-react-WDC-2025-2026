@@ -29,6 +29,7 @@ projet-clean-archi-react-WDC-2025-2026/
 │   ├── migrations_pg/     # migrations Postgres
 │   ├── migrations_mysql/  # migrations MariaDB
 │   ├── seed.js            # fixtures (idempotent recommandé)
+│   ├── seed.dev.ts        # fixtures de démo (users client/advisor)
 │   └── .env               # généré (NE PAS COMMIT)
 ├── scripts/
 │   └── dev                # start/stop/switch stack
