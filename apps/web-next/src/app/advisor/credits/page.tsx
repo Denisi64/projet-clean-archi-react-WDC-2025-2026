@@ -28,16 +28,9 @@ export default function AdvisorCreditsPage() {
     const [success, setSuccess] = useState<CreditResponse | null>(null);
 
     const searchUsers = async (q: string) => {
-        if (q.trim().length < 2) {
-            setUsers([]);
-            return;
-        }
         setSearching(true);
         try {
             const resp = await fetch(`/api/advisor/users?query=${encodeURIComponent(q)}`, {
-                headers: {
-                    "x-advisor-token": form.token || "dev-advisor",
-                },
             });
             if (!resp.ok) {
                 setUsers([]);
@@ -59,7 +52,18 @@ export default function AdvisorCreditsPage() {
             searchUsers(query);
         }, 200);
         return () => clearTimeout(handle);
-    }, [query, form.token]);
+    }, [query]);
+
+    useEffect(() => {
+        // Load initial list without typing
+        searchUsers("");
+    }, []);
+
+    useEffect(() => {
+        if (!form.userId && users.length > 0) {
+            setForm((prev) => ({ ...prev, userId: users[0].id }));
+        }
+    }, [users, form.userId]);
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,12 +71,17 @@ export default function AdvisorCreditsPage() {
         setError(null);
         setSuccess(null);
 
+        if (!form.userId) {
+            setError("NO_USER_SELECTED");
+            setLoading(false);
+            return;
+        }
+
         try {
             const resp = await fetch("/api/advisor/credits", {
                 method: "POST",
                 headers: {
                     "content-type": "application/json",
-                    "x-advisor-token": form.token || "dev-advisor",
                 },
                 body: JSON.stringify({
                     userId: form.userId.trim(),
@@ -119,13 +128,14 @@ export default function AdvisorCreditsPage() {
                 <div className={styles.subtitle}>
                     Calcul en annuité constante avec assurance répartie dans les mensualités.
                 </div>
+                {users.length === 0 && <div className={styles.alert}>Aucun utilisateur trouvé. Vérifiez le seed.</div>}
                 <form className={styles.form} onSubmit={submit}>
                     <label className={styles.wide}>
                         Rechercher un client (nom/email)
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Tapez au moins 2 caractères"
+                            placeholder="Tapez un nom ou email (optionnel)"
                         />
                     </label>
                     <label className={styles.wide}>

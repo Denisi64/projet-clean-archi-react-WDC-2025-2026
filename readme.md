@@ -78,21 +78,33 @@ curl -X POST http://localhost:3001/admin/savings/apply-interest -H "x-admin-toke
 ```
 
 ## Crédit – conseiller (octroi)
-Token conseiller via `ADVISOR_TOKEN` (défaut `dev-advisor`). Taux assurance appliqué sur le capital et réparti dans les mensualités (annuité constante).
+Taux assurance appliqué sur le capital et réparti dans les mensualités (annuité constante).
 
 ```
 # Backend Next (port 3000)
 curl -X POST http://localhost:3000/api/advisor/credits \
-  -H "x-advisor-token: dev-advisor" \
   -H "content-type: application/json" \
-  -d '{"userId":"<clientId>","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
+  -d '{"userId":"cmj68d7kb0000ee8x66ih6p9b","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
 
 # Backend Nest (port 3001)
 curl -X POST http://localhost:3001/advisor/credits \
-  -H "x-advisor-token: dev-advisor" \
   -H "content-type: application/json" \
-  -d '{"userId":"<clientId>","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
+  -d '{"userId":"cmj68d7kb0000ee8x66ih6p9b","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
+
+# Rembourser une mensualité (conseiller)
+# Next
+curl -X POST http://localhost:3000/api/advisor/credits/<creditId>/repay
+# Nest
+curl -X POST http://localhost:3001/advisor/credits/<creditId>/repay
+
+# Vérifier la langue UI (fr/en) :
+# http://localhost:3000/?lang=fr
+# http://localhost:3000/?lang=en
 ```
 
 ## Langues (UI)
 - Paramètre `?lang=fr` ou `?lang=en` sur les pages (ex: `http://localhost:3000/?lang=en`) pour basculer l’interface. Front par défaut en français.
+
+## Migrations Prisma (schéma crédit mis à jour)
+- Postgres : `make db-reset-postgres` (ou `pnpm -w prisma migrate dev --schema=prisma/schema.prisma`)
+- MariaDB : `make db-reset-mariadb` (ou `pnpm -w prisma migrate dev --schema=prisma/schema.maria.prisma`)

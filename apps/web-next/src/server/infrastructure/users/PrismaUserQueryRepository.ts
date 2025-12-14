@@ -6,13 +6,18 @@ export class PrismaUserQueryRepository implements UserQueryRepository {
 
     async search(query: string): Promise<UserMinimal[]> {
         const q = query.trim();
+        const where =
+            q.length >= 2
+                ? {
+                      OR: [
+                          { email: { contains: q, mode: "insensitive" } },
+                          { name: { contains: q, mode: "insensitive" } },
+                      ],
+                  }
+                : {};
+
         const users = await this.prisma.user.findMany({
-            where: {
-                OR: [
-                    { email: { contains: q, mode: "insensitive" } },
-                    { name: { contains: q, mode: "insensitive" } },
-                ],
-            },
+            where,
             orderBy: { createdAt: "desc" },
             take: 20,
             select: { id: true, email: true, name: true },

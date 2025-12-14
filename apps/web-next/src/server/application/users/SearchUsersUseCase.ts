@@ -5,7 +5,9 @@ export class SearchUsersUseCase {
 
     async execute(query: string) {
         const q = query.trim();
-        if (q.length < 2) return [];
+        if (q.length < 2) {
+            return this.repo.search("");
+        }
         return this.repo.search(q);
     }
 }

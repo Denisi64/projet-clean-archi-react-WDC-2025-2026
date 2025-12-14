@@ -1,4 +1,4 @@
-import { CreditRepository, CreditSummary } from "../../domain/credits/ports/CreditRepository";
+import { CreditRepository, CreditDetail } from "../../domain/credits/ports/CreditRepository";
 
 type Input = {
     userId: string;
@@ -11,7 +11,7 @@ type Input = {
 export class GrantCreditUseCase {
     constructor(private readonly repo: CreditRepository) {}
 
-    private computeMonthlyDue(input: Input): { monthlyDue: string } {
+    private computeMonthlyDue(input: Input): { monthlyDue: string; monthlyInsurance: string } {
         const { principal, annualRate, insuranceRate, termMonths } = input;
         if (principal <= 0 || annualRate <= 0 || termMonths <= 0 || insuranceRate < 0) {
             throw new Error("INVALID_INPUT");
@@ -25,19 +25,24 @@ export class GrantCreditUseCase {
         const monthlyBase = numerator / denominator;
 
         const monthlyDue = (monthlyBase + monthlyInsurance).toFixed(2);
-        return { monthlyDue };
+        return { monthlyDue, monthlyInsurance: monthlyInsurance.toFixed(2) };
     }
 
-    async execute(input: Input): Promise<CreditSummary> {
-        const { monthlyDue } = this.computeMonthlyDue(input);
+    async execute(input: Input): Promise<CreditDetail> {
+        const { monthlyDue, monthlyInsurance } = this.computeMonthlyDue(input);
+        const principalStr = input.principal.toFixed(2);
 
         return this.repo.create({
             userId: input.userId,
-            principal: input.principal.toFixed(2),
+            principal: principalStr,
+            initialPrincipal: principalStr,
+            remainingPrincipal: principalStr,
             annualRate: input.annualRate,
             insuranceRate: input.insuranceRate,
             termMonths: input.termMonths,
+            remainingTermMonths: input.termMonths,
             monthlyDue,
+            monthlyInsurance,
         });
     }
 }

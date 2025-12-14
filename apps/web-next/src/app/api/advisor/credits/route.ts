@@ -8,7 +8,7 @@ import { PrismaCreditRepository } from "@/server/infrastructure/credits/PrismaCr
 const isDev = process.env.NODE_ENV !== "production";
 
 const schema = z.object({
-    userId: z.string().uuid(),
+    userId: z.string().min(1),
     principal: z.number().positive(),
     annualRate: z.number().positive(),
     insuranceRate: z.number().min(0),
@@ -16,12 +16,6 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-    const token = req.headers.get("x-advisor-token");
-    const expected = process.env.ADVISOR_TOKEN ?? "dev-advisor";
-    if (!token || token !== expected) {
-        return NextResponse.json({ ok: false, code: "UNAUTHORIZED" }, { status: 401 });
-    }
-
     if (!process.env.DATABASE_URL) {
         if (isDev) console.error("[advisor credits] DATABASE_URL missing");
         return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });

@@ -224,11 +224,16 @@ model Credit {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  principal  Decimal      @db.Decimal(19, 4)
-  annualRate Decimal      @db.Decimal(9, 6)
-  termMonths Int
-  monthlyDue Decimal      @db.Decimal(19, 4)
-  status     CreditStatus @default(PENDING)
+  principal           Decimal      @db.Decimal(19, 4)
+  initialPrincipal    Decimal      @db.Decimal(19, 4)
+  remainingPrincipal  Decimal      @db.Decimal(19, 4)
+  annualRate          Decimal      @db.Decimal(9, 6)
+  insuranceRate       Decimal      @db.Decimal(9, 6)
+  termMonths          Int
+  remainingTermMonths Int
+  monthlyDue          Decimal      @db.Decimal(19, 4)
+  monthlyInsurance    Decimal      @db.Decimal(19, 4)
+  status              CreditStatus @default(PENDING)
 
   createdAt   DateTime  @default(now())
   activatedAt DateTime?
