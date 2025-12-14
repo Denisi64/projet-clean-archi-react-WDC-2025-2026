@@ -22,6 +22,7 @@ export default function AdvisorCreditsPage() {
     });
     const [query, setQuery] = useState("");
     const [users, setUsers] = useState<{ id: string; label: string }[]>([]);
+    const [credits, setCredits] = useState<any[]>([]);
     const [searching, setSearching] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -64,6 +65,23 @@ export default function AdvisorCreditsPage() {
             setForm((prev) => ({ ...prev, userId: users[0].id }));
         }
     }, [users, form.userId]);
+
+    useEffect(() => {
+        const fetchCredits = async (userId: string) => {
+            if (!userId) {
+                setCredits([]);
+                return;
+            }
+            const resp = await fetch(`/api/advisor/credits?userId=${encodeURIComponent(userId)}`);
+            if (!resp.ok) {
+                setCredits([]);
+                return;
+            }
+            const data = await resp.json();
+            setCredits(data.credits ?? []);
+        };
+        fetchCredits(form.userId);
+    }, [form.userId]);
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -188,6 +206,18 @@ export default function AdvisorCreditsPage() {
                 {success && (
                     <div className={`${styles.alert} ${styles.ok}`}>
                         Crédit créé (id {success.id}) — Mensualité : {success.monthlyDue} EUR sur {success.termMonths} mois
+                    </div>
+                )}
+                {credits.length > 0 && (
+                    <div className={styles.card}>
+                        <div className={styles.title}>Crédits du client</div>
+                        <ul>
+                            {credits.map((c) => (
+                                <li key={c.id}>
+                                    {c.status} — {c.monthlyDue} EUR/mois — restant {c.remainingPrincipal} EUR ({c.remainingTermMonths} mois)
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 )}
             </div>

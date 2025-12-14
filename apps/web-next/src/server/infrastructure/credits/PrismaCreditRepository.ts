@@ -72,4 +72,13 @@ export class PrismaCreditRepository implements CreditRepository {
 
         return this.toDetail(updated);
     }
+
+    async listByUser(userId: string): Promise<CreditDetail[]> {
+        const credits = await this.prisma.credit.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+        });
+        return credits.map((c) => this.toDetail(c));
+    }
 }

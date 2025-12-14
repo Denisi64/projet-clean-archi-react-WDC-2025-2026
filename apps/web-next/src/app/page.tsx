@@ -5,6 +5,7 @@ import { AccountCreator } from "./components/AccountCreator";
 import { AccountRow } from "./components/AccountRow";
 import { TransferForm } from "./components/TransferForm";
 import { getLocale, t } from "./i18n";
+import CreditList from "./components/CreditList";
 
 type Account = {
     id: string;
@@ -85,6 +86,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
     const backend = process.env.BACKEND_TARGET ?? "nest";
     const dbLabel = deriveDbLabel();
     const locale = getLocale(searchParams?.lang);
+    const credits: any[] = [];
 
     return (
         <main className={styles.page}>
@@ -152,6 +154,11 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                     <div className={styles.title}>{t(locale, "transfer")}</div>
                                     <div className={styles.subtitle}>{t(locale, "transferInfo")}</div>
                                     <TransferForm accounts={accounts} />
+                                </div>
+                            )}
+                            {authenticated && (
+                                <div className={styles.card}>
+                                    <CreditList />
                                 </div>
                             )}
                         </div>

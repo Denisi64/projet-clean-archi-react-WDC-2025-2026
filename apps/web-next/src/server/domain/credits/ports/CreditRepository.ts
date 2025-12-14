@@ -33,4 +33,5 @@ export interface CreditRepository {
 
     findById(id: string): Promise<CreditDetail | null>;
     save(credit: CreditDetail): Promise<CreditDetail>;
+    listByUser(userId: string): Promise<CreditDetail[]>;
 }
