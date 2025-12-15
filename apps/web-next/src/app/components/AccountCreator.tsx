@@ -1,11 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import styles from "../page.module.css";
-import { Field } from "../design/atoms/Field";
-import { Input } from "../design/atoms/Input";
-import { Select } from "../design/atoms/Select";
-import { Button } from "../design/atoms/Button";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Select } from "../../components/ui/select-native";
 
 export function AccountCreator() {
     const [error, setError] = useState<string | null>(null);
@@ -42,18 +41,23 @@ export function AccountCreator() {
     }
 
     return (
-        <form className={styles.form} onSubmit={handleSubmit}>
-            <Field label="Nom du compte" htmlFor="name">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+                <Label htmlFor="name">Nom du compte</Label>
                 <Input id="name" name="name" placeholder="Ex: Compte Perso" />
-            </Field>
-            <Field label="Type" htmlFor="type">
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
                 <Select id="type" name="type" defaultValue="CURRENT">
                     <option value="CURRENT">Courant</option>
                     <option value="SAVINGS">Épargne</option>
                 </Select>
-            </Field>
-            {error && <p className={styles.error}>{error}</p>}
-            <Button type="submit" disabled={loading}>
+            </div>
+
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+
+            <Button type="submit" disabled={loading} className="w-full">
                 {loading ? "Création..." : "Ajouter un compte"}
             </Button>
         </form>

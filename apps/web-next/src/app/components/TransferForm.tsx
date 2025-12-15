@@ -1,11 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import styles from "../page.module.css";
-import { Field } from "../design/atoms/Field";
-import { Select } from "../design/atoms/Select";
-import { Input } from "../design/atoms/Input";
-import { Button } from "../design/atoms/Button";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Select } from "../../components/ui/select-native";
 
 type Account = {
     id: string;
@@ -60,8 +59,9 @@ export function TransferForm({ accounts }: Props) {
     }
 
     return (
-        <form className={styles.form} onSubmit={handleSubmit}>
-            <Field label="Compte source" htmlFor="source">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+                <Label htmlFor="source">Compte source</Label>
                 <Select
                     id="source"
                     name="source"
@@ -75,8 +75,10 @@ export function TransferForm({ accounts }: Props) {
                         </option>
                     ))}
                 </Select>
-            </Field>
-            <Field label="IBAN destinataire" htmlFor="destination">
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="destination">IBAN destinataire</Label>
                 <Input
                     id="destination"
                     name="destination"
@@ -85,8 +87,10 @@ export function TransferForm({ accounts }: Props) {
                     placeholder="FR761234..."
                     required
                 />
-            </Field>
-            <Field label="Montant (€)" htmlFor="amount">
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="amount">Montant (€)</Label>
                 <Input
                     id="amount"
                     name="amount"
@@ -95,8 +99,10 @@ export function TransferForm({ accounts }: Props) {
                     placeholder="100.00"
                     required
                 />
-            </Field>
-            <Field label="Motif (optionnel)" htmlFor="note">
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="note">Motif (optionnel)</Label>
                 <Input
                     id="note"
                     name="note"
@@ -104,11 +110,11 @@ export function TransferForm({ accounts }: Props) {
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Loyer, facture..."
                 />
-            </Field>
+            </div>
 
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
 
-            <Button type="submit" disabled={loading || !sourceId}>
+            <Button type="submit" disabled={loading || !sourceId} className="w-full">
                 {loading ? "Transfert..." : "Effectuer le transfert"}
             </Button>
         </form>

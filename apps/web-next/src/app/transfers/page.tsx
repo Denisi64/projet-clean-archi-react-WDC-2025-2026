@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import styles from "./history.module.css";
 import { Suspense } from "react";
 import { TransfersHistoryClient } from "./transfers-history.client";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 
 type Account = {
     id: string;
@@ -85,14 +87,6 @@ async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Accou
     return { authenticated: true, accounts: data.accounts ?? [] };
 }
 
-function formatCurrency(amount: string) {
-    return new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 2,
-    }).format(Number(amount));
-}
-
 export default async function TransfersHistoryPage({ searchParams }: { searchParams: { accountId?: string } }) {
     const accountId = searchParams.accountId || undefined;
     const [{ authenticated, transfers }, accountsResult] = await Promise.all([
@@ -102,28 +96,33 @@ export default async function TransfersHistoryPage({ searchParams }: { searchPar
     const accounts = accountsResult.accounts;
 
     return (
-        <main className={styles.page}>
-            <div className={styles.shell}>
-                <div className={styles.header}>
-                    <div>
-                        <div className={styles.title}>Historique des transferts</div>
-                        <div className={styles.subtitle}>
+        <main className="min-h-screen bg-muted/20 p-4 md:p-8">
+            <div className="mx-auto max-w-[1600px] space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-bold tracking-tight">Historique des transferts</h1>
+                        <p className="text-muted-foreground">
                             Liste des virements internes (entrants et sortants) associés à vos comptes Avenir Bank.
-                        </div>
+                        </p>
                     </div>
-                    <div className={styles.actions}>
-                        <Link className={styles.link} href="/">Accueil comptes</Link>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/"
+                            className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
+                        >
+                            <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
+                        </Link>
                     </div>
                 </div>
 
                 {!authenticated && (
-                    <div className={styles.empty}>
+                    <div className="text-center py-12 text-muted-foreground bg-card rounded-lg border shadow-sm">
                         Connectez-vous pour consulter vos transferts.
                     </div>
                 )}
 
                 {authenticated && (
-                    <Suspense fallback={<div className={styles.empty}>Chargement de l&apos;historique...</div>}>
+                    <Suspense fallback={<div className="text-center py-12 text-muted-foreground">Chargement de l&apos;historique...</div>}>
                         <TransfersHistoryClient
                             accounts={accounts}
                             initialTransfers={transfers}

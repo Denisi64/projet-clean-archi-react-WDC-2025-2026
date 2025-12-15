@@ -4,6 +4,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { login } from "../application/login.command";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Checkbox } from "../../../components/ui/checkbox-native";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../components/ui/card";
 
 const schema = z.object({
     email: z.string().email("Email invalide"),
@@ -36,25 +41,46 @@ export default function LoginForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-sm">
-            <div>
-                <label className="block text-sm font-medium" htmlFor="email">Email</label>
-                <input id="email" type="email" {...register("email")} className="input input-bordered w-full" />
-                {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
-            </div>
-            <div>
-                <label className="block text-sm font-medium" htmlFor="password">Mot de passe</label>
-                <input id="password" type="password" {...register("password")} className="input input-bordered w-full" />
-                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
-            </div>
-            <label className="inline-flex items-center gap-2">
-                <input type="checkbox" {...register("remember")} />
-                <span>Se souvenir de moi</span>
-            </label>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <button disabled={isSubmitting} className="btn w-full">
-                {isSubmitting ? "Connexion..." : "Se connecter"}
-            </button>
-        </form>
+        <Card className="w-full max-w-sm mx-auto">
+            <CardHeader>
+                <CardTitle className="text-2xl">Connexion</CardTitle>
+                <CardDescription>
+                    Entrez vos identifiants pour accéder à votre espace.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="exemple@email.com"
+                            {...register("email")}
+                        />
+                        {errors.email && <p className="text-sm font-medium text-destructive">{errors.email.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Mot de passe</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            {...register("password")}
+                        />
+                        {errors.password && <p className="text-sm font-medium text-destructive">{errors.password.message}</p>}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Checkbox id="remember" {...register("remember")} />
+                        <Label htmlFor="remember" className="font-normal cursor-pointer">
+                            Se souvenir de moi
+                        </Label>
+                    </div>
+                    {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
+                    <Button type="submit" disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? "Connexion..." : "Se connecter"}
+                    </Button>
+                </form>
+            </CardContent>
+        </Card>
     );
 }
