@@ -352,6 +352,13 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                         )}
 
                         <CreditList />
+
+                        <Link
+                            href="/transfers"
+                            className={cn(buttonVariants({ variant: "outline" }), "w-full justify-between")}
+                        >
+                            Liste des transferts <ArrowRight className="h-4 w-4" />
+                        </Link>
                     </div>
                 </div>
             </div>
