@@ -7,9 +7,8 @@ export const metadata = {
 
 export default function LoginPage() {
     return (
-        <main className="mx-auto max-w-md p-6">
+        <main className="min-h-screen flex items-center justify-center p-4 bg-muted/20">
             <LoginForm />
-            <p className="mt-4 text-sm"><a href="/reset">Mot de passe oublié ?</a></p>
         </main>
     );
 }
