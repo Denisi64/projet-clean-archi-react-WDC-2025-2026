@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./page.module.css";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select-native";
 
 type CreditResponse = {
     id: string;
@@ -18,7 +22,6 @@ export default function AdvisorCreditsPage() {
         annualRate: "0.03",
         insuranceRate: "0.002",
         termMonths: "36",
-        token: "",
     });
     const [query, setQuery] = useState("");
     const [users, setUsers] = useState<{ id: string; label: string }[]>([]);
@@ -31,8 +34,7 @@ export default function AdvisorCreditsPage() {
     const searchUsers = async (q: string) => {
         setSearching(true);
         try {
-            const resp = await fetch(`/api/advisor/users?query=${encodeURIComponent(q)}`, {
-            });
+            const resp = await fetch(`/api/advisor/users?query=${encodeURIComponent(q)}`);
             if (!resp.ok) {
                 setUsers([]);
                 return;
@@ -49,14 +51,11 @@ export default function AdvisorCreditsPage() {
     };
 
     useEffect(() => {
-        const handle = setTimeout(() => {
-            searchUsers(query);
-        }, 200);
+        const handle = setTimeout(() => searchUsers(query), 200);
         return () => clearTimeout(handle);
     }, [query]);
 
     useEffect(() => {
-        // Load initial list without typing
         searchUsers("");
     }, []);
 
@@ -98,9 +97,7 @@ export default function AdvisorCreditsPage() {
         try {
             const resp = await fetch("/api/advisor/credits", {
                 method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
+                headers: { "content-type": "application/json" },
                 body: JSON.stringify({
                     userId: form.userId.trim(),
                     principal: Number(form.principal),
@@ -137,88 +134,95 @@ export default function AdvisorCreditsPage() {
     };
 
     return (
-        <main className={styles.page}>
-            <div className={styles.actions}>
-                <a className={styles.link} href="/">← Retour à l'accueil</a>
-            </div>
-            <div className={styles.card}>
-                <div className={styles.title}>Octroyer un crédit</div>
-                <div className={styles.subtitle}>
-                    Calcul en annuité constante avec assurance répartie dans les mensualités.
+        <main className="min-h-screen bg-background py-8 px-4">
+            <div className="mx-auto flex max-w-4xl flex-col gap-6">
+                <div className="text-sm text-muted-foreground">
+                    <a href="/" className="text-primary hover:underline">
+                        ← Retour à l&apos;accueil
+                    </a>
                 </div>
-                {users.length === 0 && <div className={styles.alert}>Aucun utilisateur trouvé. Vérifiez le seed.</div>}
-                <form className={styles.form} onSubmit={submit}>
-                    <label className={styles.wide}>
-                        Rechercher un client (nom/email)
-                        <input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Tapez un nom ou email (optionnel)"
-                        />
-                    </label>
-                    <label className={styles.wide}>
-                        Sélectionner un client
-                        <select
-                            value={form.userId}
-                            onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
-                        >
-                            <option value="">— Choisir —</option>
-                            {users.map((u) => (
-                                <option key={u.id} value={u.id}>
-                                    {u.label}
-                                </option>
-                            ))}
-                        </select>
-                        {searching && <small>Recherche...</small>}
-                    </label>
-                    <label>
-                        Montant (principal)
-                        <input type="number" step="0.01" value={form.principal} onChange={onChange("principal")} />
-                    </label>
-                    <label>
-                        Taux annuel (ex: 0.03)
-                        <input type="number" step="0.0001" value={form.annualRate} onChange={onChange("annualRate")} />
-                    </label>
-                    <label>
-                        Taux assurance (ex: 0.002)
-                        <input
-                            type="number"
-                            step="0.0001"
-                            value={form.insuranceRate}
-                            onChange={onChange("insuranceRate")}
-                        />
-                    </label>
-                    <label>
-                        Durée (mois)
-                        <input type="number" value={form.termMonths} onChange={onChange("termMonths")} />
-                    </label>
-                    <label className={styles.wide}>
-                        Token conseiller (x-advisor-token)
-                        <input value={form.token} onChange={onChange("token")} placeholder="dev-advisor si vide" />
-                    </label>
-                    <div className={`${styles.actions} ${styles.wide}`}>
-                        <button className={styles.button} type="submit" disabled={loading}>
-                            {loading ? "Calcul..." : "Octroyer"}
-                        </button>
-                    </div>
-                </form>
-                {error && <div className={`${styles.alert} ${styles.error}`}>Erreur : {error}</div>}
-                {success && (
-                    <div className={`${styles.alert} ${styles.ok}`}>
-                        Crédit créé (id {success.id}) — Mensualité : {success.monthlyDue} EUR sur {success.termMonths} mois
-                    </div>
-                )}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Octroyer un crédit</CardTitle>
+                        <CardDescription>Calcul en annuité constante avec assurance répartie dans les mensualités.</CardDescription>
+                        {users.length === 0 && <div className="text-sm text-destructive">Aucun utilisateur trouvé. Vérifiez le seed.</div>}
+                        {searching && <div className="text-xs text-muted-foreground">Recherche...</div>}
+                    </CardHeader>
+                    <CardContent>
+                        <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={submit}>
+                            <div className="md:col-span-2 space-y-2">
+                                <Label>Rechercher un client (nom/email)</Label>
+                                <Input
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder="Tapez un nom ou email (optionnel)"
+                                />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <Label>Sélectionner un client</Label>
+                                <Select
+                                    value={form.userId}
+                                    onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
+                                >
+                                    <option value="">— Choisir —</option>
+                                    {users.map((u) => (
+                                        <option key={u.id} value={u.id}>
+                                            {u.label}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Montant (principal)</Label>
+                                <Input type="number" step="0.01" value={form.principal} onChange={onChange("principal")} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Taux annuel (ex: 0.03)</Label>
+                                <Input type="number" step="0.0001" value={form.annualRate} onChange={onChange("annualRate")} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Taux assurance (ex: 0.002)</Label>
+                                <Input type="number" step="0.0001" value={form.insuranceRate} onChange={onChange("insuranceRate")} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Durée (mois)</Label>
+                                <Input type="number" value={form.termMonths} onChange={onChange("termMonths")} />
+                            </div>
+                            <div className="md:col-span-2 flex justify-end">
+                                <Button type="submit" disabled={loading}>
+                                    {loading ? "Calcul..." : "Octroyer"}
+                                </Button>
+                            </div>
+                        </form>
+                        {error && <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive">Erreur : {error}</div>}
+                        {success && (
+                            <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">
+                                Crédit créé (id {success.id}) — Mensualité : {success.monthlyDue} EUR sur {success.termMonths} mois
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {credits.length > 0 && (
-                    <div className={styles.card}>
-                        <div className={styles.title}>Crédits du client</div>
-                        <ul>
-                            {credits.map((c) => (
-                                <li key={c.id}>
-                                    {c.status} — {c.monthlyDue} EUR/mois — restant {c.remainingPrincipal} EUR ({c.remainingTermMonths} mois)
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Crédits du client</CardTitle>
+                            <CardDescription>Crédits en cours (max 10 derniers)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                {credits.map((c) => (
+                                    <li key={c.id} className="rounded-md border border-border/70 p-3">
+                                        <div className="font-semibold text-foreground">#{c.id}</div>
+                                        <div>
+                                            {c.status} — {c.monthlyDue} EUR/mois — restant {c.remainingPrincipal} EUR ({c.remainingTermMonths} mois)
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
         </main>

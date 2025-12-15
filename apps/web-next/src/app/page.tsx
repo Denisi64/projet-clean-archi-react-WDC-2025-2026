@@ -1,8 +1,5 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { AccountCreator } from "./components/AccountCreator";
-import { AccountRow } from "./components/AccountRow";
-import { TransferForm } from "./components/TransferForm";
 import { buttonVariants } from "../components/ui/button";
 import {
     Card,
@@ -36,6 +33,9 @@ import {
 } from "lucide-react";
 import { getLocale, t } from "./i18n";
 import CreditList from "./components/CreditList";
+import AccountTable from "./components/AccountTable";
+import AccountCreatorCard from "./components/AccountCreatorCard";
+import TransferCard from "./components/TransferCard";
 
 /* -------------------------------------------------------------------------- */
 /*                                    TYPES                                   */
@@ -165,12 +165,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 >
                                     Espace Client
                                 </Link>
-                                <Link
-                                    href="/advisor/credits"
-                                    className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
-                                >
-                                    Crédit
-                                </Link>
+                                {(currentUser?.role === "ADVISOR" || currentUser?.role === "DIRECTOR") && (
+                                    <Link
+                                        href="/advisor/credits"
+                                        className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
+                                    >
+                                        Crédit conseiller
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -249,11 +251,21 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                         <p className="text-muted-foreground">{t(locale, "subtitle")}</p>
                     </div>
 
-                    <form action="/api/auth/logout" method="post">
-                        <button className={cn(buttonVariants({ variant: "outline" }))}>
-                            {t(locale, "logout")}
-                        </button>
-                    </form>
+                    <div className="flex items-center gap-2">
+                        {(currentUser?.role === "ADVISOR" || currentUser?.role === "DIRECTOR") && (
+                            <Link
+                                href="/advisor/credits"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                Crédit conseiller
+                            </Link>
+                        )}
+                        <form action="/api/auth/logout" method="post">
+                            <button className={cn(buttonVariants({ variant: "outline" }))}>
+                                {t(locale, "logout")}
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -319,9 +331,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {accounts.map((acc) => (
-                                                <AccountRow key={acc.id} account={acc} />
-                                            ))}
+                                            <AccountTable accounts={accounts} />
                                         </TableBody>
                                     </Table>
                                 )}
@@ -330,26 +340,9 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                     </div>
 
                     <div className="space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t(locale, "addAccount")}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <AccountCreator />
-                            </CardContent>
-                        </Card>
+                        <AccountCreatorCard />
 
-                        {accounts.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t(locale, "transfer")}</CardTitle>
-                                    <CardDescription>{t(locale, "transferInfo")}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <TransferForm accounts={accounts} />
-                                </CardContent>
-                            </Card>
-                        )}
+                        {accounts.length > 0 && <TransferCard accounts={accounts} />}
 
                         <CreditList />
 

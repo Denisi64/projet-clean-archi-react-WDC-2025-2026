@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
     const hash = await bcrypt.hash("demo12345", 10);
 
-    // Utilisateurs démo (client + conseiller)
-    const [client, advisor] = await Promise.all([
+    const [client, advisor, director] = await Promise.all([
         prisma.user.upsert({
             where: { email: "client@avenir.bank" },
             update: {
@@ -37,6 +36,22 @@ async function main() {
                 name: "Conseiller Démo",
                 password: hash,
                 role: "ADVISOR",
+                isActive: true,
+            },
+        }),
+        prisma.user.upsert({
+            where: { email: "director@avenir.bank" },
+            update: {
+                password: hash,
+                isActive: true,
+                confirmationToken: null,
+                confirmationTokenExpiresAt: null,
+            },
+            create: {
+                email: "director@avenir.bank",
+                name: "Directeur Démo",
+                password: hash,
+                role: "DIRECTOR",
                 isActive: true,
             },
         }),
