@@ -19,7 +19,21 @@ import {
     TableRow,
 } from "../components/ui/table";
 import { cn } from "../lib/utils";
-import { ArrowRight, Banknote, Building2, CreditCard, ShieldCheck, Wallet } from "lucide-react";
+import {
+    ArrowRight,
+    Banknote,
+    Building2,
+    CreditCard,
+    ShieldCheck,
+    Wallet,
+    Bitcoin,
+    DollarSign,
+    Activity,
+    TrendingUp,
+    Landmark,
+    PieChart,
+    Euro
+} from "lucide-react";
 
 type Account = {
     id: string;
@@ -71,7 +85,7 @@ export default async function Home() {
                 <section className="relative overflow-hidden py-24 lg:py-32">
                     <div className="container relative z-10 mx-auto px-4 md:px-6">
                         <div className="flex flex-col items-center gap-4 text-center">
-                            <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl max-w-3xl bg-gradient-to-r from-blue-300 to-blue-600 bg-clip-text text-transparent">
+                            <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl max-w-3xl bg-linear-to-l from-blue-300 to-blue-600 bg-clip-text text-transparent">
                                 La banque qui donne vie à vos projets
                             </h1>
                             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
@@ -94,10 +108,21 @@ export default async function Home() {
                             </div>
                         </div>
                     </div>
-                    {/* Background decoration */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 h-full w-full max-w-7xl opacity-50 blur-3xl overflow-hidden pointer-events-none">
-                        <div className="absolute top-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-primary/20 mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-                        <div className="absolute top-[30%] left-[10%] h-[300px] w-[300px] rounded-full bg-blue-400/20 mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+                    {/* Background decoration with Fintech Icons */}
+                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none opacity-30">
+                        {/* Floating Icons */}
+                        <Bitcoin className="absolute top-10 left-[10%] h-24 w-24 text-primary animate-pulse" />
+                        <DollarSign className="absolute bottom-20 right-[15%] h-32 w-32 text-blue-500/50 rotate-12" />
+                        <Euro className="absolute top-1/3 right-[5%] h-16 w-16 text-primary/60 -rotate-12" />
+                        <Activity className="absolute bottom-[10%] left-[20%] h-20 w-20 text-indigo-400" />
+                        <TrendingUp className="absolute top-20 right-[25%] h-14 w-14 text-emerald-500" />
+                        <Landmark className="absolute bottom-1/3 left-[5%] h-28 w-28 text-slate-400/40" />
+                        <PieChart className="absolute top-1/2 right-[10%] h-20 w-20 text-purple-400/50" />
+                        <CreditCard className="absolute top-[15%] left-[30%] h-12 w-12 text-blue-300" />
+
+                        {/* Dynamic Circles */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-100/30 rounded-full blur-3xl mix-blend-multiply filter pointer-events-none" />
+                        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-100/30 rounded-full blur-3xl mix-blend-multiply filter pointer-events-none" />
                     </div>
                 </section>
 
