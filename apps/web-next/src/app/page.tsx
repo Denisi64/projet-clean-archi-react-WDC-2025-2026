@@ -165,6 +165,12 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 >
                                     Espace Client
                                 </Link>
+                                <Link
+                                    href="/advisor/credits"
+                                    className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
+                                >
+                                    Crédit
+                                </Link>
                             </div>
                         </div>
                     </div>
