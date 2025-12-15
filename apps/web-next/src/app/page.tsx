@@ -145,7 +145,7 @@ export default async function Home() {
 
     return (
         <main className="min-h-screen bg-muted/20 p-4 md:p-8">
-            <div className="mx-auto max-w-7xl space-y-8">
+            <div className="mx-auto max-w-[1600px] space-y-8">
 
                 {/* Dashboard Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

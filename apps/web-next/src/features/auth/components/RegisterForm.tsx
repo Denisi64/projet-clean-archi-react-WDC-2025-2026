@@ -6,6 +6,9 @@ import {
     registerUser,
     RegisterUserInput,
 } from '@/features/auth/application/registerUser';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type RegisterFormProps = {
     onSuccessRedirectTo?: string; // ex: '/dashboard'
@@ -59,14 +62,14 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="w-full max-w-md space-y-4 border rounded-2xl p-6 shadow-sm bg-white"
+            className="w-full max-w-md space-y-4 border rounded-2xl p-6 shadow-sm bg-card text-card-foreground"
         >
             <h1 className="text-2xl font-semibold text-center">
                 Créer un compte
             </h1>
 
             {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+                <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
                     {error}
                 </p>
             )}
@@ -77,76 +80,64 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="firstName">
-                        Prénom
-                    </label>
-                    <input
+                <div className="space-y-2">
+                    <Label htmlFor="firstName">Prénom</Label>
+                    <Input
                         id="firstName"
                         name="firstName"
-                        className="w-full border rounded-md px-3 py-2 text-sm"
                         autoComplete="given-name"
                         required
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="lastName">
-                        Nom
-                    </label>
-                    <input
+                <div className="space-y-2">
+                    <Label htmlFor="lastName">Nom</Label>
+                    <Input
                         id="lastName"
                         name="lastName"
-                        className="w-full border rounded-md px-3 py-2 text-sm"
                         autoComplete="family-name"
                         required
                     />
                 </div>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="email">
-                    Email
-                </label>
-                <input
+            <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
                     id="email"
                     name="email"
                     type="email"
-                    className="w-full border rounded-md px-3 py-2 text-sm"
                     autoComplete="email"
                     required
                 />
             </div>
 
-            <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="password">
-                    Mot de passe
-                </label>
-                <input
+            <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
                     id="password"
                     name="password"
                     type="password"
-                    className="w-full border rounded-md px-3 py-2 text-sm"
                     autoComplete="new-password"
                     required
                     minLength={8}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                     Minimum 8 caractères.
                 </p>
             </div>
 
-            <button
+            <Button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-md border px-3 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-60"
+                className="w-full"
             >
                 {loading ? "Création du compte..." : "S'inscrire"}
-            </button>
+            </Button>
 
-            <p className="text-xs text-center text-gray-500">
+            <p className="text-xs text-center text-muted-foreground">
                 Déjà un compte ?{' '}
-                <a href="/login" className="underline">
+                <a href="/login" className="underline hover:text-primary">
                     Se connecter
                 </a>
             </p>
