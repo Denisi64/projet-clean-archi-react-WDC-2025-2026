@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import styles from "./history.module.css";
-import { Select } from "../design/atoms/Select";
-import { Table, TableWrapper } from "../design/atoms/Table";
-import { Tag } from "../design/atoms/Tag";
+import { Select } from "@/components/ui/select-native";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowDownLeft, ArrowUpRight, Filter } from "lucide-react";
 
 type Account = {
     id: string;
@@ -77,77 +85,120 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
     }
 
     return (
-        <>
-            <div className={styles.filter}>
-                <label className={styles.label} htmlFor="accountId">Filtrer par compte</label>
-                <div className={styles.filterRow}>
-                    <Select
-                        id="accountId"
-                        name="accountId"
-                        value={selectedAccountId}
-                        onChange={(e) => setSelectedAccountId(e.target.value)}
-                    >
-                        <option value="">Tous les comptes</option>
-                        {options.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </Select>
-                    {loading && <span className={styles.muted}>Chargement…</span>}
+        <Card>
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <CardTitle>Liste des opérations</CardTitle>
+                        <CardDescription>Consultez le détail de vos transactions.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-muted-foreground" />
+                        <div className="w-[280px]">
+                            <Select
+                                id="accountId"
+                                name="accountId"
+                                value={selectedAccountId}
+                                onChange={(e) => setSelectedAccountId(e.target.value)}
+                            >
+                                <option value="">Tous les comptes</option>
+                                {options.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </Select>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </CardHeader>
+            <CardContent>
+                {/* Loading State Overlay (Optional, or just indicator) */}
+                {loading && (
+                    <div className="mb-4 text-sm text-muted-foreground animate-pulse">
+                        Mise à jour des données...
+                    </div>
+                )}
 
-            {error && <div className={styles.empty}>{error}</div>}
+                {error && (
+                    <div className="py-8 text-center text-destructive">
+                        {error}
+                    </div>
+                )}
 
-            {transfers.length === 0 && !error && (
-                <div className={styles.empty}>
-                    Aucun transfert pour le moment. Effectuez un virement depuis la page d&apos;accueil.
-                </div>
-            )}
+                {transfers.length === 0 && !error && !loading && (
+                    <div className="py-12 text-center text-muted-foreground">
+                        Aucun transfert trouvé pour cette sélection.
+                    </div>
+                )}
 
-            {transfers.length > 0 && (
-                <TableWrapper>
-                    <Table>
-                        <thead>
-                            <tr>
-                                <th>Direction</th>
-                                <th>Source</th>
-                                <th>Destination</th>
-                                <th>Montant</th>
-                                <th>Motif</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {transfers.map((t) => (
-                                <tr key={t.id}>
-                                    <td>
-                                        <Tag variant={t.direction === "OUT" ? "warning" : "success"}>
-                                            {t.direction === "OUT" ? "Sortant" : "Entrant"}
-                                        </Tag>
-                                    </td>
-                                    <td>
-                                        <div className={styles.accountCell}>
-                                            <div className={styles.name}>{t.source.name}</div>
-                                            <div className={styles.iban}>{t.source.iban}</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={styles.accountCell}>
-                                            <div className={styles.name}>{t.destination.name}</div>
-                                            <div className={styles.iban}>{t.destination.iban}</div>
-                                        </div>
-                                    </td>
-                                    <td className={styles.amount}>
-                                        {t.direction === "OUT" ? "-" : "+"} {formatCurrency(t.amount)}
-                                    </td>
-                                    <td className={styles.note}>{t.note || "—"}</td>
-                                    <td>{new Date(t.createdAt).toLocaleString("fr-FR")}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </TableWrapper>
-            )}
-        </>
+                {transfers.length > 0 && (
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Compte Source</TableHead>
+                                    <TableHead>Compte Destination</TableHead>
+                                    <TableHead className="text-right">Montant</TableHead>
+                                    <TableHead>Date</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {transfers.map((t) => (
+                                    <TableRow key={t.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                {t.direction === "OUT" ? (
+                                                    <div className="p-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                                                        <ArrowUpRight className="h-4 w-4" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                                                        <ArrowDownLeft className="h-4 w-4" />
+                                                    </div>
+                                                )}
+                                                <span className="font-medium">
+                                                    {t.direction === "OUT" ? "Virement émis" : "Virement reçu"}
+                                                </span>
+                                            </div>
+                                            {t.note && (
+                                                <p className="text-xs text-muted-foreground mt-1 ml-9">
+                                                    Motif: {t.note}
+                                                </p>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{t.source.name}</span>
+                                                <span className="text-xs text-muted-foreground">{t.source.iban}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{t.destination.name}</span>
+                                                <span className="text-xs text-muted-foreground">{t.destination.iban}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <span className={t.direction === "OUT" ? "text-foreground" : "text-green-600 dark:text-green-400 font-medium"}>
+                                                {t.direction === "OUT" ? "-" : "+"} {formatCurrency(t.amount)}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                                            {new Date(t.createdAt).toLocaleDateString("fr-FR", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                            })}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
