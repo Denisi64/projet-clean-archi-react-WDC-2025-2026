@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select-native";
 
 export default function AccountCreatorCard() {
+    const router = useRouter();
     const [name, setName] = useState("");
     const [type, setType] = useState<"CURRENT" | "SAVINGS">("CURRENT");
     const [loading, setLoading] = useState(false);
@@ -19,11 +21,17 @@ export default function AccountCreatorCard() {
         setLoading(true);
         setError(null);
         setSuccess(null);
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            setError("Le nom du compte est requis.");
+            setLoading(false);
+            return;
+        }
         try {
             const resp = await fetch("/api/accounts", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ name: name.trim(), type }),
+                body: JSON.stringify({ name: trimmedName, type }),
             });
             if (!resp.ok) {
                 const data = await resp.json().catch(() => null);
@@ -32,6 +40,7 @@ export default function AccountCreatorCard() {
             }
             setSuccess("Compte créé");
             setName("");
+            router.refresh();
         } catch (err: any) {
             setError(err?.message ?? "UNEXPECTED_ERROR");
         } finally {

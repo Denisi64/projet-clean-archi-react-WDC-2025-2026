@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ type Account = {
 };
 
 export default function TransferCard({ accounts }: { accounts: Account[] }) {
+    const router = useRouter();
     const [sourceAccountId, setSourceAccountId] = useState(accounts[0]?.id ?? "");
     const [destinationIban, setDestinationIban] = useState("");
     const [amount, setAmount] = useState("");
@@ -21,19 +23,35 @@ export default function TransferCard({ accounts }: { accounts: Account[] }) {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        if (accounts.length === 0) return;
+        const exists = accounts.some((account) => account.id === sourceAccountId);
+        if (!exists) {
+            setSourceAccountId(accounts[0]?.id ?? "");
+        }
+    }, [accounts, sourceAccountId]);
+
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setMessage(null);
         setError(null);
+
+        const numericAmount = Number(amount);
+        if (!sourceAccountId || Number.isNaN(numericAmount) || numericAmount <= 0) {
+            setError("Montant invalide ou compte source manquant.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const resp = await fetch("/api/transfers", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
                     sourceAccountId,
-                    destinationIban,
-                    amount: Number(amount),
+                    destinationIban: destinationIban.trim(),
+                    amount: numericAmount,
                     note,
                 }),
             });
@@ -46,6 +64,7 @@ export default function TransferCard({ accounts }: { accounts: Account[] }) {
             setDestinationIban("");
             setAmount("");
             setNote("");
+            router.refresh();
         } catch (err: any) {
             setError(err?.message ?? "UNEXPECTED_ERROR");
         } finally {
