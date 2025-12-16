@@ -7,7 +7,7 @@ import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { TableCell, TableRow } from "../../components/ui/table";
 
-type Account = {
+export type Account = {
     id: string;
     name: string;
     iban: string;
