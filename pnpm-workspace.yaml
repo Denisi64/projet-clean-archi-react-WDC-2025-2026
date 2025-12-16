@@ -3,5 +3,8 @@ packages:
   - packages/*
   - packages/infrastructure/*
 
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+
 onlyBuiltDependencies:
   - '@prisma/client'
