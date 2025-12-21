@@ -173,6 +173,20 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                         Crédit conseiller
                                     </Link>
                                 )}
+                                {currentUser?.role === "DIRECTOR" && (
+                                    <Link
+                                        href="/director/savings-rate"
+                                        className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+                                    >
+                                        Fixer taux épargne
+                                    </Link>
+                                )}
+                                <Link
+                                    href="/about"
+                                    className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+                                >
+                                    À propos
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -258,6 +272,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
                                 Crédit conseiller
+                            </Link>
+                        )}
+                        {currentUser?.role === "DIRECTOR" && (
+                            <Link
+                                href="/director/savings-rate"
+                                className={cn(buttonVariants({ variant: "outline" }))}
+                            >
+                                Fixer taux épargne
                             </Link>
                         )}
                         <form action="/api/auth/logout" method="post">

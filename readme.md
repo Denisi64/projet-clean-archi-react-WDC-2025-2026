@@ -64,17 +64,27 @@ docker-compose.yml   # services DB + mailhog
 | `./scripts/dev stop`             | ferme tmux, garde Docker |
 
 ## Épargne – appliquer les intérêts (admin)
-Taux annuel via `SAVINGS_INTEREST_RATE` (défaut 0.02). Token admin via `ADMIN_TOKEN` (défaut `dev-admin`).
+Taux annuel via `SAVINGS_INTEREST_RATE` (défaut 0.02) ou via l’UI Directeur (stocké en base). Token admin via `ADMIN_TOKEN` (défaut `dev-admin`).
 
 ```
 # Backend Next (port 3000)
 curl -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin"
+curl -X POST "http://localhost:3000/api/admin/savings/apply-interest?mode=annual" -H "x-admin-token: dev-admin"   # applique le taux annuel en une fois
 
 # Backend Nest (port 3001)
 curl -X POST http://localhost:3001/admin/savings/apply-interest -H "x-admin-token: dev-admin"
+curl -X POST "http://localhost:3001/admin/savings/apply-interest?mode=annual" -H "x-admin-token: dev-admin"   # applique le taux annuel en une fois
 
-# Exemple cron local (intérêts tous les jours à 01h00, backend Next)
+# Backend Nest – lire et mettre à jour le taux (en %) pour le stocker en base
+curl -H "x-admin-token: dev-admin" http://localhost:3001/admin/savings/rate
+curl -X POST -H "x-admin-token: dev-admin" -H "content-type: application/json" \
+  -d '{"ratePercent":2.5}' http://localhost:3001/admin/savings/rate   # met 2.5%
+
+# Exemple cron local (intérêts journaliers à 01h00, backend Next)
 # 0 1 * * * curl -s -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin" >/tmp/interest.log 2>&1
+
+# Exemple pour appliquer le taux annuel en une seule fois
+# curl -s -X POST "http://localhost:3000/api/admin/savings/apply-interest?mode=annual" -H "x-admin-token: dev-admin"
 ```
 
 ## Crédit – conseiller (octroi)
