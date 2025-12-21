@@ -183,7 +183,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 )}
                                 <Link
                                     href="/about"
-                                    className={cn(buttonVariants({ variant: "ghost", size: "lg" }))}
+                                    className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                                 >
                                     À propos
                                 </Link>
