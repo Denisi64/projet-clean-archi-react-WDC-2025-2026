@@ -139,7 +139,9 @@ async function main() {
 
     await prisma.interestAccrual.create({ data: { accountId: savings.id, rateId: rate.id, amount: "0.86" } });
 
-    console.log("Seed OK (users: client@avenir.bank / advisor@avenir.bank, mdp: demo12345)");
+    console.log(
+        "Seed OK (users: client@avenir.bank / advisor@avenir.bank / director@avenir.bank, mdp: demo12345)"
+    );
 }
 
 main()

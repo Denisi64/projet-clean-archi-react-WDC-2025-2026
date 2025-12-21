@@ -3,7 +3,8 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { ApplyDailySavingsInterestUseCase } from "@/server/application/accounts/ApplyDailySavingsInterestUseCase";
 import { PrismaSavingsInterestRepository } from "@/server/infrastructure/accounts/PrismaSavingsInterestRepository";
-import { EnvInterestRateProvider } from "@/server/infrastructure/accounts/EnvInterestRateProvider";
+import { PrismaInterestRateProvider } from "@/server/infrastructure/accounts/PrismaInterestRateProvider";
+import { PrismaSavingsRateRepository } from "@/server/infrastructure/accounts/PrismaSavingsRateRepository";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -20,12 +21,14 @@ export async function POST(req: NextRequest) {
     }
 
     try {
+        const modeParam = req.nextUrl.searchParams.get("mode");
+        const mode = modeParam === "annual" ? "annual" : "daily";
         const uc = new ApplyDailySavingsInterestUseCase(
             new PrismaSavingsInterestRepository(),
-            new EnvInterestRateProvider(),
+            new PrismaInterestRateProvider(new PrismaSavingsRateRepository()),
         );
-        const applied = await uc.execute();
-        return NextResponse.json({ ok: true, applied });
+        const applied = await uc.execute({ mode });
+        return NextResponse.json({ ok: true, applied, mode });
     } catch (e: any) {
         if (isDev) console.error("[savings] apply-interest error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });

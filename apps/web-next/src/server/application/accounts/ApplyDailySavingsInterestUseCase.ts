@@ -16,11 +16,12 @@ export class ApplyDailySavingsInterestUseCase {
         return amount.toFixed(2);
     }
 
-    async execute(): Promise<InterestAccrualResult[]> {
+    async execute(options?: { mode?: "daily" | "annual" }): Promise<InterestAccrualResult[]> {
         const rate = await this.rateProvider.getAnnualRate();
         if (!Number.isFinite(rate) || rate <= 0) return [];
 
-        const dailyRate = rate / 365;
+        const mode = options?.mode === "annual" ? "annual" : "daily";
+        const effectiveRate = mode === "annual" ? rate : rate / 365;
         const accounts = await this.repo.listActiveSavingsAccounts();
         const results: InterestAccrualResult[] = [];
 
@@ -28,7 +29,7 @@ export class ApplyDailySavingsInterestUseCase {
             const balance = Number(acc.balance);
             if (!Number.isFinite(balance) || balance <= 0) continue;
 
-            const interest = balance * dailyRate;
+            const interest = balance * effectiveRate;
             if (interest <= 0) continue;
 
             const amount = this.formatAmount(interest);
