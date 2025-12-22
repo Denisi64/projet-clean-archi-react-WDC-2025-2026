@@ -1,4 +1,5 @@
 import { SavingsRateRepository } from "../../domain/accounts/ports/SavingsRateRepository";
+import { SavingsRateNotifier } from "./ports/SavingsRateNotifier";
 
 type Input = {
     actorRole: "DIRECTOR" | "ADVISOR" | "CLIENT";
@@ -6,7 +7,10 @@ type Input = {
 };
 
 export class UpdateSavingsRateUseCase {
-    constructor(private readonly rateRepo: SavingsRateRepository) {}
+    constructor(
+        private readonly rateRepo: SavingsRateRepository,
+        private readonly notifier: SavingsRateNotifier = { notifyRateChanged: async () => {} },
+    ) {}
 
     async execute(input: Input) {
         if (input.actorRole !== "DIRECTOR") {
@@ -19,6 +23,7 @@ export class UpdateSavingsRateUseCase {
         }
 
         await this.rateRepo.saveRate(rate);
+        await this.notifier.notifyRateChanged(rate);
         return { ok: true as const, rate };
     }
 }

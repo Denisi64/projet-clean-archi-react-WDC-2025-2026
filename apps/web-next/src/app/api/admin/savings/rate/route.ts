@@ -7,12 +7,14 @@ import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier"
 import { PrismaSavingsRateRepository } from "@/server/infrastructure/accounts/PrismaSavingsRateRepository";
 import { GetActiveSavingsRateUseCase } from "@/server/application/accounts/GetActiveSavingsRateUseCase";
 import { UpdateSavingsRateUseCase } from "@/server/application/accounts/UpdateSavingsRateUseCase";
+import { LocalSocketSavingsRateNotifier } from "@/server/infrastructure/notifications/LocalSocketSavingsRateNotifier";
 
 const prisma = new PrismaClient();
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const rateRepo = new PrismaSavingsRateRepository(prisma);
+const notifier = new LocalSocketSavingsRateNotifier(prisma);
 const getRateUC = new GetActiveSavingsRateUseCase(rateRepo);
-const updateRateUC = new UpdateSavingsRateUseCase(rateRepo);
+const updateRateUC = new UpdateSavingsRateUseCase(rateRepo, notifier);
 
 const bodySchema = z.object({
     ratePercent: z.number().min(0.01).max(50),

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,20 +18,38 @@ type CreditResponse = {
     insuranceRate: number;
 };
 
+const schema = z.object({
+    userId: z.string().min(1, "Client requis"),
+    principal: z.coerce.number().positive("Montant requis"),
+    annualRate: z.coerce.number().positive("Taux annuel requis"),
+    insuranceRate: z.coerce.number().nonnegative("Taux assurance requis"),
+    termMonths: z.coerce.number().int().positive("Durée requise"),
+});
+type FormData = z.infer<typeof schema>;
+
 export default function AdvisorCreditsPage() {
-    const [form, setForm] = useState({
-        userId: "",
-        principal: "10000",
-        annualRate: "0.03",
-        insuranceRate: "0.002",
-        termMonths: "36",
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        setValue,
+        setError,
+        watch,
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            userId: "",
+            principal: 10000,
+            annualRate: 0.03,
+            insuranceRate: 0.002,
+            termMonths: 36,
+        },
     });
+    const userId = watch("userId");
     const [query, setQuery] = useState("");
     const [users, setUsers] = useState<{ id: string; label: string }[]>([]);
     const [credits, setCredits] = useState<any[]>([]);
     const [searching, setSearching] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<CreditResponse | null>(null);
 
     const searchUsers = async (q: string) => {
@@ -60,10 +81,10 @@ export default function AdvisorCreditsPage() {
     }, []);
 
     useEffect(() => {
-        if (!form.userId && users.length > 0) {
-            setForm((prev) => ({ ...prev, userId: users[0].id }));
+        if (!userId && users.length > 0) {
+            setValue("userId", users[0].id);
         }
-    }, [users, form.userId]);
+    }, [users, userId, setValue]);
 
     useEffect(() => {
         const fetchCredits = async (userId: string) => {
@@ -79,58 +100,43 @@ export default function AdvisorCreditsPage() {
             const data = await resp.json();
             setCredits(data.credits ?? []);
         };
-        fetchCredits(form.userId);
-    }, [form.userId]);
+        fetchCredits(userId);
+    }, [userId]);
 
-    const submit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+    const submit = async (data: FormData) => {
+        setError("root", { type: "clear", message: "" });
         setSuccess(null);
-
-        if (!form.userId) {
-            setError("NO_USER_SELECTED");
-            setLoading(false);
-            return;
-        }
 
         try {
             const resp = await fetch("/api/advisor/credits", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
-                    userId: form.userId.trim(),
-                    principal: Number(form.principal),
-                    annualRate: Number(form.annualRate),
-                    insuranceRate: Number(form.insuranceRate),
-                    termMonths: Number(form.termMonths),
+                    userId: data.userId.trim(),
+                    principal: data.principal,
+                    annualRate: data.annualRate,
+                    insuranceRate: data.insuranceRate,
+                    termMonths: data.termMonths,
                 }),
             });
 
             if (!resp.ok) {
-                const data = await resp.json().catch(() => null);
-                setError(data?.code ?? "UNEXPECTED_ERROR");
-                setLoading(false);
+                const resData = await resp.json().catch(() => null);
+                setError("root", { type: "server", message: resData?.code ?? "UNEXPECTED_ERROR" });
                 return;
             }
 
-            const data = await resp.json();
+            const resData = await resp.json();
             setSuccess({
-                id: data.credit.id,
-                monthlyDue: data.credit.monthlyDue,
-                termMonths: data.credit.termMonths,
-                annualRate: data.credit.annualRate,
-                insuranceRate: data.credit.insuranceRate,
+                id: resData.credit.id,
+                monthlyDue: resData.credit.monthlyDue,
+                termMonths: resData.credit.termMonths,
+                annualRate: resData.credit.annualRate,
+                insuranceRate: resData.credit.insuranceRate,
             });
         } catch (err: any) {
-            setError(err?.message ?? "UNEXPECTED_ERROR");
-        } finally {
-            setLoading(false);
+            setError("root", { type: "server", message: err?.message ?? "UNEXPECTED_ERROR" });
         }
-    };
-
-    const onChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
     return (
@@ -150,7 +156,7 @@ export default function AdvisorCreditsPage() {
                         {searching && <div className="text-xs text-muted-foreground">Recherche...</div>}
                     </CardHeader>
                     <CardContent>
-                        <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={submit}>
+                        <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={handleSubmit(submit)}>
                             <div className="md:col-span-2 space-y-2">
                                 <Label>Rechercher un client (nom/email)</Label>
                                 <Input
@@ -161,10 +167,7 @@ export default function AdvisorCreditsPage() {
                             </div>
                             <div className="md:col-span-2 space-y-2">
                                 <Label>Sélectionner un client</Label>
-                                <Select
-                                    value={form.userId}
-                                    onChange={(e) => setForm((prev) => ({ ...prev, userId: e.target.value }))}
-                                >
+                                <Select {...register("userId")}>
                                     <option value="">— Choisir —</option>
                                     {users.map((u) => (
                                         <option key={u.id} value={u.id}>
@@ -172,30 +175,41 @@ export default function AdvisorCreditsPage() {
                                         </option>
                                     ))}
                                 </Select>
+                                {errors.userId && <p className="text-sm text-destructive">{errors.userId.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Montant (principal)</Label>
-                                <Input type="number" step="0.01" value={form.principal} onChange={onChange("principal")} />
+                                <Input type="number" step="0.01" {...register("principal")} />
+                                {errors.principal && <p className="text-sm text-destructive">{errors.principal.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Taux annuel (ex: 0.03)</Label>
-                                <Input type="number" step="0.0001" value={form.annualRate} onChange={onChange("annualRate")} />
+                                <Input type="number" step="0.0001" {...register("annualRate")} />
+                                {errors.annualRate && <p className="text-sm text-destructive">{errors.annualRate.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label>Taux assurance (ex: 0.002)</Label>
-                                <Input type="number" step="0.0001" value={form.insuranceRate} onChange={onChange("insuranceRate")} />
+                                <Input type="number" step="0.0001" {...register("insuranceRate")} />
+                                {errors.insuranceRate && (
+                                    <p className="text-sm text-destructive">{errors.insuranceRate.message}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label>Durée (mois)</Label>
-                                <Input type="number" value={form.termMonths} onChange={onChange("termMonths")} />
+                                <Input type="number" {...register("termMonths")} />
+                                {errors.termMonths && <p className="text-sm text-destructive">{errors.termMonths.message}</p>}
                             </div>
                             <div className="md:col-span-2 flex justify-end">
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? "Calcul..." : "Octroyer"}
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? "Calcul..." : "Octroyer"}
                                 </Button>
                             </div>
                         </form>
-                        {error && <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive">Erreur : {error}</div>}
+                        {errors.root?.type === "server" && (
+                            <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive">
+                                Erreur : {errors.root.message}
+                            </div>
+                        )}
                         {success && (
                             <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700">
                                 Crédit créé (id {success.id}) — Mensualité : {success.monthlyDue} EUR sur {success.termMonths} mois

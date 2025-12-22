@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,13 +12,25 @@ import { Button } from "@/components/ui/button";
 
 type FetchState = "idle" | "loading" | "error";
 
+const schema = z.object({
+    ratePercent: z.coerce.number().positive("Le taux doit être un nombre positif (max 50%).").max(50),
+});
+type FormData = z.infer<typeof schema>;
+
 export function SavingsRateCard() {
     const router = useRouter();
-    const [ratePercent, setRatePercent] = useState<string>("");
     const [fetchState, setFetchState] = useState<FetchState>("loading");
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        setValue,
+        setError,
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: { ratePercent: 0 },
+    });
 
     useEffect(() => {
         let canceled = false;
@@ -32,7 +47,7 @@ export function SavingsRateCard() {
             }
             const data = (await res.json()) as { ratePercent: number | null };
             if (!canceled) {
-                setRatePercent(data.ratePercent !== null ? data.ratePercent.toString() : "");
+                setValue("ratePercent", data.ratePercent !== null ? data.ratePercent : 0);
                 setFetchState("idle");
             }
         }
@@ -41,41 +56,29 @@ export function SavingsRateCard() {
         return () => {
             canceled = true;
         };
-    }, []);
+    }, [setValue]);
 
-    async function handleSubmit(event: React.FormEvent) {
-        event.preventDefault();
-        setError(null);
+    async function onSubmit(data: FormData) {
         setSuccess(null);
 
-        const parsed = Number(ratePercent);
-        if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 50) {
-            setError("Le taux doit être un nombre positif (max 50%).");
-            return;
-        }
-
-        setSubmitting(true);
         const res = await fetch("/api/admin/savings/rate", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ ratePercent: parsed }),
+            body: JSON.stringify({ ratePercent: data.ratePercent }),
         }).catch(() => null);
 
         if (!res) {
-            setError("Impossible de joindre le serveur.");
-            setSubmitting(false);
+            setError("root", { type: "server", message: "Impossible de joindre le serveur." });
             return;
         }
 
         if (!res.ok) {
             const data = await res.json().catch(() => null);
-            setError(data?.code ?? "UNEXPECTED_ERROR");
-            setSubmitting(false);
+            setError("root", { type: "server", message: data?.code ?? "UNEXPECTED_ERROR" });
             return;
         }
 
         setSuccess("Taux mis à jour.");
-        setSubmitting(false);
         router.refresh();
     }
 
@@ -87,7 +90,7 @@ export function SavingsRateCard() {
                 <CardTitle>Fixer le taux d&apos;épargne</CardTitle>
             </CardHeader>
             <CardContent>
-                <form className="space-y-3" onSubmit={handleSubmit}>
+                <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
                     <div className="space-y-1">
                         <Label htmlFor="rate">Taux annuel (%)</Label>
                         <Input
@@ -96,16 +99,15 @@ export function SavingsRateCard() {
                             step="0.01"
                             min={0.01}
                             max={50}
-                            value={ratePercent}
-                            onChange={(event) => setRatePercent(event.target.value)}
-                            disabled={isLoading || submitting}
-                            required
+                            {...register("ratePercent")}
+                            disabled={isLoading || isSubmitting}
                         />
                     </div>
-                    <Button type="submit" disabled={isLoading || submitting}>
-                        {submitting ? "Mise à jour..." : "Enregistrer"}
+                    <Button type="submit" disabled={isLoading || isSubmitting}>
+                        {isSubmitting ? "Mise à jour..." : "Enregistrer"}
                     </Button>
-                    {error && <p className="text-sm text-destructive">Erreur : {error}</p>}
+                    {errors.ratePercent && <p className="text-sm text-destructive">{errors.ratePercent.message}</p>}
+                    {errors.root && <p className="text-sm text-destructive">Erreur : {errors.root.message}</p>}
                     {success && <p className="text-sm text-emerald-600">{success}</p>}
                 </form>
             </CardContent>

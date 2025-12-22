@@ -1,51 +1,54 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select-native";
 
+const schema = z.object({
+    name: z.string().trim().min(2, "Le nom du compte est requis."),
+    type: z.enum(["CURRENT", "SAVINGS"]),
+});
+type FormData = z.infer<typeof schema>;
+
 export default function AccountCreatorCard() {
     const router = useRouter();
-    const [name, setName] = useState("");
-    const [type, setType] = useState<"CURRENT" | "SAVINGS">("CURRENT");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        reset,
+        setError,
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: { name: "", type: "CURRENT" },
+    });
 
-    const submit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(null);
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-            setError("Le nom du compte est requis.");
-            setLoading(false);
+    const submit = async (data: FormData) => {
+        const resp = await fetch("/api/accounts", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(data),
+        }).catch(() => null);
+
+        if (!resp) {
+            setError("root", { type: "server", message: "UNEXPECTED_ERROR" });
             return;
         }
-        try {
-            const resp = await fetch("/api/accounts", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ name: trimmedName, type }),
-            });
-            if (!resp.ok) {
-                const data = await resp.json().catch(() => null);
-                setError(data?.code ?? "UNEXPECTED_ERROR");
-                return;
-            }
-            setSuccess("Compte créé");
-            setName("");
-            router.refresh();
-        } catch (err: any) {
-            setError(err?.message ?? "UNEXPECTED_ERROR");
-        } finally {
-            setLoading(false);
+        if (!resp.ok) {
+            const resData = await resp.json().catch(() => null);
+            setError("root", { type: "server", message: resData?.code ?? "UNEXPECTED_ERROR" });
+            return;
         }
+
+        setError("root", { type: "success", message: "Compte créé" });
+        reset({ name: "", type: data.type });
+        router.refresh();
     };
 
     return (
@@ -54,23 +57,28 @@ export default function AccountCreatorCard() {
                 <CardTitle>Ajouter un compte</CardTitle>
             </CardHeader>
             <CardContent>
-                <form className="space-y-3" onSubmit={submit}>
+                <form className="space-y-3" onSubmit={handleSubmit(submit)}>
                     <div className="space-y-1">
                         <Label>Nom</Label>
-                        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Mon compte" />
+                        <Input {...register("name")} placeholder="Mon compte" />
+                        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                     </div>
                     <div className="space-y-1">
                         <Label>Type</Label>
-                        <Select value={type} onChange={(e) => setType(e.target.value as "CURRENT" | "SAVINGS")}>
+                        <Select {...register("type")}>
                             <option value="CURRENT">Compte courant</option>
                             <option value="SAVINGS">Épargne</option>
                         </Select>
                     </div>
-                    <Button type="submit" disabled={loading}>
-                        {loading ? "Création..." : "Créer"}
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Création..." : "Créer"}
                     </Button>
-                    {error && <div className="text-sm text-destructive">Erreur : {error}</div>}
-                    {success && <div className="text-sm text-emerald-600">{success}</div>}
+                    {errors.root?.type === "server" && (
+                        <div className="text-sm text-destructive">Erreur : {errors.root.message}</div>
+                    )}
+                    {errors.root?.type === "success" && (
+                        <div className="text-sm text-emerald-600">{errors.root.message}</div>
+                    )}
                 </form>
             </CardContent>
         </Card>
