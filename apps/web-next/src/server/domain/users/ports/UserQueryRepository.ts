@@ -4,6 +4,9 @@ export type UserMinimal = {
     name: string;
 };
 
+export type UserRole = "CLIENT" | "ADVISOR" | "DIRECTOR";
+
 export interface UserQueryRepository {
     search(query: string): Promise<UserMinimal[]>;
+    getRoleById(userId: string): Promise<UserRole | null>;
 }
