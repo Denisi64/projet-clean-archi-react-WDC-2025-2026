@@ -34,6 +34,8 @@ export default function LoginForm() {
                 setError("Identifiants invalides.");
             } else if (e?.message === "ACCOUNT_INACTIVE") {
                 setError("Compte non confirmé. Consulte tes emails.");
+            } else if (e?.message === "ACCOUNT_BANNED") {
+                setError("Compte banni. Contacte un conseiller.");
             } else {
                 setError("Erreur. Réessayez.");
             }

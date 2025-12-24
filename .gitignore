@@ -29,3 +29,5 @@ prisma.config.ts.bak
 api-nest@0.0.1
 nest
 
+# docs locaux
+docs/*.md

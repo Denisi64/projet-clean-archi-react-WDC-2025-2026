@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { TransfersHistoryClient } from "./transfers-history.client";
 import { buttonVariants } from "@/components/ui/button";
@@ -24,6 +25,13 @@ type Transfer = {
     note?: string;
     createdAt: string;
     direction: "IN" | "OUT";
+};
+
+type CurrentUser = {
+    id: string;
+    email: string;
+    role?: string;
+    bannedAt?: string | null;
 };
 
 async function loadTransfers(accountId?: string): Promise<{ authenticated: boolean; transfers: Transfer[] }> {
@@ -87,13 +95,39 @@ async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Accou
     return { authenticated: true, accounts: data.accounts ?? [] };
 }
 
+async function loadCurrentUser(): Promise<CurrentUser | null> {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
+        .getAll()
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ");
+
+    if (!cookieHeader) return null;
+
+    const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${base}/api/auth/me`, {
+        method: "GET",
+        cache: "no-store",
+        headers: { cookie: cookieHeader },
+    }).catch(() => null);
+
+    if (!res || !res.ok) return null;
+    const data = (await res.json()) as { user?: CurrentUser };
+    return data.user ?? null;
+}
+
 export default async function TransfersHistoryPage({ searchParams }: { searchParams: { accountId?: string } }) {
     const accountId = searchParams.accountId || undefined;
-    const [{ authenticated, transfers }, accountsResult] = await Promise.all([
+    const [{ authenticated, transfers }, accountsResult, currentUser] = await Promise.all([
         loadTransfers(accountId),
         loadAccounts(),
+        loadCurrentUser(),
     ]);
     const accounts = accountsResult.accounts;
+
+    if (currentUser?.bannedAt) {
+        redirect("/banned");
+    }
 
     return (
         <main className="min-h-screen bg-muted/20 p-4 md:p-8">

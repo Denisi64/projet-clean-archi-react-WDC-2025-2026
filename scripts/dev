@@ -54,6 +54,12 @@ env_set() {
 }
 env_unset() { local file=$1 key=$2; [[ -f "$file" ]] && sed -i "/^${key}=.*/d" "$file" || true; }
 
+docker_up_ws() {
+  say "→ Docker up socket.io (4001)"
+  docker compose -f "$API_DIR/socket-server/docker-compose.yml" up --build -d
+  wait_port 127.0.0.1 4001 30
+}
+
 write_envs() {
   local target=$1 db=$2
   # API
@@ -61,6 +67,7 @@ write_envs() {
     local api_env="$API_DIR/.env"
     env_set "$api_env" "NODE_ENV" "development"
     env_set "$api_env" "PORT" "3001"
+    env_set "$api_env" "JWT_SECRET" "dev-secret"
 
     # SMTP / confirmation mail
     env_set "$api_env" "SMTP_HOST" "mailhog"
@@ -93,11 +100,16 @@ write_envs() {
   env_set "$web_env" "SMTP_FROM" "no-reply@avenir.bank"
   env_set "$web_env" "FRONT_APP_URL" "http://localhost:3000"
   env_set "$web_env" "CONFIRMATION_TOKEN_TTL_HOURS" "24"
+  env_set "$web_env" "JWT_SECRET" "dev-secret"
+  env_set "$web_env" "NEXT_PUBLIC_BACKEND_TARGET" "$target"
+  env_set "$web_env" "NOTIFICATIONS_WS_URL" "http://localhost:4001"
   if [[ "$target" == "nest" ]]; then
     env_set "$web_env" "BACKEND_TARGET" "nest"
     env_set "$web_env" "NEST_API_URL" "http://localhost:3001"
     # ne PAS laisser DATABASE_URL côté front quand on pointe Nest
     env_unset "$web_env" "DATABASE_URL"
+    env_set "$web_env" "NEXT_PUBLIC_WS_URL" "http://localhost:4001"
+    env_set "$web_env" "NEXT_PUBLIC_NEST_API_URL" "http://localhost:3001"
   else
     env_set "$web_env" "BACKEND_TARGET" "next"
     env_unset "$web_env" "NEST_API_URL"
@@ -107,21 +119,20 @@ write_envs() {
       mariadb)  env_set "$web_env" "DATABASE_URL" "$MARIADB_URL"  ;;
       memory)   env_unset "$web_env" "DATABASE_URL"               ;;
     esac
+    env_set "$web_env" "NEXT_PUBLIC_WS_URL" "http://localhost:4001"
   fi
 }
 
 switch_prisma_provider() {
   local driver="${1:-}"
-  local schema="" migdir=""
+  local schema=""
 
   case "$driver" in
     postgres|pg)
       schema="$PRISMA_DIR/schema.prisma"
-      migdir="$MIGRATIONS_PG"
       ;;
     mariadb|mysql)
       schema="$PRISMA_DIR/schema.maria.prisma"
-      migdir="$MIGRATIONS_MY"
       ;;
     memory)
       echo "→ switch_prisma_provider(memory): aucun schéma (pas de DB)."
@@ -133,19 +144,44 @@ switch_prisma_provider() {
   esac
 
   [[ -f "$schema" ]] || { echo "✖ schéma introuvable: $schema"; return 2; }
-  mkdir -p "$migdir"
 
   export PRISMA_SCHEMA="$schema"
-  export PRISMA_MIGRATIONS_DIR="$migdir"
 
   echo "→ Prisma schema: $PRISMA_SCHEMA"
-  echo "→ Migrations dir: $PRISMA_MIGRATIONS_DIR"
 
   # Log du provider du datasource
   echo -n "→ Prisma provider (datasource db): "
   sed -n '/^[[:space:]]*datasource[[:space:]]\+db[[:space:]]*{/,/}/p' "$PRISMA_SCHEMA" \
     | sed -n 's/^[[:space:]]*provider[[:space:]]*=[[:space:]]*"\([^"]*\)".*/provider = "\1"/p' \
     | head -n1
+}
+
+sync_migrations() {
+  local driver=$1
+  local source=""
+
+  case "$driver" in
+    postgres|pg)
+      source="$MIGRATIONS_PG"
+      ;;
+    mariadb|mysql)
+      source="$MIGRATIONS_MY"
+      ;;
+    memory)
+      echo "→ sync_migrations(memory): aucun dossier migrations."
+      return 0
+      ;;
+    *)
+      echo "✖ sync_migrations: driver inconnu '$driver'"; return 2 ;;
+  esac
+
+  if [[ ! -d "$source" ]]; then
+    echo "✖ sync_migrations: source introuvable $source"; return 2
+  fi
+
+  rm -rf "$PRISMA_DIR/migrations"
+  cp -R "$source" "$PRISMA_DIR/migrations"
+  echo "→ migrations copiées depuis $(basename "$source")"
 }
 
 
@@ -161,6 +197,15 @@ docker_up_db() {
       say "→ Docker up MariaDB + MailHog"
       docker compose up -d mariadb mailhog
       wait_port 127.0.0.1 3306
+      # Attendre que MariaDB accepte réellement les connexions (pas seulement le port ouvert)
+      for _ in $(seq 1 20); do
+        cid="$(docker ps --filter name=mariadb --format '{{.ID}}' | head -n1)"
+        if [[ -n "$cid" ]] && docker exec "$cid" mysqladmin ping -h 127.0.0.1 -uuser -ppass --silent >/dev/null 2>&1; then
+          echo "→ MariaDB prêt"
+          break
+        fi
+        sleep 1
+      done
       ;;
     memory)
       say "→ Mode memory : pas de DB Docker (ni MailHog)"
@@ -195,16 +240,13 @@ prisma_sync() {
 
   say "→ Prisma generate (root)"
   ( cd "$ROOT_DIR" && \
-    PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
     pnpm -w prisma generate --schema "$PRISMA_SCHEMA" )
 
   say "→ Prisma migrate deploy"
   ( cd "$ROOT_DIR" && \
-    PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
     pnpm -w prisma migrate deploy --schema "$PRISMA_SCHEMA" ) || {
       echo "→ migrate deploy KO → tentative finale db push"
       ( cd "$ROOT_DIR" && \
-        PRISMA_MIGRATIONS_DIR="$PRISMA_MIGRATIONS_DIR" \
         pnpm -w prisma db push --schema "$PRISMA_SCHEMA" )
     }
 }
@@ -299,8 +341,10 @@ run_stack() {
   write_envs "$target" "$db"
 
   [[ "$db" != "memory" ]] && switch_prisma_provider "$db"
+  [[ "$db" != "memory" ]] && sync_migrations "$db"
 
   [[ "$db" != "memory" ]] && docker_up_db "$db" && prisma_sync "$db"
+  docker_up_ws
 
   [[ "$db" != "memory" ]] && prisma_seed "$db"
 

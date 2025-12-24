@@ -5,20 +5,45 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaTransferRepository } from "@/server/infrastructure/accounts/PrismaTransferRepository";
 import { ListTransfersForUserUseCase } from "@/server/application/accounts/ListTransfersForUserUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
+import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
+import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
 
 const prisma = new PrismaClient();
 const repo = new PrismaTransferRepository(prisma);
 const listTransfersUC = new ListTransfersForUserUseCase(repo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
+const userRepo = new PrismaUserQueryRepository(prisma);
+const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-async function handleUseCase(req: NextRequest) {
-    const session = req.cookies.get("session")?.value;
-    const userId = session ? await tokenVerifier.verify(session) : null;
-    if (!userId) {
-        return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
+async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
+    const session = req.cookies.get("session")?.value ?? null;
+    try {
+        const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
+        return { userId: auth.userId };
+    } catch (e: any) {
+        if (e instanceof UnauthorizedAccessError) {
+            return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
+        }
+        if (e instanceof ForbiddenRoleError) {
+            return NextResponse.json({ code: "FORBIDDEN" }, { status: 403 });
+        }
+        if (e instanceof BannedAccountError) {
+            return NextResponse.json({ code: "ACCOUNT_BANNED" }, { status: 403 });
+        }
+        if (isDev) console.error("[transfer history] auth error:", e?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+}
+
+async function handleUseCase(req: NextRequest) {
+    const auth = await requireClient(req);
+    if (auth instanceof NextResponse) return auth;
+    const { userId } = auth;
     const accountId = req.nextUrl.searchParams.get("accountId") || undefined;
 
     try {
