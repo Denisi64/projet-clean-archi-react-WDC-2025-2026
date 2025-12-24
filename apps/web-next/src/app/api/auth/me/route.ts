@@ -31,6 +31,7 @@ async function handleUseCase(req: NextRequest) {
             email: user.email,
             name: user.name,
             role: user.role,
+            bannedAt: user.bannedAt ?? null,
         },
     });
 }

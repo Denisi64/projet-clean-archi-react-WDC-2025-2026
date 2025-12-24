@@ -3,6 +3,7 @@ import { PasswordHasher } from "../../domain/auth/ports/PasswordHasher";
 import { TokenManager } from "../../domain/auth/ports/TokenManager";
 import { InvalidCredentialsError } from "../../domain/auth/errors/InvalidCredentialsError";
 import { InactiveAccountError } from "../../domain/auth/errors/InactiveAccountError";
+import { BannedAccountError } from "../../domain/auth/errors/BannedAccountError";
 
 type Input = { email: string; password: string; remember?: boolean };
 type Output = { token: string; userId: string; ttl: number };
@@ -20,6 +21,10 @@ export class LoginUserUseCase {
 
         const ok = await this.hasher.compare(password, user.passwordHash);
         if (!ok) throw new InvalidCredentialsError();
+
+        if (user.bannedAt) {
+            throw new BannedAccountError();
+        }
 
         if (!user.isActive) {
             throw new InactiveAccountError();

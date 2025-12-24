@@ -1,5 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { UserQueryRepository, UserMinimal, UserRole } from "../../domain/users/ports/UserQueryRepository";
+import {
+    UserQueryRepository,
+    UserMinimal,
+    UserRole,
+    UserAccess,
+} from "../../domain/users/ports/UserQueryRepository";
 
 export class PrismaUserQueryRepository implements UserQueryRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
@@ -33,5 +38,15 @@ export class PrismaUserQueryRepository implements UserQueryRepository {
         });
 
         return user?.role ?? null;
+    }
+
+    async getAccessById(userId: string): Promise<UserAccess | null> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true, bannedAt: true },
+        });
+
+        if (!user?.role) return null;
+        return { role: user.role, bannedAt: user.bannedAt ?? null };
     }
 }

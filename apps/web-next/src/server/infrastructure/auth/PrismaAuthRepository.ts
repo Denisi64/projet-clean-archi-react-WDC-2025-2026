@@ -20,6 +20,7 @@ export class PrismaAuthRepository implements AuthRepository {
             isActive: !!u.isActive,
             name: u.name,
             role: u.role,
+            bannedAt: u.bannedAt ?? null,
             confirmationToken: u.confirmationToken ?? null,
             confirmationTokenExpiresAt: u.confirmationTokenExpiresAt ?? null,
         };

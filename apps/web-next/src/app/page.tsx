@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { buttonVariants } from "../components/ui/button";
 import {
     Card,
@@ -56,6 +57,7 @@ type CurrentUser = {
     email: string;
     name?: string;
     role?: string;
+    bannedAt?: string | null;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -132,6 +134,10 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
         loadCurrentUser(),
     ]);
 
+    if (currentUser?.bannedAt) {
+        redirect("/banned");
+    }
+
     const backend = process.env.BACKEND_TARGET ?? "nest";
     const dbLabel = deriveDbLabel();
     const locale = getLocale(searchParams?.lang);
@@ -171,6 +177,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                         className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
                                     >
                                         Crédit conseiller
+                                    </Link>
+                                )}
+                                {currentUser?.role === "DIRECTOR" && (
+                                    <Link
+                                        href="/director/admin"
+                                        className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
+                                    >
+                                        Panel admin
                                     </Link>
                                 )}
                                 {currentUser?.role === "DIRECTOR" && (
@@ -272,6 +286,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
                                 Crédit conseiller
+                            </Link>
+                        )}
+                        {currentUser?.role === "DIRECTOR" && (
+                            <Link
+                                href="/director/admin"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                Panel admin
                             </Link>
                         )}
                         {currentUser?.role === "DIRECTOR" && (

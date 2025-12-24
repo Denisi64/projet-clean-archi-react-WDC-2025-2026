@@ -10,6 +10,7 @@ import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaU
 import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
@@ -26,6 +27,9 @@ async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
         }
         if (e instanceof ForbiddenRoleError) {
             return NextResponse.json({ code: "FORBIDDEN" }, { status: 403 });
+        }
+        if (e instanceof BannedAccountError) {
+            return NextResponse.json({ code: "ACCOUNT_BANNED" }, { status: 403 });
         }
         if (isDev) console.error("[advisor credits] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });

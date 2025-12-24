@@ -5,6 +5,7 @@ export type AuthUser = {
     isActive: boolean;
     name?: string;
     role?: string;
+    bannedAt?: Date | null;
     confirmationToken?: string | null;
     confirmationTokenExpiresAt?: Date | null;
 };
