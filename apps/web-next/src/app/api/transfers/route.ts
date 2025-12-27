@@ -34,10 +34,9 @@ const transferSchema = z.object({
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
-        return { userId: auth.userId };
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -50,6 +49,7 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
         if (isDev) console.error("[transfer] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return { userId: auth.value.userId };
 }
 
 async function handleUseCase(req: NextRequest) {
@@ -57,25 +57,24 @@ async function handleUseCase(req: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const { userId } = auth;
 
-    try {
-        const raw = await req.json().catch(() => null);
-        const parsed = transferSchema.safeParse(raw);
-        if (!parsed.success) {
-            return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
-        }
+    const raw = await req.json().catch(() => null);
+    const parsed = transferSchema.safeParse(raw);
+    if (!parsed.success) {
+        return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
+    }
 
-        const { sourceAccountId, destinationIban, amount, note } = parsed.data;
+    const { sourceAccountId, destinationIban, amount, note } = parsed.data;
 
-        const result = await transferUC.execute({
-            userId,
-            sourceAccountId,
-            destinationIban,
-            amount,
-            note,
-        });
+    const result = await transferUC.execute({
+        userId,
+        sourceAccountId,
+        destinationIban,
+        amount,
+        note,
+    });
 
-        return NextResponse.json(result, { status: 201 });
-    } catch (e: any) {
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof AccountNotFoundError) {
             return NextResponse.json({ code: "ACCOUNT_NOT_FOUND" }, { status: 404 });
         }
@@ -94,6 +93,8 @@ async function handleUseCase(req: NextRequest) {
         if (isDev) console.error("[transfer] unexpected", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+
+    return NextResponse.json(result.value, { status: 201 });
 }
 
 async function handleProxy(req: NextRequest) {

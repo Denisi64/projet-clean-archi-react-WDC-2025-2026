@@ -34,21 +34,17 @@ async function handleUseCase(req: NextRequest) {
 
     const { email, password, firstName, lastName } = parsed.data;
 
-    try {
-        const uc = new RegisterUserUseCase(
-            new PrismaAuthRepository(),
-            new BCryptPasswordHasher(),
-            new NodemailerEmailService(),
-            ttlHours,
-        );
+    const uc = new RegisterUserUseCase(
+        new PrismaAuthRepository(),
+        new BCryptPasswordHasher(),
+        new NodemailerEmailService(),
+        ttlHours,
+    );
 
-        const name = [firstName, lastName].filter(Boolean).join(" ").trim() || undefined;
-        const { expiresAt } = await uc.execute({ email, password, name });
-        return NextResponse.json(
-            { ok: true, confirmationExpiresAt: expiresAt.toISOString() },
-            { status: 201 },
-        );
-    } catch (err: any) {
+    const name = [firstName, lastName].filter(Boolean).join(" ").trim() || undefined;
+    const result = await uc.execute({ email, password, name });
+    if (!result.ok) {
+        const err = result.error;
         if (err instanceof EmailAlreadyInUseError) {
             return NextResponse.json({ code: "EMAIL_ALREADY_USED" }, { status: 409 });
         }
@@ -58,6 +54,12 @@ async function handleUseCase(req: NextRequest) {
         if (isDev) console.error("Error in /api/auth/register:", err);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+
+    const { expiresAt } = result.value;
+    return NextResponse.json(
+        { ok: true, confirmationExpiresAt: expiresAt.toISOString() },
+        { status: 201 },
+    );
 }
 
 async function handleProxy(req: NextRequest) {

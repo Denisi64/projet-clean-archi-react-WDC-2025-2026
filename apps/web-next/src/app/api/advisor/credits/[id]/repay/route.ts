@@ -25,9 +25,9 @@ const paramsSchema = z.object({ id: z.string().min(1) });
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -50,10 +50,9 @@ async function handleUseCase(id: string) {
     }
 
     const uc = new RepayCreditUseCase(new PrismaCreditRepository());
-    try {
-        const credit = await uc.execute(id);
-        return NextResponse.json({ ok: true, credit });
-    } catch (e: any) {
+    const result = await uc.execute(id);
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof CreditNotFoundError) {
             return NextResponse.json({ code: "CREDIT_NOT_FOUND" }, { status: 404 });
         }
@@ -69,6 +68,7 @@ async function handleUseCase(id: string) {
         if (isDev) console.error("[advisor repay] unexpected:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ ok: true, credit: result.value });
 }
 
 async function handleProxy(req: NextRequest, id: string) {

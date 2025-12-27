@@ -23,9 +23,9 @@ const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireDirector(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -49,8 +49,12 @@ async function handleUseCase(req: NextRequest, userId: string) {
     const authError = await requireDirector(req);
     if (authError) return authError;
 
-    const user = await banUserUC.execute(userId);
-    return NextResponse.json({ ok: true, user });
+    const result = await banUserUC.execute(userId);
+    if (!result.ok) {
+        if (isDev) console.error("[admin users ban] unexpected:", result.error?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, user: result.value });
 }
 
 async function handleProxy(req: NextRequest, userId: string) {

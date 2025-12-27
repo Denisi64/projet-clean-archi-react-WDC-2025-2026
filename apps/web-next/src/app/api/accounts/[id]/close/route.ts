@@ -28,10 +28,9 @@ const closeParamsSchema = z.object({
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
-        return { userId: auth.userId };
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -44,6 +43,7 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
         if (isDev) console.error("[accounts close] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return { userId: auth.value.userId };
 }
 
 async function handleUseCase(req: NextRequest, accountId: string) {
@@ -51,22 +51,22 @@ async function handleUseCase(req: NextRequest, accountId: string) {
     if (auth instanceof NextResponse) return auth;
     const { userId } = auth;
 
-    try {
-        const account = await closeAccountUC.execute({ accountId, userId });
-
-        return NextResponse.json({
-            account: {
-                ...account,
-                createdAt: account.createdAt.toISOString(),
-            },
-        });
-    } catch (e: any) {
+    const result = await closeAccountUC.execute({ accountId, userId });
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof AccountNotFoundError) {
             return NextResponse.json({ code: "ACCOUNT_NOT_FOUND" }, { status: 404 });
         }
         if (isDev) console.error("[accounts close] unexpected:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+
+    return NextResponse.json({
+        account: {
+            ...result.value,
+            createdAt: result.value.createdAt.toISOString(),
+        },
+    });
 }
 
 async function handleProxy(req: NextRequest, accountId: string) {

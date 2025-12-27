@@ -1,6 +1,7 @@
 import { CreditRepository, CreditDetail } from "../../domain/credits/ports/CreditRepository";
 import { InvalidCreditInputError } from "../../domain/credits/errors/InvalidCreditInputError";
 import { InvalidCreditTermError } from "../../domain/credits/errors/InvalidCreditTermError";
+import { Result, err, ok } from "../Result";
 
 type Input = {
     userId: string;
@@ -9,42 +10,52 @@ type Input = {
     insuranceRate: number;
     termMonths: number;
 };
+type GrantCreditError = InvalidCreditInputError | InvalidCreditTermError | Error;
 
 export class GrantCreditUseCase {
     constructor(private readonly repo: CreditRepository) {}
 
-    private computeMonthlyDue(input: Input): { monthlyDue: string; monthlyInsurance: string } {
+    private computeMonthlyDue(
+        input: Input,
+    ): Result<{ monthlyDue: string; monthlyInsurance: string }, GrantCreditError> {
         const { principal, annualRate, insuranceRate, termMonths } = input;
         if (principal <= 0 || annualRate <= 0 || termMonths <= 0 || insuranceRate < 0) {
-            throw new InvalidCreditInputError();
+            return err(new InvalidCreditInputError());
         }
         const monthlyRate = annualRate / 12;
         const monthlyInsurance = (principal * insuranceRate) / termMonths;
 
         const numerator = principal * monthlyRate;
         const denominator = 1 - Math.pow(1 + monthlyRate, -termMonths);
-        if (denominator <= 0) throw new InvalidCreditTermError();
+        if (denominator <= 0) return err(new InvalidCreditTermError());
         const monthlyBase = numerator / denominator;
 
         const monthlyDue = (monthlyBase + monthlyInsurance).toFixed(2);
-        return { monthlyDue, monthlyInsurance: monthlyInsurance.toFixed(2) };
+        return ok({ monthlyDue, monthlyInsurance: monthlyInsurance.toFixed(2) });
     }
 
-    async execute(input: Input): Promise<CreditDetail> {
-        const { monthlyDue, monthlyInsurance } = this.computeMonthlyDue(input);
+    async execute(input: Input): Promise<Result<CreditDetail, GrantCreditError>> {
+        const dueResult = this.computeMonthlyDue(input);
+        if (!dueResult.ok) return err(dueResult.error);
+        const { monthlyDue, monthlyInsurance } = dueResult.value;
         const principalStr = input.principal.toFixed(2);
 
-        return this.repo.create({
-            userId: input.userId,
-            principal: principalStr,
-            initialPrincipal: principalStr,
-            remainingPrincipal: principalStr,
-            annualRate: input.annualRate,
-            insuranceRate: input.insuranceRate,
-            termMonths: input.termMonths,
-            remainingTermMonths: input.termMonths,
-            monthlyDue,
-            monthlyInsurance,
-        });
+        try {
+            const credit = await this.repo.create({
+                userId: input.userId,
+                principal: principalStr,
+                initialPrincipal: principalStr,
+                remainingPrincipal: principalStr,
+                annualRate: input.annualRate,
+                insuranceRate: input.insuranceRate,
+                termMonths: input.termMonths,
+                remainingTermMonths: input.termMonths,
+                monthlyDue,
+                monthlyInsurance,
+            });
+            return ok(credit);
+        } catch (e: any) {
+            return err(e instanceof Error ? e : new Error("CREDIT_GRANT_FAILED"));
+        }
     }
 }

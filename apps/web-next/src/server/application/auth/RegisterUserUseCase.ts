@@ -5,9 +5,11 @@ import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
 import { PasswordHasher } from "../../domain/auth/ports/PasswordHasher";
 import { EmailAlreadyInUseError } from "../../domain/auth/errors/EmailAlreadyInUseError";
 import { EmailService } from "../../domain/auth/ports/EmailService";
+import { Result, err, ok } from "../Result";
 
 type Input = { email: string; password: string; name?: string };
 type Output = { success: true; expiresAt: Date };
+type RegisterError = EmailAlreadyInUseError | Error;
 
 export class RegisterUserUseCase {
     constructor(
@@ -17,10 +19,10 @@ export class RegisterUserUseCase {
         private readonly ttlHours: number,
     ) {}
 
-    async execute({ email, password, name }: Input): Promise<Output> {
+    async execute({ email, password, name }: Input): Promise<Result<Output, RegisterError>> {
         const existing = await this.repo.findByEmail(email);
         if (existing) {
-            throw new EmailAlreadyInUseError(email);
+            return err(new EmailAlreadyInUseError(email));
         }
 
         const passwordHash = await this.hasher.hash(password);
@@ -29,17 +31,21 @@ export class RegisterUserUseCase {
         const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
         const displayName = name?.trim() || email.split("@")[0];
 
-        await this.repo.createUser({
-            email,
-            passwordHash,
-            name: displayName,
-            isActive: false,
-            confirmationToken: token,
-            confirmationTokenExpiresAt: expiresAt,
-        });
+        try {
+            await this.repo.createUser({
+                email,
+                passwordHash,
+                name: displayName,
+                isActive: false,
+                confirmationToken: token,
+                confirmationTokenExpiresAt: expiresAt,
+            });
 
-        await this.emailService.sendConfirmationEmail(email, token);
+            await this.emailService.sendConfirmationEmail(email, token);
+        } catch (e: any) {
+            return err(e instanceof Error ? e : new Error("REGISTER_FAILED"));
+        }
 
-        return { success: true, expiresAt };
+        return ok({ success: true, expiresAt });
     }
 }

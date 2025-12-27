@@ -17,9 +17,9 @@ const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -48,12 +48,11 @@ export async function GET(req: NextRequest) {
     const schema = z.string().optional();
     const parsed = schema.safeParse(queryParam);
 
-    try {
-        const uc = new SearchUsersUseCase(userRepo);
-        const users = await uc.execute(parsed.success ? parsed.data ?? "" : "");
-        return NextResponse.json({ users });
-    } catch (e: any) {
-        if (isDev) console.error("[advisor users] unexpected:", e?.message);
+    const uc = new SearchUsersUseCase(userRepo);
+    const result = await uc.execute(parsed.success ? parsed.data ?? "" : "");
+    if (!result.ok) {
+        if (isDev) console.error("[advisor users] unexpected:", result.error?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ users: result.value });
 }

@@ -28,11 +28,10 @@ async function handleUseCase(req: NextRequest) {
 
     const { token } = parsed.data;
 
-    try {
-        const uc = new ConfirmUserUseCase(new PrismaAuthRepository());
-        await uc.execute(token);
-        return NextResponse.json({ success: true });
-    } catch (err: any) {
+    const uc = new ConfirmUserUseCase(new PrismaAuthRepository());
+    const result = await uc.execute(token);
+    if (!result.ok) {
+        const err = result.error;
         if (err instanceof InvalidConfirmationTokenError) {
             return NextResponse.json({ code: "CONFIRMATION_TOKEN_INVALID" }, { status: 400 });
         }
@@ -42,6 +41,7 @@ async function handleUseCase(req: NextRequest) {
         if (isDev) console.error("Error in /api/auth/confirm:", err);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ success: true });
 }
 
 async function handleProxy(req: NextRequest) {

@@ -21,9 +21,9 @@ const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -62,11 +62,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    try {
-        const uc = new GrantCreditUseCase(new PrismaCreditRepository());
-        const credit = await uc.execute(parsed.data);
-        return NextResponse.json({ ok: true, credit }, { status: 201 });
-    } catch (e: any) {
+    const uc = new GrantCreditUseCase(new PrismaCreditRepository());
+    const result = await uc.execute(parsed.data);
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof InvalidCreditInputError) {
             return NextResponse.json({ code: "INVALID_CREDIT_INPUT" }, { status: 400 });
         }
@@ -76,6 +75,7 @@ export async function POST(req: NextRequest) {
         if (isDev) console.error("[advisor credits] unexpected:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ ok: true, credit: result.value }, { status: 201 });
 }
 
 export async function GET(req: NextRequest) {
@@ -92,12 +92,11 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ credits: [] });
     }
 
-    try {
-        const uc = new ListCreditsForUserUseCase(new PrismaCreditRepository());
-        const credits = await uc.execute(userId);
-        return NextResponse.json({ ok: true, credits });
-    } catch (e: any) {
-        if (isDev) console.error("[advisor credits list] unexpected:", e?.message);
+    const uc = new ListCreditsForUserUseCase(new PrismaCreditRepository());
+    const result = await uc.execute(userId);
+    if (!result.ok) {
+        if (isDev) console.error("[advisor credits list] unexpected:", result.error?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ ok: true, credits: result.value });
 }

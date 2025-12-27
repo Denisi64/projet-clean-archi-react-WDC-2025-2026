@@ -22,10 +22,9 @@ const isDev = process.env.NODE_ENV !== "production";
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
-        return { userId: auth.userId };
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -38,6 +37,7 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
         if (isDev) console.error("[transfer history] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return { userId: auth.value.userId };
 }
 
 async function handleUseCase(req: NextRequest) {
@@ -46,18 +46,18 @@ async function handleUseCase(req: NextRequest) {
     const { userId } = auth;
     const accountId = req.nextUrl.searchParams.get("accountId") || undefined;
 
-    try {
-        const transfers = await listTransfersUC.execute(userId, accountId);
-        return NextResponse.json({
-            transfers: transfers.map((t) => ({
-                ...t,
-                createdAt: t.createdAt.toISOString(),
-            })),
-        });
-    } catch (e: any) {
-        if (isDev) console.error("[transfer history] unexpected:", e?.message);
+    const result = await listTransfersUC.execute(userId, accountId);
+    if (!result.ok) {
+        if (isDev) console.error("[transfer history] unexpected:", result.error?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+
+    return NextResponse.json({
+        transfers: result.value.map((t) => ({
+            ...t,
+            createdAt: t.createdAt.toISOString(),
+        })),
+    });
 }
 
 async function handleProxy(req: NextRequest) {

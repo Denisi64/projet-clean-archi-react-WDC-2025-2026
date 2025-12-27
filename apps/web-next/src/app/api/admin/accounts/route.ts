@@ -31,9 +31,9 @@ const createSchema = z.object({
 
 async function requireDirector(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -61,9 +61,13 @@ async function handleUseCase(req: NextRequest) {
         const userId = req.nextUrl.searchParams.get("userId") ?? "";
         if (!userId) return NextResponse.json({ accounts: [] });
         const listUC = new GetUserAccountsUseCase(accountRepo);
-        const accounts = await listUC.execute(userId);
+        const result = await listUC.execute(userId);
+        if (!result.ok) {
+            if (isDev) console.error("[admin accounts] list error:", result.error?.message);
+            return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+        }
         return NextResponse.json({
-            accounts: accounts.map((acc) => ({
+            accounts: result.value.map((acc) => ({
                 ...acc,
                 createdAt: acc.createdAt.toISOString(),
             })),
@@ -76,14 +80,18 @@ async function handleUseCase(req: NextRequest) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const account = await createAccountUC.execute({
+    const result = await createAccountUC.execute({
         userId: parsed.data.userId,
         name: parsed.data.name,
         type: (parsed.data.type ?? "CURRENT") as AccountType,
     });
+    if (!result.ok) {
+        if (isDev) console.error("[admin accounts] create error:", result.error?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
 
     return NextResponse.json(
-        { account: { ...account, createdAt: account.createdAt.toISOString() } },
+        { account: { ...result.value, createdAt: result.value.createdAt.toISOString() } },
         { status: 201 },
     );
 }

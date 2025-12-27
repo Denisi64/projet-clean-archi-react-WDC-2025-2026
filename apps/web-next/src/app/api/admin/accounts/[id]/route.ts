@@ -29,9 +29,9 @@ const renameSchema = z.object({
 
 async function requireDirector(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -61,13 +61,17 @@ async function handleUseCase(req: NextRequest, accountId: string) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const account = await renameAccountUC.execute({
+    const result = await renameAccountUC.execute({
         accountId,
         userId: parsed.data.userId,
         name: parsed.data.name,
     });
+    if (!result.ok) {
+        if (isDev) console.error("[admin accounts rename] unexpected:", result.error?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
 
-    return NextResponse.json({ account });
+    return NextResponse.json({ account: result.value });
 }
 
 async function handleProxy(req: NextRequest, accountId: string) {
