@@ -34,25 +34,15 @@ async function handleUseCase(req: NextRequest) {
 
     const { email, password, remember } = parsed.data;
 
-    try {
-        const uc = new LoginUserUseCase(
-            new PrismaAuthRepository(),
-            new BCryptPasswordHasher(),
-            new JwtTokenManager(process.env.JWT_SECRET ?? "dev-secret"),
-        );
+    const uc = new LoginUserUseCase(
+        new PrismaAuthRepository(),
+        new BCryptPasswordHasher(),
+        new JwtTokenManager(process.env.JWT_SECRET ?? "dev-secret"),
+    );
 
-        const { token, ttl } = await uc.execute({ email, password, remember });
-
-        const res = NextResponse.json({ ok: true });
-        res.cookies.set("session", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV !== "development",
-            sameSite: "lax",
-            path: "/",
-            maxAge: ttl, // seconds
-        });
-        return res;
-    } catch (e: any) {
+    const result = await uc.execute({ email, password, remember });
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof InvalidCredentialsError) {
             return NextResponse.json({ code: "INVALID_CREDENTIALS" }, { status: 401 });
         }
@@ -68,6 +58,17 @@ async function handleUseCase(req: NextRequest) {
             { status: 500 },
         );
     }
+
+    const { token, ttl } = result.value;
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set("session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "development",
+        sameSite: "lax",
+        path: "/",
+        maxAge: ttl, // seconds
+    });
+    return res;
 }
 
 async function handleProxy(req: NextRequest) {

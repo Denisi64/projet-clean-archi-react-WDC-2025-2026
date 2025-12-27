@@ -8,6 +8,7 @@ import { AccountNotFoundError } from "../../domain/accounts/errors/AccountNotFou
 import { AccountInactiveError } from "../../domain/accounts/errors/AccountInactiveError";
 import { SameAccountTransferError } from "../../domain/accounts/errors/SameAccountTransferError";
 import { InsufficientFundsError } from "../../domain/accounts/errors/InsufficientFundsError";
+import { Result, err, ok } from "../Result";
 
 type Input = {
     userId: string;
@@ -16,18 +17,25 @@ type Input = {
     amount: string;
     note?: string;
 };
+type TransferError =
+    | InvalidTransferAmountError
+    | AccountNotFoundError
+    | AccountInactiveError
+    | SameAccountTransferError
+    | InsufficientFundsError
+    | Error;
 
 export class TransferBetweenAccountsUseCase {
     constructor(private readonly repo: TransferRepository) {}
 
-    private toCents(value: string): number {
+    private toCents(value: string): Result<number, InvalidTransferAmountError> {
         const [intPart, decPart = ""] = value.split(".");
         const normalizedDec = (decPart + "00").slice(0, 2);
         const cents = Number(intPart) * 100 + Number(normalizedDec);
         if (!Number.isFinite(cents)) {
-            throw new InvalidTransferAmountError();
+            return err(new InvalidTransferAmountError());
         }
-        return cents;
+        return ok(cents);
     }
 
     private formatCents(cents: number): string {
@@ -38,17 +46,18 @@ export class TransferBetweenAccountsUseCase {
         return `${sign}${euros}.${decimals}`;
     }
 
-    private normalizeAmount(amount: string): string {
+    private normalizeAmount(amount: string): Result<string, InvalidTransferAmountError> {
         const trimmed = amount.trim();
         const match = trimmed.match(/^\d+(\.\d{1,2})?$/);
         if (!match) {
-            throw new InvalidTransferAmountError();
+            return err(new InvalidTransferAmountError());
         }
-        const cents = this.toCents(trimmed);
-        if (cents <= 0) {
-            throw new InvalidTransferAmountError();
+        const centsResult = this.toCents(trimmed);
+        if (!centsResult.ok) return centsResult;
+        if (centsResult.value <= 0) {
+            return err(new InvalidTransferAmountError());
         }
-        return this.formatCents(cents);
+        return ok(this.formatCents(centsResult.value));
     }
 
     private ensureAccountsValid(input: {
@@ -56,47 +65,58 @@ export class TransferBetweenAccountsUseCase {
         source: TransferAccount | null;
         destination: TransferAccount | null;
         amountCents: number;
-    }) {
+    }): Result<void, TransferError> {
         const { userId, source, destination, amountCents } = input;
         if (!source || source.userId !== userId) {
-            throw new AccountNotFoundError();
+            return err(new AccountNotFoundError());
         }
         if (!destination) {
-            throw new AccountNotFoundError();
+            return err(new AccountNotFoundError());
         }
         if (source.id === destination.id) {
-            throw new SameAccountTransferError();
+            return err(new SameAccountTransferError());
         }
         if (!source.isActive || !destination.isActive) {
-            throw new AccountInactiveError();
+            return err(new AccountInactiveError());
         }
-        const sourceBalanceCents = this.toCents(source.balance);
-        if (sourceBalanceCents < amountCents) {
-            throw new InsufficientFundsError();
+        const sourceBalanceCentsResult = this.toCents(source.balance);
+        if (!sourceBalanceCentsResult.ok) return sourceBalanceCentsResult;
+        if (sourceBalanceCentsResult.value < amountCents) {
+            return err(new InsufficientFundsError());
         }
+        return ok(undefined);
     }
 
-    async execute(input: Input): Promise<TransferResult> {
-        const normalizedAmount = this.normalizeAmount(input.amount ?? "");
-        const amountCents = this.toCents(normalizedAmount);
+    async execute(input: Input): Promise<Result<TransferResult, TransferError>> {
+        const normalizedAmountResult = this.normalizeAmount(input.amount ?? "");
+        if (!normalizedAmountResult.ok) return err(normalizedAmountResult.error);
+
+        const amountCentsResult = this.toCents(normalizedAmountResult.value);
+        if (!amountCentsResult.ok) return err(amountCentsResult.error);
 
         const [source, destination] = await Promise.all([
             this.repo.findAccountById(input.sourceAccountId),
             this.repo.findAccountByIban(input.destinationIban.trim()),
         ]);
 
-        this.ensureAccountsValid({
+        const validation = this.ensureAccountsValid({
             userId: input.userId,
             source,
             destination,
-            amountCents,
+            amountCents: amountCentsResult.value,
         });
+        if (!validation.ok) return err(validation.error);
 
-        return this.repo.executeTransfer({
-            sourceAccountId: input.sourceAccountId,
-            destinationAccountId: destination!.id,
-            amount: normalizedAmount,
-            note: input.note?.trim(),
-        });
+        try {
+            const transfer = await this.repo.executeTransfer({
+                sourceAccountId: input.sourceAccountId,
+                destinationAccountId: destination!.id,
+                amount: normalizedAmountResult.value,
+                note: input.note?.trim(),
+            });
+            return ok(transfer);
+        } catch (e: any) {
+            return err(e instanceof Error ? e : new Error("TRANSFER_FAILED"));
+        }
     }
 }

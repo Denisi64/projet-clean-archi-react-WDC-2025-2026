@@ -20,17 +20,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
     }
 
-    try {
-        const modeParam = req.nextUrl.searchParams.get("mode");
-        const mode = modeParam === "annual" ? "annual" : "daily";
-        const uc = new ApplyDailySavingsInterestUseCase(
-            new PrismaSavingsInterestRepository(),
-            new PrismaInterestRateProvider(new PrismaSavingsRateRepository()),
-        );
-        const applied = await uc.execute({ mode });
-        return NextResponse.json({ ok: true, applied, mode });
-    } catch (e: any) {
-        if (isDev) console.error("[savings] apply-interest error:", e?.message);
+    const modeParam = req.nextUrl.searchParams.get("mode");
+    const mode = modeParam === "annual" ? "annual" : "daily";
+    const uc = new ApplyDailySavingsInterestUseCase(
+        new PrismaSavingsInterestRepository(),
+        new PrismaInterestRateProvider(new PrismaSavingsRateRepository()),
+    );
+    const result = await uc.execute({ mode });
+    if (!result.ok) {
+        if (isDev) console.error("[savings] apply-interest error:", result.error?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ ok: true, applied: result.value, mode });
 }

@@ -22,8 +22,12 @@ async function handleUseCase(req: NextRequest) {
     }
 
     const uc = new ListCreditsForUserUseCase(new PrismaCreditRepository());
-    const credits = await uc.execute(userId);
-    return NextResponse.json({ ok: true, credits });
+    const result = await uc.execute(userId);
+    if (!result.ok) {
+        if (isDev) console.error("[credits/me] unexpected:", result.error?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, credits: result.value });
 }
 
 async function handleProxy(req: NextRequest) {

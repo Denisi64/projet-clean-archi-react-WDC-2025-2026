@@ -7,6 +7,8 @@ import { RepayCreditUseCase } from "@/server/application/credits/RepayCreditUseC
 import { PrismaCreditRepository } from "@/server/infrastructure/credits/PrismaCreditRepository";
 import { CreditNotFoundError } from "@/server/domain/credits/errors/CreditNotFoundError";
 import { CreditInactiveError } from "@/server/domain/credits/errors/CreditInactiveError";
+import { InvalidCreditAmountError } from "@/server/domain/credits/errors/InvalidCreditAmountError";
+import { InvalidCreditRepaymentError } from "@/server/domain/credits/errors/InvalidCreditRepaymentError";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
@@ -23,9 +25,9 @@ const paramsSchema = z.object({ id: z.string().min(1) });
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["ADVISOR", "DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -48,19 +50,25 @@ async function handleUseCase(id: string) {
     }
 
     const uc = new RepayCreditUseCase(new PrismaCreditRepository());
-    try {
-        const credit = await uc.execute(id);
-        return NextResponse.json({ ok: true, credit });
-    } catch (e: any) {
+    const result = await uc.execute(id);
+    if (!result.ok) {
+        const e = result.error;
         if (e instanceof CreditNotFoundError) {
             return NextResponse.json({ code: "CREDIT_NOT_FOUND" }, { status: 404 });
         }
         if (e instanceof CreditInactiveError) {
             return NextResponse.json({ code: "CREDIT_INACTIVE" }, { status: 409 });
         }
+        if (e instanceof InvalidCreditAmountError) {
+            return NextResponse.json({ code: "INVALID_CREDIT_AMOUNT" }, { status: 400 });
+        }
+        if (e instanceof InvalidCreditRepaymentError) {
+            return NextResponse.json({ code: "INVALID_CREDIT_REPAYMENT" }, { status: 400 });
+        }
         if (isDev) console.error("[advisor repay] unexpected:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return NextResponse.json({ ok: true, credit: result.value });
 }
 
 async function handleProxy(req: NextRequest, id: string) {

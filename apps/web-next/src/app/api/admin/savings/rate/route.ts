@@ -29,9 +29,9 @@ const bodySchema = z.object({
 
 export async function GET(req: NextRequest) {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -44,7 +44,11 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
 
-    const current = await getRateUC.execute();
+    const rateResult = await getRateUC.execute();
+    if (!rateResult.ok) {
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
+    const current = rateResult.value;
     const ratePercent = current !== null ? Math.round(current * 10000) / 100 : null;
 
     return NextResponse.json({ ratePercent });
@@ -52,9 +56,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["DIRECTOR"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -76,8 +80,8 @@ export async function POST(req: NextRequest) {
     const rate = parsed.data.ratePercent / 100;
     const result = await updateRateUC.execute({ actorRole: "DIRECTOR", rate });
     if (!result.ok) {
-        const status = result.code === "FORBIDDEN" ? 403 : 400;
-        return NextResponse.json({ code: result.code }, { status });
+        const status = result.error === "FORBIDDEN" ? 403 : 400;
+        return NextResponse.json({ code: result.error }, { status });
     }
 
     return NextResponse.json({ ok: true, ratePercent: parsed.data.ratePercent });

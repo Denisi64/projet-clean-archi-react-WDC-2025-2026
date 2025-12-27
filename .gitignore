@@ -31,3 +31,5 @@ nest
 
 # docs locaux
 docs/*.md
+docs/clean-archi/*.md
+

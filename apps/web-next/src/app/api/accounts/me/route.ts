@@ -18,10 +18,9 @@ const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
     const session = req.cookies.get("session")?.value ?? null;
-    try {
-        const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
-        return { userId: auth.userId };
-    } catch (e: any) {
+    const auth = await getUserRoleUC.execute({ token: session, requiredRoles: ["CLIENT"] });
+    if (!auth.ok) {
+        const e = auth.error;
         if (e instanceof UnauthorizedAccessError) {
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
@@ -34,6 +33,7 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
         if (isDev) console.error("[accounts] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    return { userId: auth.value.userId };
 }
 
 async function handleUseCase(req: NextRequest) {
@@ -48,10 +48,14 @@ async function handleUseCase(req: NextRequest) {
 
     const repo = new PrismaAccountRepository();
     const uc = new GetUserAccountsUseCase(repo);
-    const accounts = await uc.execute(userId);
+    const result = await uc.execute(userId);
+    if (!result.ok) {
+        if (isDev) console.error("[accounts] list error:", result.error?.message);
+        return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
+    }
 
     return NextResponse.json({
-        accounts: accounts.map((acc) => ({
+        accounts: result.value.map((acc) => ({
             ...acc,
             createdAt: acc.createdAt.toISOString(),
         })),

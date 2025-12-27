@@ -18,13 +18,17 @@ export default function AdminPanelClient() {
     const [createType, setCreateType] = useState<"CURRENT" | "SAVINGS">("CURRENT");
     const [createResult, setCreateResult] = useState<string | null>(null);
 
-    const [renameAccountId, setRenameAccountId] = useState("");
     const [renameUserId, setRenameUserId] = useState("");
+    const [renameAccounts, setRenameAccounts] = useState<{ id: string; label: string }[]>([]);
+    const [renameAccountId, setRenameAccountId] = useState("");
+    const [loadingRenameAccounts, setLoadingRenameAccounts] = useState(false);
     const [renameName, setRenameName] = useState("");
     const [renameResult, setRenameResult] = useState<string | null>(null);
 
-    const [closeAccountId, setCloseAccountId] = useState("");
     const [closeUserId, setCloseUserId] = useState("");
+    const [closeAccounts, setCloseAccounts] = useState<{ id: string; label: string }[]>([]);
+    const [closeAccountId, setCloseAccountId] = useState("");
+    const [loadingCloseAccounts, setLoadingCloseAccounts] = useState(false);
     const [closeResult, setCloseResult] = useState<string | null>(null);
 
     async function loadUsers() {
@@ -41,17 +45,69 @@ export default function AdminPanelClient() {
                 label: `${u.name} <${u.email}>`,
             }));
             setUsers(list);
-            if (!banUserId && list.length > 0) {
-                setBanUserId(list[0].id);
+            if (list.length > 0) {
+                if (!banUserId) setBanUserId(list[0].id);
+                if (!createUserId) setCreateUserId(list[0].id);
+                if (!renameUserId) setRenameUserId(list[0].id);
+                if (!closeUserId) setCloseUserId(list[0].id);
             }
         } finally {
             setLoadingUsers(false);
         }
     }
 
+    async function loadAccounts(userId: string): Promise<{ id: string; label: string }[]> {
+        if (!userId) return [];
+        const res = await fetch(`/api/admin/accounts?userId=${encodeURIComponent(userId)}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.accounts ?? []).map((a: any) => ({
+            id: a.id,
+            label: `${a.name} (${a.iban})`,
+        }));
+    }
+
     useEffect(() => {
         loadUsers();
     }, []);
+
+    useEffect(() => {
+        let active = true;
+        setLoadingRenameAccounts(true);
+        loadAccounts(renameUserId)
+            .then((list) => {
+                if (!active) return;
+                setRenameAccounts(list);
+                if (!renameAccountId && list.length > 0) {
+                    setRenameAccountId(list[0].id);
+                }
+            })
+            .finally(() => {
+                if (active) setLoadingRenameAccounts(false);
+            });
+        return () => {
+            active = false;
+        };
+    }, [renameUserId]);
+
+    useEffect(() => {
+        let active = true;
+        setLoadingCloseAccounts(true);
+        loadAccounts(closeUserId)
+            .then((list) => {
+                if (!active) return;
+                setCloseAccounts(list);
+                if (!closeAccountId && list.length > 0) {
+                    setCloseAccountId(list[0].id);
+                }
+            })
+            .finally(() => {
+                if (active) setLoadingCloseAccounts(false);
+            });
+        return () => {
+            active = false;
+        };
+    }, [closeUserId]);
 
     async function handleBanUser() {
         setBanResult(null);
@@ -196,11 +252,19 @@ export default function AdminPanelClient() {
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
                         <Label htmlFor="createUserId">ID utilisateur</Label>
-                        <Input
+                        <Select
                             id="createUserId"
                             value={createUserId}
                             onChange={(e) => setCreateUserId(e.target.value)}
-                        />
+                            disabled={loadingUsers || users.length === 0}
+                        >
+                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.label}
+                                </option>
+                            ))}
+                        </Select>
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="createName">Nom du compte</Label>
@@ -235,20 +299,39 @@ export default function AdminPanelClient() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="renameAccountId">ID compte</Label>
-                        <Input
+                        <Label htmlFor="renameUserId">Utilisateur</Label>
+                        <Select
+                            id="renameUserId"
+                            value={renameUserId}
+                            onChange={(e) => {
+                                setRenameUserId(e.target.value);
+                                setRenameAccountId("");
+                            }}
+                            disabled={loadingUsers || users.length === 0}
+                        >
+                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="renameAccountId">Compte</Label>
+                        <Select
                             id="renameAccountId"
                             value={renameAccountId}
                             onChange={(e) => setRenameAccountId(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="renameUserId">ID utilisateur</Label>
-                        <Input
-                            id="renameUserId"
-                            value={renameUserId}
-                            onChange={(e) => setRenameUserId(e.target.value)}
-                        />
+                            disabled={loadingRenameAccounts || renameAccounts.length === 0}
+                        >
+                            {renameAccounts.length === 0 && <option value="">Aucun compte</option>}
+                            {renameAccounts.map((a) => (
+                                <option key={a.id} value={a.id}>
+                                    {a.label}
+                                </option>
+                            ))}
+                        </Select>
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="renameName">Nouveau nom</Label>
@@ -272,20 +355,39 @@ export default function AdminPanelClient() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="closeAccountId">ID compte</Label>
-                        <Input
+                        <Label htmlFor="closeUserId">Utilisateur</Label>
+                        <Select
+                            id="closeUserId"
+                            value={closeUserId}
+                            onChange={(e) => {
+                                setCloseUserId(e.target.value);
+                                setCloseAccountId("");
+                            }}
+                            disabled={loadingUsers || users.length === 0}
+                        >
+                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="closeAccountId">Compte</Label>
+                        <Select
                             id="closeAccountId"
                             value={closeAccountId}
                             onChange={(e) => setCloseAccountId(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <Label htmlFor="closeUserId">ID utilisateur</Label>
-                        <Input
-                            id="closeUserId"
-                            value={closeUserId}
-                            onChange={(e) => setCloseUserId(e.target.value)}
-                        />
+                            disabled={loadingCloseAccounts || closeAccounts.length === 0}
+                        >
+                            {closeAccounts.length === 0 && <option value="">Aucun compte</option>}
+                            {closeAccounts.map((a) => (
+                                <option key={a.id} value={a.id}>
+                                    {a.label}
+                                </option>
+                            ))}
+                        </Select>
                     </div>
                     {closeResult && <p className="text-sm text-muted-foreground">{closeResult}</p>}
                     <Button onClick={handleCloseAccount} className="w-full" variant="outline">
