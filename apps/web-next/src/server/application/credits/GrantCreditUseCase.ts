@@ -1,4 +1,6 @@
 import { CreditRepository, CreditDetail } from "../../domain/credits/ports/CreditRepository";
+import { InvalidCreditInputError } from "../../domain/credits/errors/InvalidCreditInputError";
+import { InvalidCreditTermError } from "../../domain/credits/errors/InvalidCreditTermError";
 
 type Input = {
     userId: string;
@@ -14,14 +16,14 @@ export class GrantCreditUseCase {
     private computeMonthlyDue(input: Input): { monthlyDue: string; monthlyInsurance: string } {
         const { principal, annualRate, insuranceRate, termMonths } = input;
         if (principal <= 0 || annualRate <= 0 || termMonths <= 0 || insuranceRate < 0) {
-            throw new Error("INVALID_INPUT");
+            throw new InvalidCreditInputError();
         }
         const monthlyRate = annualRate / 12;
         const monthlyInsurance = (principal * insuranceRate) / termMonths;
 
         const numerator = principal * monthlyRate;
         const denominator = 1 - Math.pow(1 + monthlyRate, -termMonths);
-        if (denominator <= 0) throw new Error("INVALID_TERM");
+        if (denominator <= 0) throw new InvalidCreditTermError();
         const monthlyBase = numerator / denominator;
 
         const monthlyDue = (monthlyBase + monthlyInsurance).toFixed(2);

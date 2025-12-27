@@ -11,6 +11,8 @@ import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRo
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { InvalidCreditInputError } from "@/server/domain/credits/errors/InvalidCreditInputError";
+import { InvalidCreditTermError } from "@/server/domain/credits/errors/InvalidCreditTermError";
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
@@ -65,6 +67,12 @@ export async function POST(req: NextRequest) {
         const credit = await uc.execute(parsed.data);
         return NextResponse.json({ ok: true, credit }, { status: 201 });
     } catch (e: any) {
+        if (e instanceof InvalidCreditInputError) {
+            return NextResponse.json({ code: "INVALID_CREDIT_INPUT" }, { status: 400 });
+        }
+        if (e instanceof InvalidCreditTermError) {
+            return NextResponse.json({ code: "INVALID_CREDIT_TERM" }, { status: 400 });
+        }
         if (isDev) console.error("[advisor credits] unexpected:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }

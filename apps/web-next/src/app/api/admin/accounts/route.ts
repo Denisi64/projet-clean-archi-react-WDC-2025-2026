@@ -5,6 +5,7 @@ import { z } from "zod";
 import { PrismaClient, AccountType } from "@prisma/client";
 import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
 import { CreateAccountForUserUseCase } from "@/server/application/accounts/CreateAccountForUserUseCase";
+import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
@@ -56,6 +57,19 @@ async function handleUseCase(req: NextRequest) {
     const authError = await requireDirector(req);
     if (authError) return authError;
 
+    if (req.method === "GET") {
+        const userId = req.nextUrl.searchParams.get("userId") ?? "";
+        if (!userId) return NextResponse.json({ accounts: [] });
+        const listUC = new GetUserAccountsUseCase(accountRepo);
+        const accounts = await listUC.execute(userId);
+        return NextResponse.json({
+            accounts: accounts.map((acc) => ({
+                ...acc,
+                createdAt: acc.createdAt.toISOString(),
+            })),
+        });
+    }
+
     const body = await req.json().catch(() => ({}));
     const parsed = createSchema.safeParse(body);
     if (!parsed.success) {
@@ -100,4 +114,29 @@ async function handleProxy(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     return target === "next" ? handleUseCase(req) : handleProxy(req);
+}
+
+export async function GET(req: NextRequest) {
+    if (target === "next") return handleUseCase(req);
+    const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
+    const url = new URL(`${base}/admin/accounts`);
+    const userId = req.nextUrl.searchParams.get("userId");
+    if (userId) url.searchParams.set("userId", userId);
+
+    try {
+        const resp = await fetch(url, {
+            method: "GET",
+            headers: {
+                cookie: req.headers.get("cookie") ?? "",
+            },
+        });
+
+        const data = await resp.text();
+        const out = new NextResponse(data || null, { status: resp.status });
+        out.headers.set("content-type", resp.headers.get("content-type") ?? "application/json");
+        return out;
+    } catch (e: any) {
+        if (isDev) console.error("[admin accounts GET] upstream error:", e?.message);
+        return NextResponse.json({ code: "UPSTREAM_UNREACHABLE" }, { status: 502 });
+    }
 }

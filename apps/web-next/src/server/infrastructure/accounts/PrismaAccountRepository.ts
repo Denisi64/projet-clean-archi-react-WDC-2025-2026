@@ -1,6 +1,7 @@
 import { Account, AccountType as PrismaAccountType, PrismaClient } from "@prisma/client";
 import { AccountRepository, AccountSummary, AccountType } from "../../domain/accounts/ports/AccountRepository";
 import { AccountNotFoundError } from "../../domain/accounts/errors/AccountNotFoundError";
+import { AccountIbanAllocationError } from "../../domain/accounts/errors/AccountIbanAllocationError";
 
 export class PrismaAccountRepository implements AccountRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
@@ -42,7 +43,7 @@ export class PrismaAccountRepository implements AccountRepository {
             const exists = await client.account.findUnique({ where: { iban: candidate } });
             if (!exists) return candidate;
         }
-        throw new Error("ACCOUNT_IBAN_ALLOCATION_FAILED");
+        throw new AccountIbanAllocationError();
     }
 
     private toSummary(acc: Account): AccountSummary {

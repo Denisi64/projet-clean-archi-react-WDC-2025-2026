@@ -1,13 +1,15 @@
 import { CreditRepository, CreditDetail } from "../../domain/credits/ports/CreditRepository";
 import { CreditNotFoundError } from "../../domain/credits/errors/CreditNotFoundError";
 import { CreditInactiveError } from "../../domain/credits/errors/CreditInactiveError";
+import { InvalidCreditAmountError } from "../../domain/credits/errors/InvalidCreditAmountError";
+import { InvalidCreditRepaymentError } from "../../domain/credits/errors/InvalidCreditRepaymentError";
 
 export class RepayCreditUseCase {
     constructor(private readonly repo: CreditRepository) {}
 
     private toNumber(value: string): number {
         const n = Number(value);
-        if (!Number.isFinite(n)) throw new Error("INVALID_AMOUNT");
+        if (!Number.isFinite(n)) throw new InvalidCreditAmountError();
         return n;
     }
 
@@ -23,7 +25,7 @@ export class RepayCreditUseCase {
 
         const interest = remainingPrincipal * monthlyRate;
         const principalPart = monthlyDue - interest - monthlyInsurance;
-        if (principalPart <= 0) throw new Error("INVALID_REPAYMENT");
+        if (principalPart <= 0) throw new InvalidCreditRepaymentError();
 
         const newRemainingPrincipal = Math.max(0, remainingPrincipal - principalPart);
         const newRemainingTerm = Math.max(0, credit.remainingTermMonths - 1);

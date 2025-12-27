@@ -6,6 +6,7 @@ import {
     AuthUser,
     CreateUserInput,
 } from "../../domain/auth/ports/AuthRepository";
+import { AccountIbanAllocationError } from "../../domain/accounts/errors/AccountIbanAllocationError";
 
 const prisma = new PrismaClient();
 
@@ -63,7 +64,7 @@ export class PrismaAuthRepository implements AuthRepository {
             const exists = await client.account.findUnique({ where: { iban: candidate } });
             if (!exists) return candidate;
         }
-        throw new Error("ACCOUNT_IBAN_ALLOCATION_FAILED");
+        throw new AccountIbanAllocationError();
     }
 
     async createUser(data: CreateUserInput): Promise<AuthUser> {
