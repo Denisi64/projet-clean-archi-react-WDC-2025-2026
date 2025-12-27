@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient, AccountType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
 import { CreateAccountForUserUseCase } from "@/server/application/accounts/CreateAccountForUserUseCase";
 import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
@@ -12,6 +12,7 @@ import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRo
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { AccountType } from "@/server/domain/accounts/ports/AccountRepository";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

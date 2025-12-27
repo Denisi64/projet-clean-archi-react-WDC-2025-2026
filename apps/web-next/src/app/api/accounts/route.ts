@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, AccountType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
 import { CreateAccountForUserUseCase } from "@/server/application/accounts/CreateAccountForUserUseCase";
@@ -11,6 +11,7 @@ import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRo
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { AccountType } from "@/server/domain/accounts/ports/AccountRepository";
 
 const prisma = new PrismaClient();
 const accountRepo = new PrismaAccountRepository(prisma);
