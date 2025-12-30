@@ -1,9 +1,9 @@
 // apps/api-nest/src/application/auth/LoginUserUseCase.ts
-import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
-import { PasswordHasher } from "../../domain/auth/ports/PasswordHasher";
-import { TokenManager } from "../../domain/auth/ports/TokenManager";
-import { InvalidCredentialsError } from "../../domain/auth/errors/InvalidCredentialsError";
-import { InactiveAccountError } from "../../domain/auth/errors/InactiveAccountError";
+import { AuthRepository } from '../ports/AuthRepository';
+import { PasswordHasher } from '../ports/PasswordHasher';
+import { TokenManager } from '../ports/TokenManager';
+import { InvalidCredentialsError } from '../../../domain/auth/errors/InvalidCredentialsError';
+import { InactiveAccountError } from '../../../domain/auth/errors/InactiveAccountError';
 
 type Input = { email: string; password: string; remember?: boolean };
 type Output = { token: string; userId: string; ttl: number };
@@ -30,7 +30,7 @@ export class LoginUserUseCase {
             throw new InactiveAccountError();
         }
 
-        const expiresIn = remember ? "30d" : "1d";
+        const expiresIn = remember ? '30d' : '1d';
         const token = await this.tokens.issue({ sub: user.id }, { expiresIn });
 
         const ttl = remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // secondes

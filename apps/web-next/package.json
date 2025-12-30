@@ -12,13 +12,14 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.66.0",
     "zod": "^4.1.12",
-    "nodemailer": "^6.9.15"
+    "nodemailer": "^6.9.15",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@prisma/client": "6.18.0",
     "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/react": "19.2.2",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",

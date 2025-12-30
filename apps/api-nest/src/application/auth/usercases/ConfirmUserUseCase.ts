@@ -1,6 +1,6 @@
-import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
-import { InvalidConfirmationTokenError } from "../../domain/auth/errors/InvalidConfirmationTokenError";
-import { ExpiredConfirmationTokenError } from "../../domain/auth/errors/ExpiredConfirmationTokenError";
+import { AuthRepository } from '../ports/AuthRepository';
+import { InvalidConfirmationTokenError } from '../../../domain/auth/errors/InvalidConfirmationTokenError';
+import { ExpiredConfirmationTokenError } from '../../../domain/auth/errors/ExpiredConfirmationTokenError';
 
 type Output = { userId: string };
 

@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
 import { InvalidConfirmationTokenError } from "../../domain/auth/errors/InvalidConfirmationTokenError";
 import { ExpiredConfirmationTokenError } from "../../domain/auth/errors/ExpiredConfirmationTokenError";
@@ -5,7 +6,10 @@ import { ExpiredConfirmationTokenError } from "../../domain/auth/errors/ExpiredC
 type Output = { userId: string };
 
 export class ConfirmUserUseCase {
-    constructor(private readonly repo: AuthRepository) {}
+    constructor(
+        @Inject('AuthRepository')
+        private readonly repo: AuthRepository
+    ) {}
 
     async execute(token: string): Promise<Output> {
         const user = await this.repo.findByConfirmationToken(token);

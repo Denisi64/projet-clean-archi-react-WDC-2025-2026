@@ -3,8 +3,8 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { ConfirmUserUseCase } from "@/server/application/auth/ConfirmUserUseCase";
 import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
-import { InvalidConfirmationTokenError } from "@/server/domain/auth/errors/InvalidConfirmationTokenError";
-import { ExpiredConfirmationTokenError } from "@/server/domain/auth/errors/ExpiredConfirmationTokenError";
+// import { InvalidConfirmationTokenError } from "@/server/domain/auth/errors/InvalidConfirmationTokenError";
+// import { ExpiredConfirmationTokenError } from "@/server/domain/auth/errors/ExpiredConfirmationTokenError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -25,15 +25,18 @@ async function handleUseCase(req: NextRequest) {
         await uc.execute(token);
         return NextResponse.json({ success: true });
     } catch (err: any) {
-        if (err instanceof InvalidConfirmationTokenError) {
-            return NextResponse.json({ code: "CONFIRMATION_TOKEN_INVALID" }, { status: 400 });
+        const code = err?.code;
+    
+        if (code === "CONFIRMATION_TOKEN_INVALID") {
+            return NextResponse.json({ code }, { status: 400 });
         }
-        if (err instanceof ExpiredConfirmationTokenError) {
-            return NextResponse.json({ code: "CONFIRMATION_TOKEN_EXPIRED" }, { status: 410 });
+        if (code === "CONFIRMATION_TOKEN_EXPIRED") {
+            return NextResponse.json({ code }, { status: 410 });
         }
-        if (isDev) console.error("Error in /api/auth/confirm:", err);
+        
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
+    
 }
 
 async function handleProxy(req: NextRequest) {

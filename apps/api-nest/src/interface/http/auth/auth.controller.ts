@@ -6,17 +6,17 @@ import {
     UseFilters,
     UsePipes,
     ValidationPipe,
-} from "@nestjs/common";
-import { Response } from "express";
-import { LoginDto } from "./dto/login.dto";
-import { LoginUserUseCase } from "../../../application/auth/LoginUserUseCase";
-import { DomainExceptionFilter } from "../common/domain-exception.filter";
-import { RegisterUserUseCase } from "../../../application/auth/RegisterUserUseCase";
-import { RegisterDto } from "./dto/register.dto";
-import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase";
-import { ConfirmDto } from "./dto/confirm.dto";
+} from '@nestjs/common';
+import { Response } from 'express';
+import { LoginDto } from './dto/login.dto';
+import { LoginUserUseCase } from '../../../application/auth/usercases/LoginUserUseCase';
+import { DomainExceptionFilter } from '../common/domain-exception.filter';
+import { RegisterUserUseCase } from '../../../application/auth/usercases/RegisterUserUseCase';
+import { RegisterDto } from './dto/register.dto';
+import { ConfirmUserUseCase } from '../../../application/auth/usercases/ConfirmUserUseCase';
+import { ConfirmDto } from './dto/confirm.dto';
 
-@Controller("auth")
+@Controller('auth')
 @UseFilters(DomainExceptionFilter)
 export class AuthController {
     constructor(
@@ -25,26 +25,31 @@ export class AuthController {
         private readonly confirmUC: ConfirmUserUseCase,
     ) {}
 
-    @Post("login")
+    @Post('login')
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-    async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    async login(
+        @Body() dto: LoginDto,
+        @Res({ passthrough: true }) res: Response,
+    ) {
         const { token, ttl } = await this.loginUC.execute(dto);
 
-        res.cookie("session", token, {
+        res.cookie('session', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== "development",
-            sameSite: "lax",
-            path: "/",
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'lax',
+            path: '/',
             maxAge: ttl * 1000,
         });
 
         return { ok: true, token, ttl };
     }
 
-    @Post("register")
+    @Post('register')
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     async register(@Body() dto: RegisterDto) {
-        const name = [dto.firstName, dto.lastName].filter(Boolean).join(" ").trim() || undefined;
+        const name =
+            [dto.firstName, dto.lastName].filter(Boolean).join(' ').trim() ||
+            undefined;
         const { expiresAt } = await this.registerUC.execute({
             email: dto.email,
             password: dto.password,
@@ -53,7 +58,7 @@ export class AuthController {
         return { ok: true, confirmationExpiresAt: expiresAt.toISOString() };
     }
 
-    @Post("confirm")
+    @Post('confirm')
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     async confirm(@Body() dto: ConfirmDto) {
         await this.confirmUC.execute(dto.token);

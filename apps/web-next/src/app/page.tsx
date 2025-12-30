@@ -21,7 +21,8 @@ function formatCurrency(amount: string) {
 }
 
 async function loadAccounts(): Promise<{ authenticated: boolean; accounts: Account[] }> {
-    const cookieHeader = cookies()
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
         .getAll()
         .map((c) => `${c.name}=${c.value}`)
         .join("; ");

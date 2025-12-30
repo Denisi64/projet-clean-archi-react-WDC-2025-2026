@@ -1,7 +1,7 @@
 export class InactiveAccountError extends Error {
-    readonly name = "InactiveAccountError";
+    readonly name = 'InactiveAccountError';
 
     constructor() {
-        super("ACCOUNT_INACTIVE");
+        super('ACCOUNT_INACTIVE');
     }
 }

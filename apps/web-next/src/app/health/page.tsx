@@ -1,37 +1,53 @@
-// apps/web-next/app/health/page.tsx
-import { headers } from 'next/headers';
+// // apps/web-next/app/health/page.tsx
+// import { headers } from 'next/headers';
 
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 
-function getBaseUrl() {
-    const h = headers();
-    const proto = h.get('x-forwarded-proto');
-    const host  = h.get('x-forwarded-host') || h.get('host');
-    if (proto && host) return `${proto}://${host}`;
-    if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-    return 'http://localhost:3000';
+// function getBaseUrl() {
+//     const h = headers();
+//     const proto = h.get('x-forwarded-proto');
+//     const host  = h.get('x-forwarded-host') || h.get('host');
+//     if (proto && host) return `${proto}://${host}`;
+//     if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+//     return 'http://localhost:3000';
+// }
+
+// export default async function HealthPage() {
+//     const base = getBaseUrl();
+//     const res = await fetch(`${base}/api/health`, { cache: 'no-store' });
+
+//     if (!res.ok) {
+//         const txt = await res.text().catch(() => '');
+//         return (
+//             <main style={{ padding: 24 }}>
+//                 <h1>DB Health</h1>
+//                 <p style={{ color: 'red' }}>Erreur: {res.status} {res.statusText}</p>
+//                 <pre>{txt}</pre>
+//             </main>
+//         );
+//     }
+
+//     const data = await res.json();
+//     return (
+//         <main style={{ padding: 24 }}>
+//             <h1>DB Health</h1>
+//             <pre>{JSON.stringify(data, null, 2)}</pre>
+//         </main>
+//     );
+// }
+
+'use client';
+
+import { useEffect } from 'react';
+import { apiGet } from '@/lib/api';
+
+export default function HealthPage() {
+  useEffect(() => {
+    apiGet('/health')
+      .then(console.log)
+      .catch(console.error);
+  }, []);
+
+  return <div>Health</div>;
 }
 
-export default async function HealthPage() {
-    const base = getBaseUrl();
-    const res = await fetch(`${base}/api/health`, { cache: 'no-store' });
-
-    if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        return (
-            <main style={{ padding: 24 }}>
-                <h1>DB Health</h1>
-                <p style={{ color: 'red' }}>Erreur: {res.status} {res.statusText}</p>
-                <pre>{txt}</pre>
-            </main>
-        );
-    }
-
-    const data = await res.json();
-    return (
-        <main style={{ padding: 24 }}>
-            <h1>DB Health</h1>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
-        </main>
-    );
-}

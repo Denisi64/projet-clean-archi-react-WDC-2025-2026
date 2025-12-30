@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { EmailService } from "../../domain/auth/ports/EmailService";
+import { EmailService } from "../../application/auth/ports/EmailService";
 import { EmailDeliveryError } from "../../domain/auth/errors/EmailDeliveryError";
 
 export class NodemailerEmailService implements EmailService {

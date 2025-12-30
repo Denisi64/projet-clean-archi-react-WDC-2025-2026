@@ -10,5 +10,11 @@
     "experimentalDecorators": true,
     "strict": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": [
+    "../web-next",
+    "../../apps/web-next",
+    "../../packages",
+    "**/*.spec.ts"
+  ]
 }

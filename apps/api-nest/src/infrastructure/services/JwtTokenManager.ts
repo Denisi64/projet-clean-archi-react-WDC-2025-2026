@@ -1,6 +1,6 @@
 // apps/api-nest/src/infrastructure/services/JwtTokenManager.ts
 import * as jwt from "jsonwebtoken";
-import { TokenManager } from "../../domain/auth/ports/TokenManager";
+import { TokenManager } from "../../application/auth/ports/TokenManager";
 
 export class JwtTokenManager implements TokenManager {
     constructor(private readonly secret: string) {}
