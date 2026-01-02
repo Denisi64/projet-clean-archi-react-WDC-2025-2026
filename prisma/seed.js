@@ -93,13 +93,25 @@ async function main() {
     const [ava, neo] = await Promise.all([
         prisma.action.upsert({
             where: { symbol: "AVA" },
-            update: {},
-            create: { symbol: "AVA", name: "Avenir Bank SA" },
+            update: { name: "Avenir Bank SA", price: "100.00", availableStock: "1000.00", isAvailable: true },
+            create: {
+                symbol: "AVA",
+                name: "Avenir Bank SA",
+                price: "100.00",
+                availableStock: "1000.00",
+                isAvailable: true,
+            },
         }),
         prisma.action.upsert({
             where: { symbol: "NEO" },
-            update: {},
-            create: { symbol: "NEO", name: "NEOWare" },
+            update: { name: "NEOWare", price: "50.00", availableStock: "500.00", isAvailable: true },
+            create: {
+                symbol: "NEO",
+                name: "NEOWare",
+                price: "50.00",
+                availableStock: "500.00",
+                isAvailable: true,
+            },
         }),
     ]);
 

@@ -189,6 +189,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 )}
                                 {currentUser?.role === "DIRECTOR" && (
                                     <Link
+                                        href="/director/actions"
+                                        className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
+                                    >
+                                        Actions
+                                    </Link>
+                                )}
+                                {currentUser?.role === "DIRECTOR" && (
+                                    <Link
                                         href="/director/savings-rate"
                                         className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                                     >
@@ -298,6 +306,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                         )}
                         {currentUser?.role === "DIRECTOR" && (
                             <Link
+                                href="/director/actions"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                Actions
+                            </Link>
+                        )}
+                        {currentUser?.role === "DIRECTOR" && (
+                            <Link
                                 href="/director/savings-rate"
                                 className={cn(buttonVariants({ variant: "outline" }))}
                             >
@@ -389,6 +405,13 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                         {accounts.length > 0 && <TransferCard accounts={accounts} />}
 
                         <CreditList />
+
+                        <Link
+                            href="/actions"
+                            className={cn(buttonVariants({ variant: "outline" }), "w-full justify-between")}
+                        >
+                            Actions Avenir Bank <ArrowRight className="h-4 w-4" />
+                        </Link>
 
                         <Link
                             href="/transfers"

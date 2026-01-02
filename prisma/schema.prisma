@@ -172,6 +172,8 @@ model Action {
   id          String   @id @default(cuid())
   symbol      String   @unique
   name        String
+  price       Decimal  @default(0) @db.Decimal(19, 4)
+  availableStock Decimal @default(0) @db.Decimal(19, 4)
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

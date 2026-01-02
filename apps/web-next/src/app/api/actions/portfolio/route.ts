@@ -2,30 +2,23 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { z } from "zod";
-import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
-import { CreateAccountForUserUseCase } from "@/server/application/accounts/CreateAccountForUserUseCase";
+import { PrismaPortfolioRepository } from "@/server/infrastructure/actions/PrismaPortfolioRepository";
+import { GetPortfolioUseCase } from "@/server/application/actions/GetPortfolioUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
-import { AccountType } from "@/server/domain/accounts/ports/AccountRepository";
 
 const prisma = new PrismaClient();
-const accountRepo = new PrismaAccountRepository(prisma);
-const createAccountUC = new CreateAccountForUserUseCase(accountRepo);
+const portfolioRepo = new PrismaPortfolioRepository(prisma);
+const getPortfolioUC = new GetPortfolioUseCase(portfolioRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const userRepo = new PrismaUserQueryRepository(prisma);
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
-
-const createSchema = z.object({
-    name: z.string().trim().min(2).max(80).optional(),
-    type: z.enum(["CURRENT", "SAVINGS"]).optional(),
-});
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
     const session = req.cookies.get("session")?.value ?? null;
@@ -41,7 +34,7 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
         if (e instanceof BannedAccountError) {
             return NextResponse.json({ code: "ACCOUNT_BANNED" }, { status: 403 });
         }
-        if (isDev) console.error("[accounts] auth error:", e?.message);
+        if (isDev) console.error("[actions portfolio] auth error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
     return { userId: auth.value.userId };
@@ -50,50 +43,25 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
 async function handleUseCase(req: NextRequest) {
     const auth = await requireClient(req);
     if (auth instanceof NextResponse) return auth;
-    const { userId } = auth;
 
-    const body = await req.json().catch(() => ({}));
-    const parsed = createSchema.safeParse(body);
-    if (!parsed.success) {
-        return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
-    }
-
-    const rawName = parsed.data.name;
-    const type = parsed.data.type ?? "CURRENT";
-
-    const result = await createAccountUC.execute({
-        userId,
-        name: rawName,
-        type: type as AccountType,
-    });
+    const result = await getPortfolioUC.execute({ userId: auth.userId });
     if (!result.ok) {
-        if (isDev) console.error("[accounts] create error:", result.error?.message);
+        if (isDev) console.error("[actions portfolio] list error:", result.error?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
-
-    return NextResponse.json(
-        {
-            account: {
-                ...result.value,
-                createdAt: result.value.createdAt.toISOString(),
-            },
-        },
-        { status: 201 },
-    );
+    return NextResponse.json({ positions: result.value });
 }
 
 async function handleProxy(req: NextRequest) {
     const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
-    const url = `${base}/accounts`;
+    const url = `${base}/actions/portfolio`;
 
     try {
         const resp = await fetch(url, {
-            method: "POST",
+            method: "GET",
             headers: {
-                "content-type": "application/json",
                 cookie: req.headers.get("cookie") ?? "",
             },
-            body: await req.text(),
         });
 
         const data = await resp.text();
@@ -101,11 +69,11 @@ async function handleProxy(req: NextRequest) {
         out.headers.set("content-type", resp.headers.get("content-type") ?? "application/json");
         return out;
     } catch (e: any) {
-        if (isDev) console.error("[accounts-proxy POST] upstream error:", e?.message);
+        if (isDev) console.error("[actions portfolio GET] upstream error:", e?.message);
         return NextResponse.json({ code: "UPSTREAM_UNREACHABLE" }, { status: 502 });
     }
 }
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
     return target === "next" ? handleUseCase(req) : handleProxy(req);
 }

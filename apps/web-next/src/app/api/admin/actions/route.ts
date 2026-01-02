@@ -3,31 +3,35 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
-import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
-import { CreateAccountForUserUseCase } from "@/server/application/accounts/CreateAccountForUserUseCase";
-import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
+import { PrismaActionRepository } from "@/server/infrastructure/actions/PrismaActionRepository";
+import { CreateActionUseCase } from "@/server/application/actions/CreateActionUseCase";
+import { ListActionsUseCase } from "@/server/application/actions/ListActionsUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
-import { AccountType } from "@/server/domain/accounts/ports/AccountRepository";
+import { ActionSymbolAlreadyExistsError } from "@/server/domain/actions/errors/ActionSymbolAlreadyExistsError";
+import { InvalidActionInputError } from "@/server/domain/actions/errors/InvalidActionInputError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
 const prisma = new PrismaClient();
-const accountRepo = new PrismaAccountRepository(prisma);
-const createAccountUC = new CreateAccountForUserUseCase(accountRepo);
+const actionRepo = new PrismaActionRepository(prisma);
+const createActionUC = new CreateActionUseCase(actionRepo);
+const listActionsUC = new ListActionsUseCase(actionRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const userRepo = new PrismaUserQueryRepository(prisma);
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 const createSchema = z.object({
-    userId: z.string().min(1),
-    name: z.string().trim().min(2).max(80).optional(),
-    type: z.enum(["CURRENT", "SAVINGS"]).optional(),
+    symbol: z.string().trim().min(2).max(10),
+    name: z.string().trim().min(2).max(120),
+    price: z.string().regex(/^\d+(\.\d{1,4})?$/),
+    availableStock: z.string().regex(/^\d+(\.\d{1,4})?$/),
+    isAvailable: z.boolean().optional(),
 });
 
 async function requireDirector(req: NextRequest): Promise<NextResponse | null> {
@@ -50,27 +54,20 @@ async function requireDirector(req: NextRequest): Promise<NextResponse | null> {
 }
 
 async function handleUseCase(req: NextRequest) {
-    if (!process.env.DATABASE_URL) {
-        if (isDev) console.error("[admin accounts] DATABASE_URL missing");
-        return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
-    }
-
     const authError = await requireDirector(req);
     if (authError) return authError;
 
     if (req.method === "GET") {
-        const userId = req.nextUrl.searchParams.get("userId") ?? "";
-        if (!userId) return NextResponse.json({ accounts: [] });
-        const listUC = new GetUserAccountsUseCase(accountRepo);
-        const result = await listUC.execute(userId);
+        const result = await listActionsUC.execute({ includeUnavailable: true });
         if (!result.ok) {
-            if (isDev) console.error("[admin accounts] list error:", result.error?.message);
+            if (isDev) console.error("[admin actions] list error:", result.error?.message);
             return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
         }
         return NextResponse.json({
-            accounts: result.value.map((acc) => ({
-                ...acc,
-                createdAt: acc.createdAt.toISOString(),
+            actions: result.value.map((action) => ({
+                ...action,
+                createdAt: action.createdAt.toISOString(),
+                updatedAt: action.updatedAt.toISOString(),
             })),
         });
     }
@@ -81,34 +78,49 @@ async function handleUseCase(req: NextRequest) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const result = await createAccountUC.execute({
-        userId: parsed.data.userId,
+    const result = await createActionUC.execute({
+        symbol: parsed.data.symbol,
         name: parsed.data.name,
-        type: (parsed.data.type ?? "CURRENT") as AccountType,
+        price: parsed.data.price,
+        availableStock: parsed.data.availableStock,
+        isAvailable: parsed.data.isAvailable ?? true,
     });
     if (!result.ok) {
-        if (isDev) console.error("[admin accounts] create error:", result.error?.message);
+        const e = result.error;
+        if (e instanceof ActionSymbolAlreadyExistsError) {
+            return NextResponse.json({ code: "ACTION_SYMBOL_ALREADY_EXISTS" }, { status: 409 });
+        }
+        if (e instanceof InvalidActionInputError) {
+            return NextResponse.json({ code: "INVALID_ACTION_INPUT" }, { status: 400 });
+        }
+        if (isDev) console.error("[admin actions] create error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }
 
     return NextResponse.json(
-        { account: { ...result.value, createdAt: result.value.createdAt.toISOString() } },
+        {
+            action: {
+                ...result.value,
+                createdAt: result.value.createdAt.toISOString(),
+                updatedAt: result.value.updatedAt.toISOString(),
+            },
+        },
         { status: 201 },
     );
 }
 
 async function handleProxy(req: NextRequest) {
     const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
-    const url = `${base}/admin/accounts`;
+    const url = `${base}/admin/actions`;
 
     try {
         const resp = await fetch(url, {
-            method: "POST",
+            method: req.method,
             headers: {
                 "content-type": "application/json",
                 cookie: req.headers.get("cookie") ?? "",
             },
-            body: await req.text(),
+            body: req.method === "GET" ? undefined : await req.text(),
         });
 
         const data = await resp.text();
@@ -116,7 +128,7 @@ async function handleProxy(req: NextRequest) {
         out.headers.set("content-type", resp.headers.get("content-type") ?? "application/json");
         return out;
     } catch (e: any) {
-        if (isDev) console.error("[admin accounts POST] upstream error:", e?.message);
+        if (isDev) console.error("[admin actions] upstream error:", e?.message);
         return NextResponse.json({ code: "UPSTREAM_UNREACHABLE" }, { status: 502 });
     }
 }
@@ -126,26 +138,5 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-    if (target === "next") return handleUseCase(req);
-    const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
-    const url = new URL(`${base}/admin/accounts`);
-    const userId = req.nextUrl.searchParams.get("userId");
-    if (userId) url.searchParams.set("userId", userId);
-
-    try {
-        const resp = await fetch(url, {
-            method: "GET",
-            headers: {
-                cookie: req.headers.get("cookie") ?? "",
-            },
-        });
-
-        const data = await resp.text();
-        const out = new NextResponse(data || null, { status: resp.status });
-        out.headers.set("content-type", resp.headers.get("content-type") ?? "application/json");
-        return out;
-    } catch (e: any) {
-        if (isDev) console.error("[admin accounts GET] upstream error:", e?.message);
-        return NextResponse.json({ code: "UPSTREAM_UNREACHABLE" }, { status: 502 });
-    }
+    return target === "next" ? handleUseCase(req) : handleProxy(req);
 }
