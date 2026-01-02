@@ -1,0 +1,421 @@
+{
+  "home": {
+    "landingTitle": "The bank that powers your projects",
+    "landingSubtitle": "Avenir Bank reinvents wealth management with a smooth, secure, and modern experience.",
+    "registerNow": "Create your account",
+    "clientSpace": "Client space",
+    "advisorCredits": "Advisor credits",
+    "adminPanel": "Admin panel",
+    "actions": "Stocks",
+    "savingsRate": "Set savings rate",
+    "about": "About",
+    "featureSecurityTitle": "Maximum Security",
+    "featureSecurityDesc": "Top banking standards.",
+    "featureTransfersTitle": "Instant Transfers",
+    "featureTransfersDesc": "Money sent in a blink.",
+    "featureTransparencyTitle": "Transparent Management",
+    "featureTransparencyDesc": "Real-time tracking.",
+    "welcome": "Welcome to Avenir Bank - backend: {backend} | database: {db}",
+    "helloUser": "Hello {name} ({role})",
+    "title": "My bank accounts",
+    "subtitle": "Each user gets a current account at signup. This section shows IBAN, balance and status.",
+    "logout": "Sign out",
+    "totalBalance": "Total balance",
+    "accountCount": "{count} account(s)",
+    "activeAccounts": "Active accounts",
+    "helpTitle": "Need help?",
+    "helpDesc": "Contact your advisor",
+    "myAccounts": "My accounts",
+    "noAccounts": "No account found for this profile. Create a new user then sign in again.",
+    "thName": "Name",
+    "thIban": "IBAN",
+    "thType": "Type",
+    "thBalance": "Balance",
+    "thStatus": "Status",
+    "thOpenedAt": "Opened on",
+    "thActions": "Actions",
+    "actionsLink": "Avenir Bank stocks",
+    "transfersLink": "Transfers list"
+  },
+  "actionsPage": {
+    "title": "Avenir Bank Stocks",
+    "subtitle": "Buy and sell stocks with real-time stock updates.",
+    "back": "Back"
+  },
+  "actions": {
+    "ownershipTitle": "Clients own their stocks",
+    "ownershipBody": "Here, every client fully owns their stocks. Total transparency, as promised.",
+    "listTitle": "Available stocks",
+    "symbol": "Symbol",
+    "name": "Name",
+    "price": "Price",
+    "stock": "Stock",
+    "availability": "Availability",
+    "operations": "Operations",
+    "quantity": "Qty",
+    "buy": "Buy",
+    "sell": "Sell",
+    "loginHint": "Sign in to buy or sell stocks.",
+    "portfolioTitle": "My portfolio",
+    "noPositionsAuth": "No stocks held yet.",
+    "noPositionsAnon": "Sign in to see your portfolio.",
+    "avgPrice": "Average price",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "buyOk": "Purchase confirmed.",
+    "sellOk": "Sale confirmed.",
+    "serverError": "Unable to reach the server.",
+    "opError": "Operation failed.",
+    "noActions": "No stocks available for now."
+  },
+  "directorActionsPage": {
+    "title": "Stocks management",
+    "subtitle": "Create, toggle availability and delete stocks.",
+    "back": "Back",
+    "admin": "Admin panel"
+  },
+  "directorActions": {
+    "createTitle": "Create a stock",
+    "actionsTitle": "Existing stocks",
+    "available": "Stock available",
+    "symbol": "Symbol",
+    "name": "Name",
+    "price": "Price",
+    "stock": "Stock",
+    "availableColumn": "Available",
+    "actions": "Actions",
+    "create": "Create",
+    "update": "Update",
+    "remove": "Delete",
+    "noActions": "No stocks yet.",
+    "createOk": "Stock created successfully.",
+    "updateOk": "Stock updated.",
+    "deleteOk": "Stock deleted.",
+    "serverError": "Unable to reach the server.",
+    "createError": "Creation failed.",
+    "updateError": "Update failed.",
+    "deleteError": "Deletion failed.",
+    "symbolPlaceholder": "SYM",
+    "namePlaceholder": "Name",
+    "pricePlaceholder": "Price",
+    "stockPlaceholder": "Stock"
+  },
+  "login": {
+    "emailInvalid": "Invalid email",
+    "passwordMin": "Minimum 8 characters",
+    "title": "Sign in",
+    "description": "Enter your credentials to access your account.",
+    "email": "Email",
+    "emailPlaceholder": "you@email.com",
+    "password": "Password",
+    "remember": "Remember me",
+    "login": "Sign in",
+    "loggingIn": "Signing in...",
+    "invalidCredentials": "Invalid credentials.",
+    "inactiveAccount": "Account not confirmed. Check your emails.",
+    "bannedAccount": "Account banned. Contact an advisor.",
+    "genericError": "Error. Please try again."
+  },
+  "register": {
+    "title": "Create an account",
+    "subtitle": "Enter your details to get started.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "Minimum 8 characters.",
+    "submit": "Sign up",
+    "submitting": "Creating account...",
+    "already": "Already have an account?",
+    "login": "Sign in",
+    "success": "Account created. Check your email to confirm your account.",
+    "successWithDate": "Account created. Check your email and confirm before {eta}.",
+    "error": "An error occurred."
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "Sorry, we could not find that page. Check the URL or go back home.",
+    "notFoundBack": "Back to home",
+    "errorTitle": "Something went wrong",
+    "errorBody": "A technical incident occurred. You can retry or go back home.",
+    "errorRetry": "Retry",
+    "errorHome": "Home"
+  },
+  "lang": {
+    "fr": "FR",
+    "en": "EN"
+  },
+  "confirm": {
+    "title": "Account confirmation",
+    "loading": "Validating...",
+    "success": "Your account is confirmed. You can sign in.",
+    "tokenMissing": "Missing token in the URL.",
+    "tokenExpired": "This link has expired. Request a new email.",
+    "tokenInvalid": "Invalid confirmation link.",
+    "genericError": "Unable to confirm the account right now.",
+    "networkError": "Network error. Try again.",
+    "login": "Sign in"
+  },
+  "transfersPage": {
+    "title": "Transfers history",
+    "subtitle": "Internal transfers (incoming and outgoing) linked to your Avenir Bank accounts.",
+    "back": "Back to dashboard",
+    "loginHint": "Sign in to view your transfers.",
+    "loading": "Loading history..."
+  },
+  "transfersHistory": {
+    "title": "Transaction list",
+    "subtitle": "Review the details of your transactions.",
+    "allAccounts": "All accounts",
+    "updating": "Updating data...",
+    "empty": "No transfers found for this selection.",
+    "thType": "Type",
+    "thSource": "Source account",
+    "thDestination": "Destination account",
+    "thAmount": "Amount",
+    "thDate": "Date",
+    "outgoing": "Outgoing transfer",
+    "incoming": "Incoming transfer",
+    "reason": "Reason",
+    "loadError": "Unable to load the history."
+  },
+  "banned": {
+    "title": "Account suspended",
+    "body": "Your account was banned by a director. You no longer have access to the platform services.",
+    "hint": "If you think this is a mistake, contact an advisor."
+  },
+  "directorAdminPage": {
+    "kicker": "Director administration",
+    "title": "Admin panel",
+    "subtitle": "Manage client accounts and bans.",
+    "actions": "Stocks",
+    "savingsRate": "Savings rate",
+    "back": "Back"
+  },
+  "adminPanel": {
+    "userIdRequired": "User ID required",
+    "networkError": "Network error",
+    "serverError": "Server error",
+    "userBanned": "User banned",
+    "accountCreated": "Account created",
+    "renameRequired": "Account ID, user ID, and name are required",
+    "accountRenamed": "Account renamed",
+    "closeRequired": "Account ID and user ID required",
+    "accountClosed": "Account closed",
+    "banTitle": "Ban a client",
+    "banDescription": "Marks the account inactive (403 on routes).",
+    "userLabel": "User",
+    "noUsers": "No users",
+    "loadingUsers": "Loading...",
+    "refresh": "Refresh",
+    "ban": "Ban",
+    "createTitle": "Create a client account",
+    "createDescription": "Current or savings account for a client.",
+    "accountNameLabel": "Account name",
+    "accountTypeLabel": "Type",
+    "typeCurrent": "Current",
+    "typeSavings": "Savings",
+    "create": "Create",
+    "renameTitle": "Rename an account",
+    "renameDescription": "Updates the displayed name of a client account.",
+    "accountLabel": "Account",
+    "noAccounts": "No accounts",
+    "newNameLabel": "New name",
+    "rename": "Rename",
+    "closeTitle": "Close an account",
+    "closeDescription": "Disables a client account.",
+    "close": "Close"
+  },
+  "savingsRatePage": {
+    "kicker": "Director administration",
+    "title": "Set the savings rate",
+    "subtitle": "Adjust the annual rate applied to savings accounts. Visible to directors only.",
+    "back": "Back"
+  },
+  "savingsRateCard": {
+    "title": "Set the savings rate",
+    "rateLabel": "Annual rate (%)",
+    "submitting": "Updating...",
+    "submit": "Save",
+    "errorPrefix": "Error:",
+    "success": "Rate updated.",
+    "serverError": "Unable to reach the server.",
+    "ratePositive": "Rate must be a positive number.",
+    "rateMax": "Maximum rate is 50%."
+  },
+  "accountRow": {
+    "renameError": "Unable to rename the account.",
+    "closeError": "Unable to close the account.",
+    "closeConfirm": "Close this account? It will become inactive.",
+    "renameAria": "New account name",
+    "save": "Save",
+    "cancel": "Cancel",
+    "typeCurrent": "Current",
+    "typeSavings": "Savings",
+    "statusActive": "Active",
+    "statusClosed": "Closed",
+    "rename": "Rename",
+    "closing": "Closing...",
+    "close": "Close"
+  },
+  "accountCreatorCard": {
+    "nameRequired": "Account name is required.",
+    "serverError": "Server error",
+    "createOk": "Account created",
+    "title": "Add an account",
+    "name": "Name",
+    "namePlaceholder": "My account",
+    "type": "Type",
+    "typeCurrent": "Current account",
+    "typeSavings": "Savings",
+    "creating": "Creating...",
+    "create": "Create",
+    "errorPrefix": "Error:"
+  },
+  "accountCreator": {
+    "nameRequired": "Account name is required (minimum 2 characters).",
+    "createError": "Unable to create the account.",
+    "nameLabel": "Account name",
+    "namePlaceholder": "e.g. Personal account",
+    "typeLabel": "Type",
+    "typeCurrent": "Current",
+    "typeSavings": "Savings",
+    "creating": "Creating...",
+    "create": "Add an account"
+  },
+  "transferCard": {
+    "sourceRequired": "Source account required",
+    "ibanRequired": "IBAN required",
+    "amountInvalid": "Invalid amount",
+    "serverError": "Server error",
+    "success": "Transfer completed",
+    "title": "Make a transfer",
+    "sourceLabel": "Source account",
+    "destinationLabel": "Destination IBAN (internal)",
+    "amountLabel": "Amount",
+    "noteLabel": "Note",
+    "submitting": "Transferring...",
+    "submit": "Transfer",
+    "errorPrefix": "Error:"
+  },
+  "transferForm": {
+    "sourceRequired": "Source account required",
+    "ibanRequired": "IBAN required",
+    "amountInvalid": "Invalid amount",
+    "transferError": "Unable to complete the transfer.",
+    "sourceLabel": "Source account",
+    "destinationLabel": "Recipient IBAN",
+    "destinationPlaceholder": "FR761234...",
+    "amountLabel": "Amount (EUR)",
+    "amountPlaceholder": "100.00",
+    "noteLabel": "Reason (optional)",
+    "notePlaceholder": "Rent, invoice...",
+    "submitting": "Transferring...",
+    "submit": "Make transfer"
+  },
+  "toast": {
+    "close": "OK"
+  },
+  "notifications": {
+    "savingsRateUpdated": "New savings rate: {rate}%",
+    "close": "OK"
+  },
+  "advisorCredits": {
+    "userRequired": "Client required",
+    "principalRequired": "Amount required",
+    "annualRateRequired": "Annual rate required",
+    "insuranceRateRequired": "Insurance rate required",
+    "termRequired": "Term required",
+    "backHome": "<- Back to home",
+    "title": "Grant a loan",
+    "subtitle": "Constant annuity calculation with insurance included in monthly payments.",
+    "noUsers": "No users found. Check the seed.",
+    "searching": "Searching...",
+    "searchLabel": "Search for a client (name/email)",
+    "searchPlaceholder": "Type a name or email (optional)",
+    "selectLabel": "Select a client",
+    "selectPlaceholder": "- Choose -",
+    "principalLabel": "Amount (principal)",
+    "annualRateLabel": "Annual rate (e.g. 0.03)",
+    "insuranceRateLabel": "Insurance rate (e.g. 0.002)",
+    "termLabel": "Term (months)",
+    "submitting": "Calculating...",
+    "submit": "Grant",
+    "errorPrefix": "Error:",
+    "successMessage": "Loan created (id {id}) - Monthly due: {monthlyDue} EUR over {termMonths} months",
+    "listTitle": "Client loans",
+    "listSubtitle": "Active loans (last 10 max)",
+    "creditLine": "{status} - {monthlyDue} EUR/month - remaining {remainingPrincipal} EUR ({remainingTermMonths} months)"
+  },
+  "health": {
+    "title": "DB Health",
+    "error": "Error: {status} {statusText}"
+  },
+  "creditList": {
+    "title": "My loans",
+    "subtitle": "Active loans (max 5)",
+    "line": "#{id} - {status} - {monthlyDue} EUR/month - remaining {remainingPrincipal} EUR ({remainingTermMonths} months)"
+  },
+  "errorDemo": {
+    "message": "Demo error to trigger error.tsx"
+  },
+  "loginPage": {
+    "title": "Sign in - Avenir Bank",
+    "description": "Access your client area."
+  },
+  "registerPage": {
+    "title": "Register - Avenir Bank",
+    "description": "Create your client account."
+  },
+  "aboutMeta": {
+    "title": "About - Avenir Bank",
+    "description": "Discover the product vision, security, and Clean Architecture of Avenir Bank, an online banking platform built for reliability and transparency.",
+    "siteName": "Avenir Bank",
+    "keywords": [
+      "online banking",
+      "avenir bank",
+      "current accounts",
+      "savings",
+      "security",
+      "clean architecture",
+      "nextjs",
+      "nestjs"
+    ]
+  },
+  "about": {
+    "brand": "Avenir Bank",
+    "hero": {
+      "title": "Avenir Bank, built to last",
+      "subtitle": "A Next.js + NestJS platform shaped by Clean Architecture to ensure reliability, security, and scalability.",
+      "cta": "Back to home"
+    },
+    "mission": {
+      "title": "Our mission",
+      "items": [
+        "Transparency: clear journeys to open, manage, and close your accounts.",
+        "Security: encrypted sessions, hashed passwords, and strict access control.",
+        "Scalability: modular architecture to ship new products quickly."
+      ]
+    },
+    "architecture": {
+      "title": "Architecture",
+      "content": "Domain and use cases isolated from frameworks, Prisma adapters for Postgres/MariaDB, unified APIs on Nest and Next for flexible deployments."
+    },
+    "security": {
+      "title": "Security and compliance",
+      "items": [
+        "Signed sessions (JWT), passwords hashed via PasswordHasher.",
+        "Systematic data validation (zod / ValidationPipe).",
+        "Activation rules: inactive accounts cannot log in."
+      ]
+    },
+    "performance": {
+      "title": "Performance and SEO",
+      "items": [
+        "Server-first rendering, routes tuned for cache and revalidation.",
+        "Complete SEO metadata (title, description, Open Graph).",
+        "Sitemap planned to expose key pages to search engines."
+      ]
+    }
+  }
+}

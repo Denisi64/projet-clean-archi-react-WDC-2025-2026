@@ -1,0 +1,421 @@
+{
+  "home": {
+    "landingTitle": "La banque qui donne vie a vos projets",
+    "landingSubtitle": "Avenir Bank reinvente la gestion de patrimoine avec une interface fluide, securisee et pensee pour vous.",
+    "registerNow": "S'inscrire maintenant",
+    "clientSpace": "Espace Client",
+    "advisorCredits": "Credit conseiller",
+    "adminPanel": "Panel admin",
+    "actions": "Actions",
+    "savingsRate": "Fixer taux epargne",
+    "about": "A propos",
+    "featureSecurityTitle": "Securite Maximale",
+    "featureSecurityDesc": "Standards bancaires les plus eleves.",
+    "featureTransfersTitle": "Virements Instantanes",
+    "featureTransfersDesc": "Argent envoye en un eclair.",
+    "featureTransparencyTitle": "Gestion Transparente",
+    "featureTransparencyDesc": "Suivi en temps reel.",
+    "welcome": "Bienvenue sur Avenir Bank - backend : {backend} | base : {db}",
+    "helloUser": "Bonjour {name} ({role})",
+    "title": "Mes comptes bancaires",
+    "subtitle": "Chaque utilisateur recoit un compte courant des l'inscription. Cette section affiche IBAN, solde et statut.",
+    "logout": "Se deconnecter",
+    "totalBalance": "Solde total",
+    "accountCount": "{count} compte(s)",
+    "activeAccounts": "Comptes actifs",
+    "helpTitle": "Besoin d'aide ?",
+    "helpDesc": "Contactez votre conseiller",
+    "myAccounts": "Mes comptes",
+    "noAccounts": "Aucun compte trouve pour ce profil. Creez un nouvel utilisateur puis reconnectez-vous.",
+    "thName": "Nom",
+    "thIban": "IBAN",
+    "thType": "Type",
+    "thBalance": "Solde",
+    "thStatus": "Statut",
+    "thOpenedAt": "Ouvert le",
+    "thActions": "Actions",
+    "actionsLink": "Actions Avenir Bank",
+    "transfersLink": "Liste des transferts"
+  },
+  "actionsPage": {
+    "title": "Actions Avenir Bank",
+    "subtitle": "Achat et vente d'actions avec stock mis a jour en temps reel.",
+    "back": "Retour"
+  },
+  "actions": {
+    "ownershipTitle": "Les clients sont proprietaires de leurs actions",
+    "ownershipBody": "Ici, chaque client est pleinement proprietaire de ses actions. Transparence totale, comme promis.",
+    "listTitle": "Actions disponibles",
+    "symbol": "Symbole",
+    "name": "Nom",
+    "price": "Cours",
+    "stock": "Stock",
+    "availability": "Disponibilite",
+    "operations": "Operations",
+    "quantity": "Qte",
+    "buy": "Acheter",
+    "sell": "Vendre",
+    "loginHint": "Connectez-vous pour acheter ou vendre des actions.",
+    "portfolioTitle": "Mon portefeuille",
+    "noPositionsAuth": "Aucune action detenue.",
+    "noPositionsAnon": "Connectez-vous pour voir votre portefeuille.",
+    "avgPrice": "Prix moyen",
+    "available": "Disponible",
+    "unavailable": "Indisponible",
+    "buyOk": "Achat valide.",
+    "sellOk": "Vente validee.",
+    "serverError": "Impossible de contacter le serveur.",
+    "opError": "Erreur lors de l'operation.",
+    "noActions": "Aucune action disponible pour le moment."
+  },
+  "directorActionsPage": {
+    "title": "Gestion des actions",
+    "subtitle": "Creation, disponibilite et suppression des actions.",
+    "back": "Retour",
+    "admin": "Panel admin"
+  },
+  "directorActions": {
+    "createTitle": "Creer une action",
+    "actionsTitle": "Actions existantes",
+    "available": "Action disponible",
+    "symbol": "Symbole",
+    "name": "Nom",
+    "price": "Cours",
+    "stock": "Stock",
+    "availableColumn": "Disponible",
+    "actions": "Actions",
+    "create": "Creer",
+    "update": "Mettre a jour",
+    "remove": "Supprimer",
+    "noActions": "Aucune action pour le moment.",
+    "createOk": "Action creee avec succes.",
+    "updateOk": "Action mise a jour.",
+    "deleteOk": "Action supprimee.",
+    "serverError": "Impossible de contacter le serveur.",
+    "createError": "Erreur lors de la creation.",
+    "updateError": "Erreur lors de la mise a jour.",
+    "deleteError": "Erreur lors de la suppression.",
+    "symbolPlaceholder": "SYM",
+    "namePlaceholder": "Nom",
+    "pricePlaceholder": "Cours",
+    "stockPlaceholder": "Stock"
+  },
+  "login": {
+    "emailInvalid": "Email invalide",
+    "passwordMin": "8 caracteres minimum",
+    "title": "Connexion",
+    "description": "Entrez vos identifiants pour acceder a votre espace.",
+    "email": "Email",
+    "emailPlaceholder": "exemple@email.com",
+    "password": "Mot de passe",
+    "remember": "Se souvenir de moi",
+    "login": "Se connecter",
+    "loggingIn": "Connexion...",
+    "invalidCredentials": "Identifiants invalides.",
+    "inactiveAccount": "Compte non confirme. Consulte tes emails.",
+    "bannedAccount": "Compte banni. Contacte un conseiller.",
+    "genericError": "Erreur. Reessayez."
+  },
+  "register": {
+    "title": "Creer un compte",
+    "subtitle": "Entrez vos informations pour commencer.",
+    "firstName": "Prenom",
+    "lastName": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "passwordHint": "Minimum 8 caracteres.",
+    "submit": "S'inscrire",
+    "submitting": "Creation du compte...",
+    "already": "Deja un compte ?",
+    "login": "Se connecter",
+    "success": "Compte cree. Verifie tes emails et confirme ton compte.",
+    "successWithDate": "Compte cree. Verifie tes emails et confirme ton compte avant le {eta}.",
+    "error": "Une erreur est survenue."
+  },
+  "errors": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "Desole, nous n'avons pas trouve la page demandee. Verifiez l'URL ou retournez a l'accueil.",
+    "notFoundBack": "Retour a l'accueil",
+    "errorTitle": "Une erreur est survenue",
+    "errorBody": "Un incident technique est survenu. Vous pouvez reessayer ou revenir a l'accueil.",
+    "errorRetry": "Reessayer",
+    "errorHome": "Accueil"
+  },
+  "lang": {
+    "fr": "FR",
+    "en": "EN"
+  },
+  "confirm": {
+    "title": "Confirmation du compte",
+    "loading": "Validation en cours...",
+    "success": "Votre compte est confirme. Vous pouvez vous connecter.",
+    "tokenMissing": "Token manquant dans l'URL.",
+    "tokenExpired": "Le lien a expire. Demandez un nouvel e-mail.",
+    "tokenInvalid": "Lien de confirmation invalide.",
+    "genericError": "Impossible de confirmer le compte pour le moment.",
+    "networkError": "Erreur reseau. Reessayez.",
+    "login": "Se connecter"
+  },
+  "transfersPage": {
+    "title": "Historique des transferts",
+    "subtitle": "Liste des virements internes (entrants et sortants) associes a vos comptes Avenir Bank.",
+    "back": "Retour au tableau de bord",
+    "loginHint": "Connectez-vous pour consulter vos transferts.",
+    "loading": "Chargement de l'historique..."
+  },
+  "transfersHistory": {
+    "title": "Liste des operations",
+    "subtitle": "Consultez le detail de vos transactions.",
+    "allAccounts": "Tous les comptes",
+    "updating": "Mise a jour des donnees...",
+    "empty": "Aucun transfert trouve pour cette selection.",
+    "thType": "Type",
+    "thSource": "Compte source",
+    "thDestination": "Compte destination",
+    "thAmount": "Montant",
+    "thDate": "Date",
+    "outgoing": "Virement emis",
+    "incoming": "Virement recu",
+    "reason": "Motif",
+    "loadError": "Impossible de charger l'historique."
+  },
+  "banned": {
+    "title": "Compte suspendu",
+    "body": "Votre compte a ete banni par un directeur. Vous n'avez plus acces aux services de la plateforme.",
+    "hint": "Si vous pensez qu'il s'agit d'une erreur, contactez un conseiller."
+  },
+  "directorAdminPage": {
+    "kicker": "Administration Directeur",
+    "title": "Panel admin",
+    "subtitle": "Gestion des comptes clients et bannissement.",
+    "actions": "Actions",
+    "savingsRate": "Taux epargne",
+    "back": "Retour"
+  },
+  "adminPanel": {
+    "userIdRequired": "ID utilisateur requis",
+    "networkError": "Erreur reseau",
+    "serverError": "Erreur serveur",
+    "userBanned": "Utilisateur banni",
+    "accountCreated": "Compte cree",
+    "renameRequired": "ID compte, ID utilisateur et nom requis",
+    "accountRenamed": "Compte renomme",
+    "closeRequired": "ID compte et ID utilisateur requis",
+    "accountClosed": "Compte cloture",
+    "banTitle": "Bannir un client",
+    "banDescription": "Rend le compte inactif (403 sur les routes).",
+    "userLabel": "Utilisateur",
+    "noUsers": "Aucun utilisateur",
+    "loadingUsers": "Chargement...",
+    "refresh": "Rafraichir",
+    "ban": "Bannir",
+    "createTitle": "Creer un compte client",
+    "createDescription": "Compte courant ou epargne pour un client.",
+    "accountNameLabel": "Nom du compte",
+    "accountTypeLabel": "Type",
+    "typeCurrent": "Courant",
+    "typeSavings": "Epargne",
+    "create": "Creer",
+    "renameTitle": "Renommer un compte",
+    "renameDescription": "Modifie le nom affiche d'un compte client.",
+    "accountLabel": "Compte",
+    "noAccounts": "Aucun compte",
+    "newNameLabel": "Nouveau nom",
+    "rename": "Renommer",
+    "closeTitle": "Cloturer un compte",
+    "closeDescription": "Desactive un compte client.",
+    "close": "Cloturer"
+  },
+  "savingsRatePage": {
+    "kicker": "Administration Directeur",
+    "title": "Fixer le taux d'epargne",
+    "subtitle": "Ajustez le taux annuel applique aux comptes d'epargne. Uniquement visible par les directeurs.",
+    "back": "Retour"
+  },
+  "savingsRateCard": {
+    "title": "Fixer le taux d'epargne",
+    "rateLabel": "Taux annuel (%)",
+    "submitting": "Mise a jour...",
+    "submit": "Enregistrer",
+    "errorPrefix": "Erreur:",
+    "success": "Taux mis a jour.",
+    "serverError": "Impossible de joindre le serveur.",
+    "ratePositive": "Le taux doit etre un nombre positif.",
+    "rateMax": "Le taux maximum est 50%."
+  },
+  "accountRow": {
+    "renameError": "Impossible de renommer le compte.",
+    "closeError": "Impossible de cloturer le compte.",
+    "closeConfirm": "Cloturer ce compte ? Il passera en statut inactif.",
+    "renameAria": "Nouveau nom du compte",
+    "save": "OK",
+    "cancel": "Annuler",
+    "typeCurrent": "Courant",
+    "typeSavings": "Epargne",
+    "statusActive": "Actif",
+    "statusClosed": "Cloture",
+    "rename": "Renommer",
+    "closing": "Cloture...",
+    "close": "Cloturer"
+  },
+  "accountCreatorCard": {
+    "nameRequired": "Le nom du compte est requis.",
+    "serverError": "Erreur serveur",
+    "createOk": "Compte cree",
+    "title": "Ajouter un compte",
+    "name": "Nom",
+    "namePlaceholder": "Mon compte",
+    "type": "Type",
+    "typeCurrent": "Compte courant",
+    "typeSavings": "Epargne",
+    "creating": "Creation...",
+    "create": "Creer",
+    "errorPrefix": "Erreur:"
+  },
+  "accountCreator": {
+    "nameRequired": "Le nom du compte est requis (2 caracteres minimum).",
+    "createError": "Impossible de creer le compte.",
+    "nameLabel": "Nom du compte",
+    "namePlaceholder": "Ex: Compte Perso",
+    "typeLabel": "Type",
+    "typeCurrent": "Courant",
+    "typeSavings": "Epargne",
+    "creating": "Creation...",
+    "create": "Ajouter un compte"
+  },
+  "transferCard": {
+    "sourceRequired": "Compte source requis",
+    "ibanRequired": "IBAN requis",
+    "amountInvalid": "Montant invalide",
+    "serverError": "Erreur serveur",
+    "success": "Transfert effectue",
+    "title": "Effectuer un transfert",
+    "sourceLabel": "Compte source",
+    "destinationLabel": "IBAN destination (interne)",
+    "amountLabel": "Montant",
+    "noteLabel": "Note",
+    "submitting": "Transfert...",
+    "submit": "Transferer",
+    "errorPrefix": "Erreur:"
+  },
+  "transferForm": {
+    "sourceRequired": "Compte source requis",
+    "ibanRequired": "IBAN requis",
+    "amountInvalid": "Montant invalide",
+    "transferError": "Impossible de realiser le transfert.",
+    "sourceLabel": "Compte source",
+    "destinationLabel": "IBAN destinataire",
+    "destinationPlaceholder": "FR761234...",
+    "amountLabel": "Montant (EUR)",
+    "amountPlaceholder": "100.00",
+    "noteLabel": "Motif (optionnel)",
+    "notePlaceholder": "Loyer, facture...",
+    "submitting": "Transfert...",
+    "submit": "Effectuer le transfert"
+  },
+  "toast": {
+    "close": "OK"
+  },
+  "notifications": {
+    "savingsRateUpdated": "Nouveau taux d'epargne : {rate}%",
+    "close": "OK"
+  },
+  "advisorCredits": {
+    "userRequired": "Client requis",
+    "principalRequired": "Montant requis",
+    "annualRateRequired": "Taux annuel requis",
+    "insuranceRateRequired": "Taux assurance requis",
+    "termRequired": "Duree requise",
+    "backHome": "<- Retour a l'accueil",
+    "title": "Octroyer un credit",
+    "subtitle": "Calcul en annuite constante avec assurance repartie dans les mensualites.",
+    "noUsers": "Aucun utilisateur trouve. Verifiez le seed.",
+    "searching": "Recherche...",
+    "searchLabel": "Rechercher un client (nom/email)",
+    "searchPlaceholder": "Tapez un nom ou email (optionnel)",
+    "selectLabel": "Selectionner un client",
+    "selectPlaceholder": "- Choisir -",
+    "principalLabel": "Montant (principal)",
+    "annualRateLabel": "Taux annuel (ex: 0.03)",
+    "insuranceRateLabel": "Taux assurance (ex: 0.002)",
+    "termLabel": "Duree (mois)",
+    "submitting": "Calcul...",
+    "submit": "Octroyer",
+    "errorPrefix": "Erreur:",
+    "successMessage": "Credit cree (id {id}) - Mensualite : {monthlyDue} EUR sur {termMonths} mois",
+    "listTitle": "Credits du client",
+    "listSubtitle": "Credits en cours (max 10 derniers)",
+    "creditLine": "{status} - {monthlyDue} EUR/mois - restant {remainingPrincipal} EUR ({remainingTermMonths} mois)"
+  },
+  "health": {
+    "title": "DB Health",
+    "error": "Erreur: {status} {statusText}"
+  },
+  "creditList": {
+    "title": "Mes credits",
+    "subtitle": "Credits en cours (max 5)",
+    "line": "#{id} - {status} - {monthlyDue} EUR/mois - restant {remainingPrincipal} EUR ({remainingTermMonths} mois)"
+  },
+  "errorDemo": {
+    "message": "Erreur demo pour declencher error.tsx"
+  },
+  "loginPage": {
+    "title": "Connexion - Avenir Bank",
+    "description": "Accedez a votre espace client."
+  },
+  "registerPage": {
+    "title": "Inscription - Avenir Bank",
+    "description": "Creez votre compte client."
+  },
+  "aboutMeta": {
+    "title": "A propos - Avenir Bank",
+    "description": "Decouvrez la vision produit, la securite et l'architecture Clean d'Avenir Bank, plateforme bancaire en ligne pensee pour la fiabilite et la transparence.",
+    "siteName": "Avenir Bank",
+    "keywords": [
+      "banque en ligne",
+      "avenir bank",
+      "comptes courants",
+      "epargne",
+      "securite",
+      "clean architecture",
+      "nextjs",
+      "nestjs"
+    ]
+  },
+  "about": {
+    "brand": "Avenir Bank",
+    "hero": {
+      "title": "Avenir Bank, la banque en ligne concue pour durer",
+      "subtitle": "Une plateforme Next.js + NestJS, structuree en Clean Architecture pour garantir fiabilite, securite et evolutivite.",
+      "cta": "Revenir a l'accueil"
+    },
+    "mission": {
+      "title": "Notre mission",
+      "items": [
+        "Transparence : des parcours clairs pour ouvrir, gerer et cloturer vos comptes.",
+        "Securite : chiffrement des sessions, mots de passe hashes et controle strict des acces.",
+        "Evolutivite : une architecture modulaire pour ajouter produits et services rapidement."
+      ]
+    },
+    "architecture": {
+      "title": "Architecture",
+      "content": "Domain et Use Cases independants des frameworks, adaptateurs Prisma pour Postgres/MariaDB, et API unifiees cote Nest et Next pour un deploiement flexible."
+    },
+    "security": {
+      "title": "Securite et conformite",
+      "items": [
+        "Sessions signees (JWT), mots de passe hashes via PasswordHasher.",
+        "Validation systematique des donnees (zod / ValidationPipe).",
+        "Regles metier d'activation : un compte inactif ne peut pas se connecter."
+      ]
+    },
+    "performance": {
+      "title": "Performance et SEO",
+      "items": [
+        "Rendu serveur prioritaire, routes optimisees pour le cache et la revalidation.",
+        "Metadata SEO completes (title, description, Open Graph).",
+        "Sitemap prevu pour exposer les pages cles aux moteurs de recherche."
+      ]
+    }
+  }
+}

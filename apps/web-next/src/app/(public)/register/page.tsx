@@ -1,4 +1,13 @@
-import { RegisterForm } from '@/features/auth/components/RegisterForm';
+import { RegisterForm } from "@/features/auth/components/RegisterForm";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata() {
+    const t = await getTranslations("registerPage");
+    return {
+        title: t("title"),
+        description: t("description"),
+    };
+}
 
 export default function RegisterPage() {
     return (

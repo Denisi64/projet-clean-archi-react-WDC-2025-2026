@@ -32,11 +32,12 @@ import {
     PieChart,
     Euro,
 } from "lucide-react";
-import { getLocale, t } from "./i18n";
+import { getLocale, getTranslations } from "next-intl/server";
 import CreditList from "./components/CreditList";
 import AccountTable from "./components/AccountTable";
 import AccountCreatorCard from "./components/AccountCreatorCard";
 import TransferCard from "./components/TransferCard";
+import { LanguageSwitch } from "./components/LanguageSwitch";
 
 /* -------------------------------------------------------------------------- */
 /*                                    TYPES                                   */
@@ -128,7 +129,10 @@ function deriveDbLabel(): string {
 /*                                    PAGE                                    */
 /* -------------------------------------------------------------------------- */
 
-export default async function Home({ searchParams }: { searchParams: { lang?: string } }) {
+export default async function Home() {
+    const t = await getTranslations("home");
+    const locale = await getLocale();
+    const intlLocale = locale === "en" ? "en-US" : "fr-FR";
     const [{ authenticated, accounts }, currentUser] = await Promise.all([
         loadAccounts(),
         loadCurrentUser(),
@@ -140,8 +144,6 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
 
     const backend = process.env.BACKEND_TARGET ?? "nest";
     const dbLabel = deriveDbLabel();
-    const locale = getLocale(searchParams?.lang);
-
     /* ----------------------------- LANDING PAGE ----------------------------- */
 
     if (!authenticated) {
@@ -151,32 +153,32 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                 <section className="relative overflow-hidden py-24 lg:py-32">
                     <div className="container relative z-10 mx-auto px-4 md:px-6">
                         <div className="flex flex-col items-center gap-4 text-center">
+                            <LanguageSwitch />
                             <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl max-w-3xl bg-linear-to-l from-blue-300 to-blue-600 bg-clip-text text-transparent">
-                                La banque qui donne vie à vos projets
+                                {t("landingTitle")}
                             </h1>
                             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl">
-                                Avenir Bank réinvente la gestion de patrimoine avec une interface fluide,
-                                sécurisée et pensée pour vous.
+                                {t("landingSubtitle")}
                             </p>
                             <div className="flex flex-wrap gap-4 mt-4">
                                 <Link
                                     href="/register"
                                     className={cn(buttonVariants({ size: "lg" }), "gap-2 px-8")}
                                 >
-                                    S'inscrire maintenant <ArrowRight className="h-4 w-4" />
+                                    {t("registerNow")} <ArrowRight className="h-4 w-4" />
                                 </Link>
                                 <Link
                                     href="/login"
                                     className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                                 >
-                                    Espace Client
+                                    {t("clientSpace")}
                                 </Link>
                                 {(currentUser?.role === "ADVISOR" || currentUser?.role === "DIRECTOR") && (
                                     <Link
                                         href="/advisor/credits"
                                         className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
                                     >
-                                        Crédit conseiller
+                                        {t("advisorCredits")}
                                     </Link>
                                 )}
                                 {currentUser?.role === "DIRECTOR" && (
@@ -184,7 +186,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                         href="/director/admin"
                                         className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
                                     >
-                                        Panel admin
+                                        {t("adminPanel")}
                                     </Link>
                                 )}
                                 {currentUser?.role === "DIRECTOR" && (
@@ -192,7 +194,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                         href="/director/actions"
                                         className={cn(buttonVariants({ variant: "secondary", size: "lg" }))}
                                     >
-                                        Actions
+                                        {t("actions")}
                                     </Link>
                                 )}
                                 {currentUser?.role === "DIRECTOR" && (
@@ -200,14 +202,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                         href="/director/savings-rate"
                                         className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                                     >
-                                        Fixer taux épargne
+                                        {t("savingsRate")}
                                     </Link>
                                 )}
                                 <Link
                                     href="/about"
                                     className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
                                 >
-                                    À propos
+                                    {t("about")}
                                 </Link>
                             </div>
                         </div>
@@ -230,27 +232,27 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                         <Card>
                             <CardHeader>
                                 <ShieldCheck className="h-10 w-10 text-primary mb-2" />
-                                <CardTitle>Sécurité Maximale</CardTitle>
+                                <CardTitle>{t("featureSecurityTitle")}</CardTitle>
                                 <CardDescription>
-                                    Standards bancaires les plus élevés.
+                                    {t("featureSecurityDesc")}
                                 </CardDescription>
                             </CardHeader>
                         </Card>
                         <Card>
                             <CardHeader>
                                 <Banknote className="h-10 w-10 text-primary mb-2" />
-                                <CardTitle>Virements Instantanés</CardTitle>
+                                <CardTitle>{t("featureTransfersTitle")}</CardTitle>
                                 <CardDescription>
-                                    Argent envoyé en un éclair.
+                                    {t("featureTransfersDesc")}
                                 </CardDescription>
                             </CardHeader>
                         </Card>
                         <Card>
                             <CardHeader>
                                 <Building2 className="h-10 w-10 text-primary mb-2" />
-                                <CardTitle>Gestion Transparente</CardTitle>
+                                <CardTitle>{t("featureTransparencyTitle")}</CardTitle>
                                 <CardDescription>
-                                    Suivi en temps réel.
+                                    {t("featureTransparencyDesc")}
                                 </CardDescription>
                             </CardHeader>
                         </Card>
@@ -263,7 +265,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
     /* ------------------------------- DASHBOARD ------------------------------- */
 
     const totalBalance = accounts.reduce((acc, a) => acc + Number(a.balance), 0);
-    const formattedTotal = new Intl.NumberFormat("fr-FR", {
+    const formattedTotal = new Intl.NumberFormat(intlLocale, {
         style: "currency",
         currency: "EUR",
     }).format(totalBalance);
@@ -276,15 +278,15 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div>
                         <p className="text-sm text-muted-foreground">
-                            {t(locale, "welcome", { backend, db: dbLabel })}{" "}
+                            {t("welcome", { backend, db: dbLabel })}{" "}
                             {currentUser &&
-                                `— ${t(locale, "helloUser", {
+                                `— ${t("helloUser", {
                                     name: currentUser.name ?? currentUser.email,
                                     role: currentUser.role ?? "client",
                                 })}`}
                         </p>
-                        <h1 className="text-3xl font-bold">{t(locale, "title")}</h1>
-                        <p className="text-muted-foreground">{t(locale, "subtitle")}</p>
+                        <h1 className="text-3xl font-bold">{t("title")}</h1>
+                        <p className="text-muted-foreground">{t("subtitle")}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -293,7 +295,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 href="/advisor/credits"
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
-                                Crédit conseiller
+                                {t("advisorCredits")}
                             </Link>
                         )}
                         {currentUser?.role === "DIRECTOR" && (
@@ -301,7 +303,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 href="/director/admin"
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
-                                Panel admin
+                                {t("adminPanel")}
                             </Link>
                         )}
                         {currentUser?.role === "DIRECTOR" && (
@@ -309,7 +311,7 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 href="/director/actions"
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
-                                Actions
+                                {t("actions")}
                             </Link>
                         )}
                         {currentUser?.role === "DIRECTOR" && (
@@ -317,12 +319,12 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                                 href="/director/savings-rate"
                                 className={cn(buttonVariants({ variant: "outline" }))}
                             >
-                                Fixer taux épargne
+                                {t("savingsRate")}
                             </Link>
                         )}
                         <form action="/api/auth/logout" method="post">
                             <button className={cn(buttonVariants({ variant: "outline" }))}>
-                                {t(locale, "logout")}
+                                {t("logout")}
                             </button>
                         </form>
                     </div>
@@ -332,20 +334,20 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader className="flex justify-between">
-                            <CardTitle className="text-sm">Solde total</CardTitle>
+                            <CardTitle className="text-sm">{t("totalBalance")}</CardTitle>
                             <Wallet className="h-4 w-4" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{formattedTotal}</div>
                             <p className="text-xs text-muted-foreground">
-                                {accounts.length} compte(s)
+                                {t("accountCount", { count: String(accounts.length) })}
                             </p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex justify-between">
-                            <CardTitle className="text-sm">Comptes actifs</CardTitle>
+                            <CardTitle className="text-sm">{t("activeAccounts")}</CardTitle>
                             <CreditCard className="h-4 w-4" />
                         </CardHeader>
                         <CardContent>
@@ -357,9 +359,9 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
 
                     <Card className="hidden md:block bg-primary text-primary-foreground">
                         <CardHeader>
-                            <CardTitle>Besoin d'aide ?</CardTitle>
+                            <CardTitle>{t("helpTitle")}</CardTitle>
                             <CardDescription className="text-primary-foreground/80">
-                                Contactez votre conseiller
+                                {t("helpDesc")}
                             </CardDescription>
                         </CardHeader>
                     </Card>
@@ -370,24 +372,24 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Mes comptes</CardTitle>
+                                <CardTitle>{t("myAccounts")}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {accounts.length === 0 ? (
                                     <p className="text-muted-foreground text-center py-8">
-                                        {t(locale, "noAccounts")}
+                                        {t("noAccounts")}
                                     </p>
                                 ) : (
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Nom</TableHead>
-                                                <TableHead>IBAN</TableHead>
-                                                <TableHead>Type</TableHead>
-                                                <TableHead>Solde</TableHead>
-                                                <TableHead>Statut</TableHead>
-                                                <TableHead>Ouvert le</TableHead>
-                                                <TableHead>Actions</TableHead>
+                                                <TableHead>{t("thName")}</TableHead>
+                                                <TableHead>{t("thIban")}</TableHead>
+                                                <TableHead>{t("thType")}</TableHead>
+                                                <TableHead>{t("thBalance")}</TableHead>
+                                                <TableHead>{t("thStatus")}</TableHead>
+                                                <TableHead>{t("thOpenedAt")}</TableHead>
+                                                <TableHead>{t("thActions")}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -410,14 +412,14 @@ export default async function Home({ searchParams }: { searchParams: { lang?: st
                             href="/actions"
                             className={cn(buttonVariants({ variant: "outline" }), "w-full justify-between")}
                         >
-                            Actions Avenir Bank <ArrowRight className="h-4 w-4" />
+                            {t("actionsLink")} <ArrowRight className="h-4 w-4" />
                         </Link>
 
                         <Link
                             href="/transfers"
                             className={cn(buttonVariants({ variant: "outline" }), "w-full justify-between")}
                         >
-                            Liste des transferts <ArrowRight className="h-4 w-4" />
+                            {t("transfersLink")} <ArrowRight className="h-4 w-4" />
                         </Link>
                     </div>
                 </div>

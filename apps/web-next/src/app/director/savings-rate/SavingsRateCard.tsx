@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,18 +9,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 type FetchState = "idle" | "loading" | "error";
 
-const schema = z.object({
-    ratePercent: z.coerce.number().positive("Le taux doit être un nombre positif (max 50%).").max(50),
-});
-type FormData = z.infer<typeof schema>;
-
 export function SavingsRateCard() {
+    const t = useTranslations("savingsRateCard");
     const router = useRouter();
     const [fetchState, setFetchState] = useState<FetchState>("loading");
     const [success, setSuccess] = useState<string | null>(null);
+    const schema = useMemo(
+        () =>
+            z.object({
+                ratePercent: z.coerce
+                    .number()
+                    .positive(t("ratePositive"))
+                    .max(50, t("rateMax")),
+            }),
+        [t],
+    );
+    type FormData = z.infer<typeof schema>;
     const {
         register,
         handleSubmit,
@@ -68,17 +76,17 @@ export function SavingsRateCard() {
         }).catch(() => null);
 
         if (!res) {
-            setError("root", { type: "server", message: "Impossible de joindre le serveur." });
+            setError("root", { type: "server", message: t("serverError") });
             return;
         }
 
         if (!res.ok) {
             const data = await res.json().catch(() => null);
-            setError("root", { type: "server", message: data?.code ?? "UNEXPECTED_ERROR" });
+            setError("root", { type: "server", message: data?.code ?? t("serverError") });
             return;
         }
 
-        setSuccess("Taux mis à jour.");
+        setSuccess(t("success"));
         router.refresh();
     }
 
@@ -87,12 +95,12 @@ export function SavingsRateCard() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Fixer le taux d&apos;épargne</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
                     <div className="space-y-1">
-                        <Label htmlFor="rate">Taux annuel (%)</Label>
+                        <Label htmlFor="rate">{t("rateLabel")}</Label>
                         <Input
                             id="rate"
                             type="number"
@@ -104,10 +112,14 @@ export function SavingsRateCard() {
                         />
                     </div>
                     <Button type="submit" disabled={isLoading || isSubmitting}>
-                        {isSubmitting ? "Mise à jour..." : "Enregistrer"}
+                        {isSubmitting ? t("submitting") : t("submit")}
                     </Button>
                     {errors.ratePercent && <p className="text-sm text-destructive">{errors.ratePercent.message}</p>}
-                    {errors.root && <p className="text-sm text-destructive">Erreur : {errors.root.message}</p>}
+                    {errors.root && (
+                        <p className="text-sm text-destructive">
+                            {t("errorPrefix")} {errors.root.message}
+                        </p>
+                    )}
                     {success && <p className="text-sm text-emerald-600">{success}</p>}
                 </form>
             </CardContent>

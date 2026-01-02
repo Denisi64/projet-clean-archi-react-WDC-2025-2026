@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { useToast } from "../components/ToastProvider";
 
 type ActionItem = {
     id: string;
@@ -55,13 +57,14 @@ type Props = {
 };
 
 export function ActionsClient({ authenticated, initialActions, initialPositions }: Props) {
+    const t = useTranslations("actions");
     const [actions, setActions] = useState<ActionItem[]>(initialActions);
     const [positions, setPositions] = useState<PortfolioPosition[]>(initialPositions);
     const [quantities, setQuantities] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
-    const [toast, setToast] = useState<{ message: string; at: number } | null>(null);
     const wsCandidates = useMemo(() => resolveWsCandidates(), []);
     const [socket, setSocket] = useState<Socket | null>(null);
+    const { pushToast } = useToast();
 
     useEffect(() => {
         if (wsCandidates.length === 0) return;
@@ -147,18 +150,17 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
             body: JSON.stringify({ quantity }),
         }).catch(() => null);
         if (!res) {
-            setError("Impossible de contacter le serveur.");
+            setError(t("serverError"));
             return;
         }
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            setError(data?.code ?? "Erreur lors de l'operation.");
+            setError(data?.code ?? t("opError"));
             return;
         }
         setError(null);
-        const message = side === "buy" ? "Achat valide." : "Vente validee.";
-        setToast({ message, at: Date.now() });
-        setTimeout(() => setToast(null), 4000);
+        const message = side === "buy" ? t("buyOk") : t("sellOk");
+        pushToast(message);
         await refreshPortfolio();
     };
 
@@ -166,12 +168,10 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Les clients sont proprietaires de leurs actions</CardTitle>
+                    <CardTitle>{t("ownershipTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                        Ici, chaque client est pleinement proprietaire de ses actions. Transparence totale, comme promis.
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t("ownershipBody")}</p>
                 </CardContent>
             </Card>
 
@@ -180,46 +180,24 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                     {error}
                 </div>
             )}
-            {toast && (
-                <div className="pointer-events-none fixed bottom-4 right-4 z-50 max-w-xs">
-                    <div
-                        className={cn(
-                            "pointer-events-auto rounded-md border border-primary/40 bg-background/95 px-4 py-3 shadow-lg",
-                            "backdrop-blur supports-[backdrop-filter]:bg-background/70",
-                        )}
-                    >
-                        <div className="flex items-start gap-3">
-                            <div className="flex-1 text-sm text-foreground">{toast.message}</div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setToast(null)}
-                                className="h-6 px-2 text-xs"
-                            >
-                                OK
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Actions disponibles</CardTitle>
+                    <CardTitle>{t("listTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {actions.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">Aucune action disponible pour le moment.</div>
+                        <div className="text-sm text-muted-foreground">{t("noActions")}</div>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Symbole</TableHead>
-                                    <TableHead>Nom</TableHead>
-                                    <TableHead>Cours</TableHead>
-                                    <TableHead>Stock</TableHead>
-                                    <TableHead>Disponibilite</TableHead>
-                                    <TableHead className="text-right">Operations</TableHead>
+                                    <TableHead>{t("symbol")}</TableHead>
+                                    <TableHead>{t("name")}</TableHead>
+                                    <TableHead>{t("price")}</TableHead>
+                                    <TableHead>{t("stock")}</TableHead>
+                                    <TableHead>{t("availability")}</TableHead>
+                                    <TableHead className="text-right">{t("operations")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -234,7 +212,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                                             <TableCell>{action.availableStock}</TableCell>
                                             <TableCell>
                                                 <Badge variant={action.isAvailable ? "default" : "secondary"}>
-                                                    {action.isAvailable ? "Disponible" : "Indisponible"}
+                                                    {action.isAvailable ? t("available") : t("unavailable")}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -242,7 +220,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                                                     <Input
                                                         className="h-9 w-24"
                                                         inputMode="decimal"
-                                                        placeholder="Qte"
+                                                        placeholder={t("quantity")}
                                                         value={qty}
                                                         onChange={(e) =>
                                                             setQuantities((prev) => ({
@@ -256,7 +234,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                                                         disabled={disabled}
                                                         onClick={() => submitTrade(action.id, "buy")}
                                                     >
-                                                        Acheter
+                                                        {t("buy")}
                                                     </Button>
                                                     <Button
                                                         size="sm"
@@ -264,7 +242,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                                                         disabled={!authenticated}
                                                         onClick={() => submitTrade(action.id, "sell")}
                                                     >
-                                                        Vendre
+                                                        {t("sell")}
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -277,7 +255,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
 
                     {!authenticated && (
                         <p className="mt-4 text-sm text-muted-foreground">
-                            Connectez-vous pour acheter ou vendre des actions.
+                            {t("loginHint")}
                         </p>
                     )}
                 </CardContent>
@@ -285,22 +263,22 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Mon portefeuille</CardTitle>
+                    <CardTitle>{t("portfolioTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {positions.length === 0 ? (
                         <div className="text-sm text-muted-foreground">
-                            {authenticated ? "Aucune action detenue." : "Connectez-vous pour voir votre portefeuille."}
+                            {authenticated ? t("noPositionsAuth") : t("noPositionsAnon")}
                         </div>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Symbole</TableHead>
-                                    <TableHead>Nom</TableHead>
-                                    <TableHead>Quantite</TableHead>
-                                    <TableHead>Prix moyen</TableHead>
-                                    <TableHead>Disponibilite</TableHead>
+                                    <TableHead>{t("symbol")}</TableHead>
+                                    <TableHead>{t("name")}</TableHead>
+                                    <TableHead>{t("quantity")}</TableHead>
+                                    <TableHead>{t("avgPrice")}</TableHead>
+                                    <TableHead>{t("availability")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -317,7 +295,7 @@ export function ActionsClient({ authenticated, initialActions, initialPositions 
                                                     pos.isAvailable ? "text-emerald-600" : "text-muted-foreground",
                                                 )}
                                             >
-                                                {pos.isAvailable ? "Disponible" : "Indisponible"}
+                                                {pos.isAvailable ? t("available") : t("unavailable")}
                                             </span>
                                         </TableCell>
                                     </TableRow>

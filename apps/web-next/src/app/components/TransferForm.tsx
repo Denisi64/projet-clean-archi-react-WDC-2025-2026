@@ -8,6 +8,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Select } from "../../components/ui/select-native";
+import { useTranslations } from "next-intl";
 
 type Account = {
     id: string;
@@ -20,19 +21,23 @@ type Props = {
     accounts: Account[];
 };
 
-const schema = z.object({
-    sourceAccountId: z.string().min(1, "Compte source requis"),
-    destinationIban: z.string().trim().min(5, "IBAN requis"),
-    amount: z.coerce.number().positive("Montant invalide"),
-    note: z.string().trim().optional(),
-});
-type FormData = z.infer<typeof schema>;
-
 export function TransferForm({ accounts }: Props) {
+    const t = useTranslations("transferForm");
     const options = useMemo(
         () => accounts.map((a) => ({ value: a.id, label: `${a.name} (${a.iban})` })),
         [accounts],
     );
+    const schema = useMemo(
+        () =>
+            z.object({
+                sourceAccountId: z.string().min(1, t("sourceRequired")),
+                destinationIban: z.string().trim().min(5, t("ibanRequired")),
+                amount: z.coerce.number().positive(t("amountInvalid")),
+                note: z.string().trim().optional(),
+            }),
+        [t],
+    );
+    type FormData = z.infer<typeof schema>;
 
     const {
         register,
@@ -62,7 +67,7 @@ export function TransferForm({ accounts }: Props) {
         }).catch(() => null);
 
         if (!res) {
-            setError("root", { type: "server", message: "Impossible de réaliser le transfert." });
+            setError("root", { type: "server", message: t("transferError") });
             return;
         }
 
@@ -70,7 +75,7 @@ export function TransferForm({ accounts }: Props) {
             const dataRes = await res.json().catch(() => ({}));
             setError("root", {
                 type: "server",
-                message: dataRes?.code ?? "Impossible de réaliser le transfert.",
+                message: dataRes?.code ?? t("transferError"),
             });
             return;
         }
@@ -87,7 +92,7 @@ export function TransferForm({ accounts }: Props) {
     return (
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
-                <Label htmlFor="source">Compte source</Label>
+                <Label htmlFor="source">{t("sourceLabel")}</Label>
                 <Select id="source" {...register("sourceAccountId")}>
                     {options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -101,10 +106,10 @@ export function TransferForm({ accounts }: Props) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="destination">IBAN destinataire</Label>
+                <Label htmlFor="destination">{t("destinationLabel")}</Label>
                 <Input
                     id="destination"
-                    placeholder="FR761234..."
+                    placeholder={t("destinationPlaceholder")}
                     {...register("destinationIban")}
                 />
                 {errors.destinationIban && (
@@ -113,20 +118,20 @@ export function TransferForm({ accounts }: Props) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="amount">Montant (€)</Label>
-                <Input id="amount" placeholder="100.00" {...register("amount")} />
+                <Label htmlFor="amount">{t("amountLabel")}</Label>
+                <Input id="amount" placeholder={t("amountPlaceholder")} {...register("amount")} />
                 {errors.amount && <p className="text-sm font-medium text-destructive">{errors.amount.message}</p>}
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="note">Motif (optionnel)</Label>
-                <Input id="note" placeholder="Loyer, facture..." {...register("note")} />
+                <Label htmlFor="note">{t("noteLabel")}</Label>
+                <Input id="note" placeholder={t("notePlaceholder")} {...register("note")} />
             </div>
 
             {errors.root && <p className="text-sm font-medium text-destructive">{errors.root.message}</p>}
 
             <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Transfert..." : "Effectuer le transfert"}
+                {isSubmitting ? t("submitting") : t("submit")}
             </Button>
         </form>
     );

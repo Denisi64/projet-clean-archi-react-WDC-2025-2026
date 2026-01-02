@@ -10,9 +10,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownLeft, ArrowUpRight, Filter } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 type Account = {
     id: string;
@@ -41,6 +41,9 @@ type Props = {
 };
 
 export function TransfersHistoryClient({ accounts, initialTransfers, initialAccountId }: Props) {
+    const t = useTranslations("transfersHistory");
+    const locale = useLocale();
+    const intlLocale = locale === "en" ? "en-US" : "fr-FR";
     const [selectedAccountId, setSelectedAccountId] = useState(initialAccountId ?? "");
     const [transfers, setTransfers] = useState<Transfer[]>(initialTransfers);
     const [loading, startTransition] = useTransition();
@@ -64,20 +67,20 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
                     signal: controller.signal,
                 });
                 if (!resp.ok) {
-                    setError("Impossible de charger l'historique.");
+                    setError(t("loadError"));
                     return;
                 }
                 const data = (await resp.json()) as { transfers?: Transfer[] };
                 setTransfers(data.transfers ?? []);
             } catch (e: any) {
-                if (e?.name !== "AbortError") setError("Impossible de charger l'historique.");
+                if (e?.name !== "AbortError") setError(t("loadError"));
             }
         });
         return () => controller.abort();
-    }, [selectedAccountId]);
+    }, [selectedAccountId, t]);
 
     function formatCurrency(amount: string) {
-        return new Intl.NumberFormat("fr-FR", {
+        return new Intl.NumberFormat(intlLocale, {
             style: "currency",
             currency: "EUR",
             maximumFractionDigits: 2,
@@ -89,8 +92,8 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
             <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <CardTitle>Liste des opérations</CardTitle>
-                        <CardDescription>Consultez le détail de vos transactions.</CardDescription>
+                        <CardTitle>{t("title")}</CardTitle>
+                        <CardDescription>{t("subtitle")}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4 text-muted-foreground" />
@@ -101,7 +104,7 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
                                 value={selectedAccountId}
                                 onChange={(e) => setSelectedAccountId(e.target.value)}
                             >
-                                <option value="">Tous les comptes</option>
+                                <option value="">{t("allAccounts")}</option>
                                 {options.map((opt) => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                 ))}
@@ -114,7 +117,7 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
                 {/* Loading State Overlay (Optional, or just indicator) */}
                 {loading && (
                     <div className="mb-4 text-sm text-muted-foreground animate-pulse">
-                        Mise à jour des données...
+                        {t("updating")}
                     </div>
                 )}
 
@@ -126,7 +129,7 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
 
                 {transfers.length === 0 && !error && !loading && (
                     <div className="py-12 text-center text-muted-foreground">
-                        Aucun transfert trouvé pour cette sélection.
+                        {t("empty")}
                     </div>
                 )}
 
@@ -135,19 +138,19 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Compte Source</TableHead>
-                                    <TableHead>Compte Destination</TableHead>
-                                    <TableHead className="text-right">Montant</TableHead>
-                                    <TableHead>Date</TableHead>
+                                    <TableHead>{t("thType")}</TableHead>
+                                    <TableHead>{t("thSource")}</TableHead>
+                                    <TableHead>{t("thDestination")}</TableHead>
+                                    <TableHead className="text-right">{t("thAmount")}</TableHead>
+                                    <TableHead>{t("thDate")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {transfers.map((t) => (
-                                    <TableRow key={t.id}>
+                                {transfers.map((transfer) => (
+                                    <TableRow key={transfer.id}>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                {t.direction === "OUT" ? (
+                                                {transfer.direction === "OUT" ? (
                                                     <div className="p-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                                                         <ArrowUpRight className="h-4 w-4" />
                                                     </div>
@@ -157,34 +160,47 @@ export function TransfersHistoryClient({ accounts, initialTransfers, initialAcco
                                                     </div>
                                                 )}
                                                 <span className="font-medium">
-                                                    {t.direction === "OUT" ? "Virement émis" : "Virement reçu"}
+                                                    {transfer.direction === "OUT"
+                                                        ? t("outgoing")
+                                                        : t("incoming")}
                                                 </span>
                                             </div>
-                                            {t.note && (
+                                            {transfer.note && (
                                                 <p className="text-xs text-muted-foreground mt-1 ml-9">
-                                                    Motif: {t.note}
+                                                    {t("reason")}: {transfer.note}
                                                 </p>
                                             )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span className="font-medium">{t.source.name}</span>
-                                                <span className="text-xs text-muted-foreground">{t.source.iban}</span>
+                                                <span className="font-medium">{transfer.source.name}</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {transfer.source.iban}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span className="font-medium">{t.destination.name}</span>
-                                                <span className="text-xs text-muted-foreground">{t.destination.iban}</span>
+                                                <span className="font-medium">{transfer.destination.name}</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {transfer.destination.iban}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <span className={t.direction === "OUT" ? "text-foreground" : "text-green-600 dark:text-green-400 font-medium"}>
-                                                {t.direction === "OUT" ? "-" : "+"} {formatCurrency(t.amount)}
+                                            <span
+                                                className={
+                                                    transfer.direction === "OUT"
+                                                        ? "text-foreground"
+                                                        : "text-green-600 dark:text-green-400 font-medium"
+                                                }
+                                            >
+                                                {transfer.direction === "OUT" ? "-" : "+"}{" "}
+                                                {formatCurrency(transfer.amount)}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground whitespace-nowrap">
-                                            {new Date(t.createdAt).toLocaleDateString("fr-FR", {
+                                            {new Date(transfer.createdAt).toLocaleDateString(intlLocale, {
                                                 day: "numeric",
                                                 month: "short",
                                                 year: "numeric",

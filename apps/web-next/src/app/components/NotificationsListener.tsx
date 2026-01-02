@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 type SavingsRateEvent = { ratePercent: number; userIds?: string[] };
 
@@ -26,6 +27,7 @@ function resolveWsCandidates(): string[] {
 }
 
 export function NotificationsListener() {
+    const t = useTranslations("notifications");
     const [socket, setSocket] = useState<Socket | null>(null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [banner, setBanner] = useState<{ message: string; at: number } | null>(null);
@@ -93,7 +95,7 @@ export function NotificationsListener() {
             if (payload.userIds && currentUserId && !payload.userIds.includes(currentUserId)) {
                 return;
             }
-            const msg = `Nouveau taux d'épargne : ${payload.ratePercent}%`;
+            const msg = t("savingsRateUpdated", { rate: payload.ratePercent });
             setBanner({ message: msg, at: Date.now() });
             setTimeout(() => setBanner(null), 6000);
         };
@@ -101,7 +103,7 @@ export function NotificationsListener() {
         return () => {
             socket.off("savings-rate-updated", handler);
         };
-    }, [socket, currentUserId]);
+    }, [socket, currentUserId, t]);
 
     if (!banner) return null;
 
@@ -121,7 +123,7 @@ export function NotificationsListener() {
                         onClick={() => setBanner(null)}
                         className="h-6 px-2 text-xs"
                     >
-                        OK
+                        {t("close")}
                     </Button>
                 </div>
             </div>

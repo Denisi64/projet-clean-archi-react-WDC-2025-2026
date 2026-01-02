@@ -4,6 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SavingsRateCard } from "./SavingsRateCard";
+import { getTranslations } from "next-intl/server";
 
 type CurrentUser = { id: string; email: string; role: string | null };
 
@@ -30,6 +31,7 @@ async function loadCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export default async function SavingsRatePage() {
+    const t = await getTranslations("savingsRatePage");
     const user = await loadCurrentUser();
     if (!user || user.role !== "DIRECTOR") {
         redirect("/");
@@ -40,15 +42,12 @@ export default async function SavingsRatePage() {
             <div className="mx-auto max-w-3xl space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm text-muted-foreground">Administration Directeur</p>
-                        <h1 className="text-3xl font-bold">Fixer le taux d&apos;épargne</h1>
-                        <p className="text-muted-foreground">
-                            Ajustez le taux annuel appliqué aux comptes d&apos;épargne. Uniquement visible par
-                            les directeurs.
-                        </p>
+                        <p className="text-sm text-muted-foreground">{t("kicker")}</p>
+                        <h1 className="text-3xl font-bold">{t("title")}</h1>
+                        <p className="text-muted-foreground">{t("subtitle")}</p>
                     </div>
                     <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
-                        Retour
+                        {t("back")}
                     </Link>
                 </div>
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
     registerUser,
     RegisterUserInput,
@@ -23,7 +24,10 @@ type RegisterFormProps = {
     onSuccessRedirectTo?: string; // ex: '/dashboard'
 };
 
-export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
+export function RegisterForm({ onSuccessRedirectTo = "/" }: RegisterFormProps) {
+    const t = useTranslations("register");
+    const locale = useLocale();
+    const intlLocale = locale === "en" ? "en-US" : "fr-FR";
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -47,12 +51,12 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
         try {
             const { confirmationExpiresAt } = await registerUser(payload);
             const eta = confirmationExpiresAt
-                ? new Date(confirmationExpiresAt).toLocaleString()
+                ? new Date(confirmationExpiresAt).toLocaleString(intlLocale)
                 : null;
             setSuccess(
                 eta
-                    ? `Compte créé. Vérifie tes emails et confirme ton compte avant le ${eta}.`
-                    : 'Compte créé. Vérifie tes emails et confirme ton compte.',
+                    ? t("successWithDate", { eta })
+                    : t("success"),
             );
             if (onSuccessRedirectTo) {
                 router.prefetch(onSuccessRedirectTo);
@@ -61,7 +65,7 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
             if (err instanceof Error) {
                 setError(err.message);
             } else {
-                setError('Une erreur est survenue.');
+                setError(t("error"));
             }
         } finally {
             setLoading(false);
@@ -71,9 +75,9 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
     return (
         <Card className="w-full max-w-md">
             <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-center">Créer un compte</CardTitle>
+                <CardTitle className="text-2xl font-bold text-center">{t("title")}</CardTitle>
                 <CardDescription className="text-center">
-                    Entrez vos informations pour commencer.
+                    {t("subtitle")}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -91,7 +95,7 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="firstName">Prénom</Label>
+                            <Label htmlFor="firstName">{t("firstName")}</Label>
                             <Input
                                 id="firstName"
                                 name="firstName"
@@ -101,7 +105,7 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="lastName">Nom</Label>
+                            <Label htmlFor="lastName">{t("lastName")}</Label>
                             <Input
                                 id="lastName"
                                 name="lastName"
@@ -112,7 +116,7 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t("email")}</Label>
                         <Input
                             id="email"
                             name="email"
@@ -123,7 +127,7 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Mot de passe</Label>
+                        <Label htmlFor="password">{t("password")}</Label>
                         <Input
                             id="password"
                             name="password"
@@ -133,20 +137,20 @@ export function RegisterForm({ onSuccessRedirectTo = '/' }: RegisterFormProps) {
                             minLength={8}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Minimum 8 caractères.
+                            {t("passwordHint")}
                         </p>
                     </div>
 
                     <Button type="submit" disabled={loading} className="w-full">
-                        {loading ? 'Création du compte...' : "S'inscrire"}
+                        {loading ? t("submitting") : t("submit")}
                     </Button>
                 </form>
             </CardContent>
             <CardFooter>
                 <p className="text-sm text-center text-muted-foreground w-full">
-                    Déjà un compte ?{' '}
+                    {t("already")}{" "}
                     <Link href="/login" className="underline hover:text-primary">
-                        Se connecter
+                        {t("login")}
                     </Link>
                 </p>
             </CardFooter>

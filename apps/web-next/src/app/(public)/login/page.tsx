@@ -1,9 +1,13 @@
 import LoginForm from "@/features/auth/components/LoginForm";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-    title: "Connexion – Avenir Bank",
-    description: "Accédez à votre espace client.",
-};
+export async function generateMetadata() {
+    const t = await getTranslations("loginPage");
+    return {
+        title: t("title"),
+        description: t("description"),
+    };
+}
 
 export default function LoginPage() {
     return (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ActionsAdminClient from "./ActionsAdminClient";
+import { getTranslations } from "next-intl/server";
 
 type CurrentUser = { id: string; email: string; role: string | null };
 
@@ -30,6 +31,7 @@ async function loadCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export default async function DirectorActionsPage() {
+    const t = await getTranslations("directorActionsPage");
     const user = await loadCurrentUser();
     if (!user || user.role !== "DIRECTOR") {
         redirect("/");
@@ -41,17 +43,15 @@ export default async function DirectorActionsPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm text-muted-foreground">Administration Directeur</p>
-                        <h1 className="text-3xl font-bold">Gestion des actions</h1>
-                        <p className="text-muted-foreground">
-                            Creation, disponibilite et suppression des actions.
-                        </p>
+                        <h1 className="text-3xl font-bold">{t("title")}</h1>
+                        <p className="text-muted-foreground">{t("subtitle")}</p>
                     </div>
                     <div className="flex gap-2">
                         <Link href="/director/admin" className={cn(buttonVariants({ variant: "outline" }))}>
-                            Panel admin
+                            {t("admin")}
                         </Link>
                         <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
-                            Retour
+                            {t("back")}
                         </Link>
                     </div>
                 </div>
