@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import AdminPanelClient from "./AdminPanelClient";
+import ActionsAdminClient from "./ActionsAdminClient";
 
 type CurrentUser = { id: string; email: string; role: string | null };
 
@@ -29,7 +29,7 @@ async function loadCurrentUser(): Promise<CurrentUser | null> {
     return { ...data.user, role: data.user.role ?? null };
 }
 
-export default async function DirectorAdminPage() {
+export default async function DirectorActionsPage() {
     const user = await loadCurrentUser();
     if (!user || user.role !== "DIRECTOR") {
         redirect("/");
@@ -41,23 +41,14 @@ export default async function DirectorAdminPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm text-muted-foreground">Administration Directeur</p>
-                        <h1 className="text-3xl font-bold">Panel admin</h1>
+                        <h1 className="text-3xl font-bold">Gestion des actions</h1>
                         <p className="text-muted-foreground">
-                            Gestion des comptes clients et bannissement.
+                            Creation, disponibilite et suppression des actions.
                         </p>
                     </div>
                     <div className="flex gap-2">
-                        <Link
-                            href="/director/actions"
-                            className={cn(buttonVariants({ variant: "outline" }))}
-                        >
-                            Actions
-                        </Link>
-                        <Link
-                            href="/director/savings-rate"
-                            className={cn(buttonVariants({ variant: "outline" }))}
-                        >
-                            Taux épargne
+                        <Link href="/director/admin" className={cn(buttonVariants({ variant: "outline" }))}>
+                            Panel admin
                         </Link>
                         <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
                             Retour
@@ -65,7 +56,7 @@ export default async function DirectorAdminPage() {
                     </div>
                 </div>
 
-                <AdminPanelClient />
+                <ActionsAdminClient />
             </div>
         </main>
     );
