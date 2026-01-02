@@ -9,15 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select-native";
-
-const schema = z.object({
-    name: z.string().trim().min(2, "Le nom du compte est requis."),
-    type: z.enum(["CURRENT", "SAVINGS"]),
-});
-type FormData = z.infer<typeof schema>;
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 export default function AccountCreatorCard() {
+    const t = useTranslations("accountCreatorCard");
     const router = useRouter();
+    const schema = useMemo(
+        () =>
+            z.object({
+                name: z.string().trim().min(2, t("nameRequired")),
+                type: z.enum(["CURRENT", "SAVINGS"]),
+            }),
+        [t],
+    );
+    type FormData = z.infer<typeof schema>;
     const {
         register,
         handleSubmit,
@@ -37,16 +43,16 @@ export default function AccountCreatorCard() {
         }).catch(() => null);
 
         if (!resp) {
-            setError("root", { type: "server", message: "UNEXPECTED_ERROR" });
+            setError("root", { type: "server", message: t("serverError") });
             return;
         }
         if (!resp.ok) {
             const resData = await resp.json().catch(() => null);
-            setError("root", { type: "server", message: resData?.code ?? "UNEXPECTED_ERROR" });
+            setError("root", { type: "server", message: resData?.code ?? t("serverError") });
             return;
         }
 
-        setError("root", { type: "success", message: "Compte créé" });
+        setError("root", { type: "success", message: t("createOk") });
         reset({ name: "", type: data.type });
         router.refresh();
     };
@@ -54,27 +60,29 @@ export default function AccountCreatorCard() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Ajouter un compte</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form className="space-y-3" onSubmit={handleSubmit(submit)}>
                     <div className="space-y-1">
-                        <Label>Nom</Label>
-                        <Input {...register("name")} placeholder="Mon compte" />
+                        <Label>{t("name")}</Label>
+                        <Input {...register("name")} placeholder={t("namePlaceholder")} />
                         {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                     </div>
                     <div className="space-y-1">
-                        <Label>Type</Label>
+                        <Label>{t("type")}</Label>
                         <Select {...register("type")}>
-                            <option value="CURRENT">Compte courant</option>
-                            <option value="SAVINGS">Épargne</option>
+                            <option value="CURRENT">{t("typeCurrent")}</option>
+                            <option value="SAVINGS">{t("typeSavings")}</option>
                         </Select>
                     </div>
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Création..." : "Créer"}
+                        {isSubmitting ? t("creating") : t("create")}
                     </Button>
                     {errors.root?.type === "server" && (
-                        <div className="text-sm text-destructive">Erreur : {errors.root.message}</div>
+                        <div className="text-sm text-destructive">
+                            {t("errorPrefix")} {errors.root.message}
+                        </div>
                     )}
                     {errors.root?.type === "success" && (
                         <div className="text-sm text-emerald-600">{errors.root.message}</div>

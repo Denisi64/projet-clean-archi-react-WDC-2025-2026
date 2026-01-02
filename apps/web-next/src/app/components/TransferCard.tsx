@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 type Account = {
     id: string;
@@ -16,16 +17,20 @@ type Account = {
     name: string;
 };
 
-const schema = z.object({
-    sourceAccountId: z.string().min(1, "Compte source requis"),
-    destinationIban: z.string().trim().min(5, "IBAN requis"),
-    amount: z.coerce.number().positive("Montant invalide"),
-    note: z.string().trim().optional(),
-});
-type FormData = z.infer<typeof schema>;
-
 export default function TransferCard({ accounts }: { accounts: Account[] }) {
+    const t = useTranslations("transferCard");
     const router = useRouter();
+    const schema = useMemo(
+        () =>
+            z.object({
+                sourceAccountId: z.string().min(1, t("sourceRequired")),
+                destinationIban: z.string().trim().min(5, t("ibanRequired")),
+                amount: z.coerce.number().positive(t("amountInvalid")),
+                note: z.string().trim().optional(),
+            }),
+        [t],
+    );
+    type FormData = z.infer<typeof schema>;
     const {
         register,
         handleSubmit,
@@ -67,16 +72,16 @@ export default function TransferCard({ accounts }: { accounts: Account[] }) {
         }).catch(() => null);
 
         if (!resp) {
-            setError("root", { type: "server", message: "UNEXPECTED_ERROR" });
+            setError("root", { type: "server", message: t("serverError") });
             return;
         }
         if (!resp.ok) {
             const resData = await resp.json().catch(() => null);
-            setError("root", { type: "server", message: resData?.code ?? "UNEXPECTED_ERROR" });
+            setError("root", { type: "server", message: resData?.code ?? t("serverError") });
             return;
         }
 
-        setError("root", { type: "success", message: "Transfert effectué" });
+        setError("root", { type: "success", message: t("success") });
         reset({
             sourceAccountId: data.sourceAccountId,
             destinationIban: "",
@@ -91,12 +96,12 @@ export default function TransferCard({ accounts }: { accounts: Account[] }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Effectuer un transfert</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form className="space-y-3" onSubmit={handleSubmit(submit)}>
                     <div className="space-y-1">
-                        <Label>Compte source</Label>
+                        <Label>{t("sourceLabel")}</Label>
                         <select
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             {...register("sourceAccountId")}
@@ -112,25 +117,29 @@ export default function TransferCard({ accounts }: { accounts: Account[] }) {
                         )}
                     </div>
                     <div className="space-y-1">
-                        <Label>IBAN destination (interne)</Label>
+                        <Label>{t("destinationLabel")}</Label>
                         <Input {...register("destinationIban")} />
                         {errors.destinationIban && (
                             <p className="text-sm text-destructive">{errors.destinationIban.message}</p>
                         )}
                     </div>
                     <div className="space-y-1">
-                        <Label>Montant</Label>
+                        <Label>{t("amountLabel")}</Label>
                         <Input type="number" step="0.01" {...register("amount")} />
                         {errors.amount && <p className="text-sm text-destructive">{errors.amount.message}</p>}
                     </div>
                     <div className="space-y-1">
-                        <Label>Note</Label>
+                        <Label>{t("noteLabel")}</Label>
                         <Input {...register("note")} />
                     </div>
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Transfert..." : "Transférer"}
+                        {isSubmitting ? t("submitting") : t("submit")}
                     </Button>
-                    {error && <div className="text-sm text-destructive">Erreur : {error}</div>}
+                    {error && (
+                        <div className="text-sm text-destructive">
+                            {t("errorPrefix")} {error}
+                        </div>
+                    )}
                     {message && <div className="text-sm text-emerald-600">{message}</div>}
                 </form>
             </CardContent>

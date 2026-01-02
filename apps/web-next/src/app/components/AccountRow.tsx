@@ -6,6 +6,7 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { TableCell, TableRow } from "../../components/ui/table";
+import { useLocale, useTranslations } from "next-intl";
 
 export type Account = {
     id: string;
@@ -22,6 +23,9 @@ type Props = {
 };
 
 export function AccountRow({ account }: Props) {
+    const t = useTranslations("accountRow");
+    const locale = useLocale();
+    const intlLocale = locale === "en" ? "en-US" : "fr-FR";
     const router = useRouter();
     const [name, setName] = useState(account.name);
     const [editing, setEditing] = useState(false);
@@ -34,7 +38,7 @@ export function AccountRow({ account }: Props) {
     }, [account.name]);
 
     function formatCurrency(amount: string) {
-        return new Intl.NumberFormat("fr-FR", {
+        return new Intl.NumberFormat(intlLocale, {
             style: "currency",
             currency: "EUR",
             maximumFractionDigits: 2,
@@ -56,14 +60,14 @@ export function AccountRow({ account }: Props) {
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
-                setError(data?.code ?? "Impossible de renommer le compte.");
+                setError(data?.code ?? t("renameError"));
                 return;
             }
 
             setEditing(false);
             router.refresh();
         } catch (err) {
-            setError("Impossible de renommer le compte.");
+            setError(t("renameError"));
         } finally {
             setLoading(false);
         }
@@ -71,7 +75,7 @@ export function AccountRow({ account }: Props) {
 
     async function handleClose() {
         if (!account.isActive) return;
-        const confirmed = window.confirm("Clôturer ce compte ? Il passera en statut inactif.");
+        const confirmed = window.confirm(t("closeConfirm"));
         if (!confirmed) return;
 
         setClosing(true);
@@ -83,13 +87,13 @@ export function AccountRow({ account }: Props) {
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
-                setError(data?.code ?? "Impossible de clôturer le compte.");
+                setError(data?.code ?? t("closeError"));
                 return;
             }
 
             router.refresh();
         } catch (err) {
-            setError("Impossible de clôturer le compte.");
+            setError(t("closeError"));
         } finally {
             setClosing(false);
         }
@@ -108,11 +112,11 @@ export function AccountRow({ account }: Props) {
                                 onChange={(e) => setName(e.target.value)}
                                 minLength={2}
                                 maxLength={80}
-                                aria-label="Nouveau nom du compte"
+                                aria-label={t("renameAria")}
                                 className="h-8 w-40"
                             />
                             <Button type="submit" size="sm" disabled={loading}>
-                                OK
+                                {t("save")}
                             </Button>
                             <Button
                                 variant="ghost"
@@ -124,7 +128,7 @@ export function AccountRow({ account }: Props) {
                                 }}
                                 disabled={loading}
                             >
-                                X
+                                {t("cancel")}
                             </Button>
                         </form>
                     )}
@@ -134,16 +138,16 @@ export function AccountRow({ account }: Props) {
             <TableCell>{account.iban}</TableCell>
             <TableCell>
                 <Badge variant={account.type === "CURRENT" ? "outline" : "secondary"}>
-                    {account.type === "CURRENT" ? "Courant" : "Épargne"}
+                    {account.type === "CURRENT" ? t("typeCurrent") : t("typeSavings")}
                 </Badge>
             </TableCell>
             <TableCell>{formatCurrency(account.balance)}</TableCell>
             <TableCell>
                 <Badge variant={account.isActive ? "default" : "destructive"}>
-                    {account.isActive ? "Actif" : "Clôturé"}
+                    {account.isActive ? t("statusActive") : t("statusClosed")}
                 </Badge>
             </TableCell>
-            <TableCell>{new Date(account.createdAt).toLocaleDateString("fr-FR")}</TableCell>
+            <TableCell>{new Date(account.createdAt).toLocaleDateString(intlLocale)}</TableCell>
             <TableCell>
                 <div className="flex items-center gap-2">
                     <Button
@@ -161,7 +165,7 @@ export function AccountRow({ account }: Props) {
                         }}
                         disabled={closing}
                     >
-                        {editing ? "Fermer" : "Renommer"}
+                        {editing ? t("cancel") : t("rename")}
                     </Button>
                     <Button
                         variant="destructive"
@@ -170,7 +174,7 @@ export function AccountRow({ account }: Props) {
                         onClick={handleClose}
                         disabled={!account.isActive || closing}
                     >
-                        {closing ? "..." : "Clôturer"}
+                        {closing ? t("closing") : t("close")}
                     </Button>
                 </div>
             </TableCell>

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox-native";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useTranslations } from "next-intl";
+import { useToast } from "../../components/ToastProvider";
 
 type ActionItem = {
     id: string;
@@ -19,6 +21,7 @@ type ActionItem = {
 type ActionEdit = { name: string; isAvailable: boolean };
 
 export default function ActionsAdminClient() {
+    const t = useTranslations("directorActions");
     const [actions, setActions] = useState<ActionItem[]>([]);
     const [edits, setEdits] = useState<Record<string, ActionEdit>>({});
     const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export default function ActionsAdminClient() {
         availableStock: "",
         isAvailable: true,
     });
+    const { pushToast } = useToast();
 
     const loadActions = async () => {
         const res = await fetch("/api/admin/actions", { cache: "no-store" }).catch(() => null);
@@ -55,15 +59,16 @@ export default function ActionsAdminClient() {
             body: JSON.stringify(creating),
         }).catch(() => null);
         if (!res) {
-            setError("Impossible de contacter le serveur.");
+            setError(t("serverError"));
             return;
         }
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            setError(data?.code ?? "Erreur lors de la creation.");
+            setError(data?.code ?? t("createError"));
             return;
         }
         setCreating({ symbol: "", name: "", price: "", availableStock: "", isAvailable: true });
+        pushToast(t("createOk"));
         await loadActions();
     };
 
@@ -76,14 +81,15 @@ export default function ActionsAdminClient() {
             body: JSON.stringify(payload),
         }).catch(() => null);
         if (!res) {
-            setError("Impossible de contacter le serveur.");
+            setError(t("serverError"));
             return;
         }
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            setError(data?.code ?? "Erreur lors de la mise a jour.");
+            setError(data?.code ?? t("updateError"));
             return;
         }
+        pushToast(t("updateOk"));
         await loadActions();
     };
 
@@ -93,14 +99,15 @@ export default function ActionsAdminClient() {
             method: "DELETE",
         }).catch(() => null);
         if (!res) {
-            setError("Impossible de contacter le serveur.");
+            setError(t("serverError"));
             return;
         }
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            setError(data?.code ?? "Erreur lors de la suppression.");
+            setError(data?.code ?? t("deleteError"));
             return;
         }
+        pushToast(t("deleteOk"));
         await loadActions();
     };
 
@@ -114,64 +121,64 @@ export default function ActionsAdminClient() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Creer une action</CardTitle>
+                    <CardTitle>{t("createTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="grid gap-3 md:grid-cols-4">
                         <Input
-                            placeholder="SYM"
+                            placeholder={t("symbolPlaceholder")}
                             value={creating.symbol}
                             onChange={(e) => setCreating((prev) => ({ ...prev, symbol: e.target.value }))}
                         />
                         <Input
-                            placeholder="Nom"
+                            placeholder={t("namePlaceholder")}
                             value={creating.name}
                             onChange={(e) => setCreating((prev) => ({ ...prev, name: e.target.value }))}
                         />
                         <Input
-                            placeholder="Cours"
+                            placeholder={t("pricePlaceholder")}
                             inputMode="decimal"
                             value={creating.price}
                             onChange={(e) => setCreating((prev) => ({ ...prev, price: e.target.value }))}
                         />
                         <Input
-                            placeholder="Stock"
+                            placeholder={t("stockPlaceholder")}
                             inputMode="decimal"
                             value={creating.availableStock}
                             onChange={(e) => setCreating((prev) => ({ ...prev, availableStock: e.target.value }))}
                         />
                     </div>
-                    <label className="flex items-center gap-2 text-sm">
-                        <Checkbox
-                            checked={creating.isAvailable}
-                            onChange={(e) => {
-                                const checked = e.currentTarget.checked;
-                                setCreating((prev) => ({ ...prev, isAvailable: checked }));
-                            }}
-                        />
-                        Action disponible
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                                checked={creating.isAvailable}
+                                onChange={(e) => {
+                                    const checked = e.currentTarget.checked;
+                                    setCreating((prev) => ({ ...prev, isAvailable: checked }));
+                                }}
+                            />
+                        {t("available")}
                     </label>
-                    <Button onClick={createAction}>Creer</Button>
+                    <Button onClick={createAction}>{t("create")}</Button>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Actions existantes</CardTitle>
+                    <CardTitle>{t("actionsTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {actions.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">Aucune action pour le moment.</div>
+                        <div className="text-sm text-muted-foreground">{t("noActions")}</div>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Symbole</TableHead>
-                                    <TableHead>Nom</TableHead>
-                                    <TableHead>Cours</TableHead>
-                                    <TableHead>Stock</TableHead>
-                                    <TableHead>Disponible</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t("symbol")}</TableHead>
+                                    <TableHead>{t("name")}</TableHead>
+                                    <TableHead>{t("price")}</TableHead>
+                                    <TableHead>{t("stock")}</TableHead>
+                                    <TableHead>{t("availableColumn")}</TableHead>
+                                    <TableHead className="text-right">{t("actions")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -212,14 +219,14 @@ export default function ActionsAdminClient() {
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
                                                 <Button size="sm" onClick={() => updateAction(action.id)}>
-                                                    Mettre a jour
+                                                    {t("update")}
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
                                                     onClick={() => deleteAction(action.id)}
                                                 >
-                                                    Supprimer
+                                                    {t("remove")}
                                                 </Button>
                                             </div>
                                         </TableCell>

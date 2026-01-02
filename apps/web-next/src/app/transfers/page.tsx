@@ -6,6 +6,7 @@ import { TransfersHistoryClient } from "./transfers-history.client";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 type Account = {
     id: string;
@@ -117,6 +118,7 @@ async function loadCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export default async function TransfersHistoryPage({ searchParams }: { searchParams: { accountId?: string } }) {
+    const t = await getTranslations("transfersPage");
     const accountId = searchParams.accountId || undefined;
     const [{ authenticated, transfers }, accountsResult, currentUser] = await Promise.all([
         loadTransfers(accountId),
@@ -134,9 +136,9 @@ export default async function TransfersHistoryPage({ searchParams }: { searchPar
             <div className="mx-auto max-w-[1600px] space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-bold tracking-tight">Historique des transferts</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
                         <p className="text-muted-foreground">
-                            Liste des virements internes (entrants et sortants) associés à vos comptes Avenir Bank.
+                            {t("subtitle")}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -144,19 +146,19 @@ export default async function TransfersHistoryPage({ searchParams }: { searchPar
                             href="/"
                             className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
                         >
-                            <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
+                            <ArrowLeft className="h-4 w-4" /> {t("back")}
                         </Link>
                     </div>
                 </div>
 
                 {!authenticated && (
                     <div className="text-center py-12 text-muted-foreground bg-card rounded-lg border shadow-sm">
-                        Connectez-vous pour consulter vos transferts.
+                        {t("loginHint")}
                     </div>
                 )}
 
                 {authenticated && (
-                    <Suspense fallback={<div className="text-center py-12 text-muted-foreground">Chargement de l&apos;historique...</div>}>
+                    <Suspense fallback={<div className="text-center py-12 text-muted-foreground">{t("loading")}</div>}>
                         <TransfersHistoryClient
                             accounts={accounts}
                             initialTransfers={transfers}

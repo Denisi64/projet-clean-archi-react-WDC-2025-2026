@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select-native";
+import { useTranslations } from "next-intl";
 
 export default function AdminPanelClient() {
+    const t = useTranslations("adminPanel");
     const [banUserId, setBanUserId] = useState("");
     const [banResult, setBanResult] = useState<string | null>(null);
     const [users, setUsers] = useState<{ id: string; label: string }[]>([]);
@@ -112,28 +114,28 @@ export default function AdminPanelClient() {
     async function handleBanUser() {
         setBanResult(null);
         if (!banUserId.trim()) {
-            setBanResult("ID utilisateur requis");
+            setBanResult(t("userIdRequired"));
             return;
         }
         const res = await fetch(`/api/admin/users/${encodeURIComponent(banUserId)}/ban`, {
             method: "POST",
         }).catch(() => null);
         if (!res) {
-            setBanResult("Erreur réseau");
+            setBanResult(t("networkError"));
             return;
         }
         if (!res.ok) {
             const payload = await res.json().catch(() => ({}));
-            setBanResult(payload?.code ?? "Erreur serveur");
+            setBanResult(payload?.code ?? t("serverError"));
             return;
         }
-        setBanResult("Utilisateur banni");
+        setBanResult(t("userBanned"));
     }
 
     async function handleCreateAccount() {
         setCreateResult(null);
         if (!createUserId.trim()) {
-            setCreateResult("ID utilisateur requis");
+            setCreateResult(t("userIdRequired"));
             return;
         }
         const res = await fetch("/api/admin/accounts", {
@@ -146,21 +148,21 @@ export default function AdminPanelClient() {
             }),
         }).catch(() => null);
         if (!res) {
-            setCreateResult("Erreur réseau");
+            setCreateResult(t("networkError"));
             return;
         }
         if (!res.ok) {
             const payload = await res.json().catch(() => ({}));
-            setCreateResult(payload?.code ?? "Erreur serveur");
+            setCreateResult(payload?.code ?? t("serverError"));
             return;
         }
-        setCreateResult("Compte créé");
+        setCreateResult(t("accountCreated"));
     }
 
     async function handleRenameAccount() {
         setRenameResult(null);
         if (!renameAccountId.trim() || !renameUserId.trim() || !renameName.trim()) {
-            setRenameResult("ID compte, ID utilisateur et nom requis");
+            setRenameResult(t("renameRequired"));
             return;
         }
         const res = await fetch(`/api/admin/accounts/${encodeURIComponent(renameAccountId)}`, {
@@ -172,21 +174,21 @@ export default function AdminPanelClient() {
             }),
         }).catch(() => null);
         if (!res) {
-            setRenameResult("Erreur réseau");
+            setRenameResult(t("networkError"));
             return;
         }
         if (!res.ok) {
             const payload = await res.json().catch(() => ({}));
-            setRenameResult(payload?.code ?? "Erreur serveur");
+            setRenameResult(payload?.code ?? t("serverError"));
             return;
         }
-        setRenameResult("Compte renommé");
+        setRenameResult(t("accountRenamed"));
     }
 
     async function handleCloseAccount() {
         setCloseResult(null);
         if (!closeAccountId.trim() || !closeUserId.trim()) {
-            setCloseResult("ID compte et ID utilisateur requis");
+            setCloseResult(t("closeRequired"));
             return;
         }
         const res = await fetch(`/api/admin/accounts/${encodeURIComponent(closeAccountId)}/close`, {
@@ -197,34 +199,34 @@ export default function AdminPanelClient() {
             }),
         }).catch(() => null);
         if (!res) {
-            setCloseResult("Erreur réseau");
+            setCloseResult(t("networkError"));
             return;
         }
         if (!res.ok) {
             const payload = await res.json().catch(() => ({}));
-            setCloseResult(payload?.code ?? "Erreur serveur");
+            setCloseResult(payload?.code ?? t("serverError"));
             return;
         }
-        setCloseResult("Compte clôturé");
+        setCloseResult(t("accountClosed"));
     }
 
     return (
         <div className="grid gap-6 md:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Bannir un client</CardTitle>
-                    <CardDescription>Rend le compte inactif (403 sur les routes).</CardDescription>
+                    <CardTitle>{t("banTitle")}</CardTitle>
+                    <CardDescription>{t("banDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="banUserId">Utilisateur</Label>
+                        <Label htmlFor="banUserId">{t("userLabel")}</Label>
                         <Select
                             id="banUserId"
                             value={banUserId}
                             onChange={(e) => setBanUserId(e.target.value)}
                             disabled={loadingUsers || users.length === 0}
                         >
-                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.length === 0 && <option value="">{t("noUsers")}</option>}
                             {users.map((u) => (
                                 <option key={u.id} value={u.id}>
                                     {u.label}
@@ -235,10 +237,10 @@ export default function AdminPanelClient() {
                     {banResult && <p className="text-sm text-muted-foreground">{banResult}</p>}
                     <div className="flex gap-2">
                         <Button onClick={loadUsers} className="w-full" variant="outline">
-                            {loadingUsers ? "Chargement..." : "Rafraîchir"}
+                            {loadingUsers ? t("loadingUsers") : t("refresh")}
                         </Button>
                         <Button onClick={handleBanUser} className="w-full">
-                            Bannir
+                            {t("ban")}
                         </Button>
                     </div>
                 </CardContent>
@@ -246,19 +248,19 @@ export default function AdminPanelClient() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Créer un compte client</CardTitle>
-                    <CardDescription>Compte courant ou épargne pour un client.</CardDescription>
+                    <CardTitle>{t("createTitle")}</CardTitle>
+                    <CardDescription>{t("createDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="createUserId">ID utilisateur</Label>
+                        <Label htmlFor="createUserId">{t("userLabel")}</Label>
                         <Select
                             id="createUserId"
                             value={createUserId}
                             onChange={(e) => setCreateUserId(e.target.value)}
                             disabled={loadingUsers || users.length === 0}
                         >
-                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.length === 0 && <option value="">{t("noUsers")}</option>}
                             {users.map((u) => (
                                 <option key={u.id} value={u.id}>
                                     {u.label}
@@ -267,7 +269,7 @@ export default function AdminPanelClient() {
                         </Select>
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="createName">Nom du compte</Label>
+                        <Label htmlFor="createName">{t("accountNameLabel")}</Label>
                         <Input
                             id="createName"
                             value={createName}
@@ -275,31 +277,31 @@ export default function AdminPanelClient() {
                         />
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="createType">Type</Label>
+                        <Label htmlFor="createType">{t("accountTypeLabel")}</Label>
                         <Select
                             id="createType"
                             value={createType}
                             onChange={(e) => setCreateType(e.target.value as "CURRENT" | "SAVINGS")}
                         >
-                            <option value="CURRENT">Courant</option>
-                            <option value="SAVINGS">Épargne</option>
+                            <option value="CURRENT">{t("typeCurrent")}</option>
+                            <option value="SAVINGS">{t("typeSavings")}</option>
                         </Select>
                     </div>
                     {createResult && <p className="text-sm text-muted-foreground">{createResult}</p>}
                     <Button onClick={handleCreateAccount} className="w-full">
-                        Créer
+                        {t("create")}
                     </Button>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Renommer un compte</CardTitle>
-                    <CardDescription>Modifie le nom affiché d’un compte client.</CardDescription>
+                    <CardTitle>{t("renameTitle")}</CardTitle>
+                    <CardDescription>{t("renameDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="renameUserId">Utilisateur</Label>
+                        <Label htmlFor="renameUserId">{t("userLabel")}</Label>
                         <Select
                             id="renameUserId"
                             value={renameUserId}
@@ -309,7 +311,7 @@ export default function AdminPanelClient() {
                             }}
                             disabled={loadingUsers || users.length === 0}
                         >
-                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.length === 0 && <option value="">{t("noUsers")}</option>}
                             {users.map((u) => (
                                 <option key={u.id} value={u.id}>
                                     {u.label}
@@ -318,14 +320,14 @@ export default function AdminPanelClient() {
                         </Select>
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="renameAccountId">Compte</Label>
+                        <Label htmlFor="renameAccountId">{t("accountLabel")}</Label>
                         <Select
                             id="renameAccountId"
                             value={renameAccountId}
                             onChange={(e) => setRenameAccountId(e.target.value)}
                             disabled={loadingRenameAccounts || renameAccounts.length === 0}
                         >
-                            {renameAccounts.length === 0 && <option value="">Aucun compte</option>}
+                            {renameAccounts.length === 0 && <option value="">{t("noAccounts")}</option>}
                             {renameAccounts.map((a) => (
                                 <option key={a.id} value={a.id}>
                                     {a.label}
@@ -334,7 +336,7 @@ export default function AdminPanelClient() {
                         </Select>
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="renameName">Nouveau nom</Label>
+                        <Label htmlFor="renameName">{t("newNameLabel")}</Label>
                         <Input
                             id="renameName"
                             value={renameName}
@@ -343,19 +345,19 @@ export default function AdminPanelClient() {
                     </div>
                     {renameResult && <p className="text-sm text-muted-foreground">{renameResult}</p>}
                     <Button onClick={handleRenameAccount} className="w-full">
-                        Renommer
+                        {t("rename")}
                     </Button>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Clôturer un compte</CardTitle>
-                    <CardDescription>Désactive un compte client.</CardDescription>
+                    <CardTitle>{t("closeTitle")}</CardTitle>
+                    <CardDescription>{t("closeDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div className="space-y-1">
-                        <Label htmlFor="closeUserId">Utilisateur</Label>
+                        <Label htmlFor="closeUserId">{t("userLabel")}</Label>
                         <Select
                             id="closeUserId"
                             value={closeUserId}
@@ -365,7 +367,7 @@ export default function AdminPanelClient() {
                             }}
                             disabled={loadingUsers || users.length === 0}
                         >
-                            {users.length === 0 && <option value="">Aucun utilisateur</option>}
+                            {users.length === 0 && <option value="">{t("noUsers")}</option>}
                             {users.map((u) => (
                                 <option key={u.id} value={u.id}>
                                     {u.label}
@@ -374,14 +376,14 @@ export default function AdminPanelClient() {
                         </Select>
                     </div>
                     <div className="space-y-1">
-                        <Label htmlFor="closeAccountId">Compte</Label>
+                        <Label htmlFor="closeAccountId">{t("accountLabel")}</Label>
                         <Select
                             id="closeAccountId"
                             value={closeAccountId}
                             onChange={(e) => setCloseAccountId(e.target.value)}
                             disabled={loadingCloseAccounts || closeAccounts.length === 0}
                         >
-                            {closeAccounts.length === 0 && <option value="">Aucun compte</option>}
+                            {closeAccounts.length === 0 && <option value="">{t("noAccounts")}</option>}
                             {closeAccounts.map((a) => (
                                 <option key={a.id} value={a.id}>
                                     {a.label}
@@ -391,7 +393,7 @@ export default function AdminPanelClient() {
                     </div>
                     {closeResult && <p className="text-sm text-muted-foreground">{closeResult}</p>}
                     <Button onClick={handleCloseAccount} className="w-full" variant="outline">
-                        Clôturer
+                        {t("close")}
                     </Button>
                 </CardContent>
             </Card>

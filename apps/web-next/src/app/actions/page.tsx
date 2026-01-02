@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ActionsClient } from "./actions.client";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 type ActionItem = {
     id: string;
@@ -33,7 +34,10 @@ type CurrentUser = {
 
 async function loadActions(): Promise<ActionItem[]> {
     const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${base}/api/actions`, { method: "GET", cache: "no-store" }).catch(() => null);
+    const res = await fetch(`${base}/api/actions`, {
+        method: "GET",
+        next: { revalidate: 30 },
+    }).catch(() => null);
     if (!res || !res.ok) return [];
     const data = (await res.json()) as { actions?: ActionItem[] };
     return data.actions ?? [];
@@ -66,6 +70,7 @@ async function loadCurrentUser(cookieHeader: string): Promise<CurrentUser | null
 }
 
 export default async function ActionsPage() {
+    const t = await getTranslations("actionsPage");
     const cookieStore = await cookies();
     const cookieHeader = cookieStore
         .getAll()
@@ -83,13 +88,11 @@ export default async function ActionsPage() {
             <div className="mx-auto max-w-5xl space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold">Actions Avenir Bank</h1>
-                        <p className="text-muted-foreground">
-                            Achat et vente d&apos;actions avec stock mis a jour en temps reel.
-                        </p>
+                        <h1 className="text-3xl font-bold">{t("title")}</h1>
+                        <p className="text-muted-foreground">{t("subtitle")}</p>
                     </div>
                     <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
-                        Retour
+                        {t("back")}
                     </Link>
                 </div>
 

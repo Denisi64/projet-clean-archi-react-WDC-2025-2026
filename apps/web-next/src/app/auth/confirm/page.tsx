@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type Status = "idle" | "loading" | "success" | "error";
 
 export default function ConfirmPage() {
+    const t = useTranslations("confirm");
     const search = useSearchParams();
     const token = search.get("token");
     const [status, setStatus] = useState<Status>("idle");
@@ -15,7 +17,7 @@ export default function ConfirmPage() {
         async function run() {
             if (!token) {
                 setStatus("error");
-                setMessage("Token manquant dans l'URL.");
+                setMessage(t("tokenMissing"));
                 return;
             }
             setStatus("loading");
@@ -28,32 +30,32 @@ export default function ConfirmPage() {
                 });
                 if (res.ok) {
                     setStatus("success");
-                    setMessage("Votre compte est confirmé. Vous pouvez vous connecter.");
+                    setMessage(t("success"));
                 } else {
                     const payload = await res.json().catch(() => ({}));
                     const code = payload?.code;
                     if (code === "CONFIRMATION_TOKEN_EXPIRED") {
-                        setMessage("Le lien a expiré. Demandez un nouvel e-mail.");
+                        setMessage(t("tokenExpired"));
                     } else if (code === "CONFIRMATION_TOKEN_INVALID") {
-                        setMessage("Lien de confirmation invalide.");
+                        setMessage(t("tokenInvalid"));
                     } else {
-                        setMessage("Impossible de confirmer le compte pour le moment.");
+                        setMessage(t("genericError"));
                     }
                     setStatus("error");
                 }
             } catch (e: any) {
                 setStatus("error");
-                setMessage("Erreur réseau. Réessayez.");
+                setMessage(t("networkError"));
             }
         }
         run();
-    }, [token]);
+    }, [token, t]);
 
     return (
         <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="w-full max-w-md rounded-xl border bg-white p-6 shadow-sm space-y-3">
-                <h1 className="text-xl font-semibold">Confirmation du compte</h1>
-                {status === "loading" && <p className="text-sm text-gray-600">Validation en cours...</p>}
+                <h1 className="text-xl font-semibold">{t("title")}</h1>
+                {status === "loading" && <p className="text-sm text-gray-600">{t("loading")}</p>}
                 {status === "success" && (
                     <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-md p-3">
                         {message}
@@ -66,7 +68,7 @@ export default function ConfirmPage() {
                 )}
                 {status === "success" && (
                     <a href="/login" className="inline-flex justify-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-gray-50">
-                        Se connecter
+                        {t("login")}
                     </a>
                 )}
             </div>
