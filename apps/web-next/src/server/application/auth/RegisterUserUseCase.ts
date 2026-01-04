@@ -1,10 +1,10 @@
 // src/server/application/auth/RegisterUserUseCase.ts
 
-import { randomBytes } from "crypto";
 import { AuthRepository } from "../../domain/auth/ports/AuthRepository";
 import { PasswordHasher } from "../../domain/auth/ports/PasswordHasher";
 import { EmailAlreadyInUseError } from "../../domain/auth/errors/EmailAlreadyInUseError";
 import { EmailService } from "../../domain/auth/ports/EmailService";
+import { ActivationTokenGenerator } from "../../domain/auth/ports/ActivationTokenGenerator";
 import { Result, err, ok } from "../Result";
 
 type Input = { email: string; password: string; name?: string };
@@ -16,6 +16,7 @@ export class RegisterUserUseCase {
         private readonly repo: AuthRepository,
         private readonly hasher: PasswordHasher,
         private readonly emailService: EmailService,
+        private readonly tokenGenerator: ActivationTokenGenerator,
         private readonly ttlHours: number,
     ) {}
 
@@ -26,7 +27,7 @@ export class RegisterUserUseCase {
         }
 
         const passwordHash = await this.hasher.hash(password);
-        const token = randomBytes(32).toString("hex");
+        const token = await this.tokenGenerator.generate();
         const hours = Number.isFinite(this.ttlHours) ? this.ttlHours : 24;
         const expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
         const displayName = name?.trim() || email.split("@")[0];

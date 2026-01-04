@@ -8,6 +8,7 @@ import { RegisterUserUseCase } from "@/server/application/auth/RegisterUserUseCa
 import { EmailAlreadyInUseError } from "@/server/domain/auth/errors/EmailAlreadyInUseError";
 import { NodemailerEmailService } from "@/server/infrastructure/auth/NodemailerEmailService";
 import { EmailDeliveryError } from "@/server/domain/auth/errors/EmailDeliveryError";
+import { CryptoActivationTokenGenerator } from "@/server/infrastructure/auth/CryptoActivationTokenGenerator";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -38,6 +39,7 @@ async function handleUseCase(req: NextRequest) {
         new PrismaAuthRepository(),
         new BCryptPasswordHasher(),
         new NodemailerEmailService(),
+        new CryptoActivationTokenGenerator(),
         ttlHours,
     );
 
