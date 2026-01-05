@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
-import { EmailService } from "../../domain/auth/ports/EmailService";
-import { EmailDeliveryError } from "../../domain/auth/errors/EmailDeliveryError";
+import { EmailService } from "@proj/domain/auth/ports/EmailService";
+import { EmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError";
 
 export class NodemailerEmailService implements EmailService {
     private readonly host = process.env.SMTP_HOST ?? "mailhog";

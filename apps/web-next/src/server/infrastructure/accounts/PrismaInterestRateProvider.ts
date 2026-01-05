@@ -1,5 +1,5 @@
-import { InterestRateProvider } from "../../domain/accounts/ports/InterestRateProvider";
-import { SavingsRateRepository } from "../../domain/accounts/ports/SavingsRateRepository";
+import { InterestRateProvider } from "@proj/domain/accounts/ports/InterestRateProvider";
+import { SavingsRateRepository } from "@proj/domain/accounts/ports/SavingsRateRepository";
 
 export class PrismaInterestRateProvider implements InterestRateProvider {
     constructor(private readonly rateRepo: SavingsRateRepository) {}

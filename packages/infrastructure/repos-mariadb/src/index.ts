@@ -1,1 +1,1 @@
-// infra adapter: repos-mariadb
+export { MariadbDbHealthAdapter } from "./DbHealth.mariadb";

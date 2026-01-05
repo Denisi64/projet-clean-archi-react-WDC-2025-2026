@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
 import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
-import { RegisterUserUseCase } from "@/server/application/auth/RegisterUserUseCase";
-import { EmailAlreadyInUseError } from "@/server/domain/auth/errors/EmailAlreadyInUseError";
+import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
+import { EmailAlreadyInUseError } from "@proj/domain/auth/errors/EmailAlreadyInUseError";
 import { NodemailerEmailService } from "@/server/infrastructure/auth/NodemailerEmailService";
-import { EmailDeliveryError } from "@/server/domain/auth/errors/EmailDeliveryError";
+import { EmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError";
 import { CryptoActivationTokenGenerator } from "@/server/infrastructure/auth/CryptoActivationTokenGenerator";
 
 const target = process.env.BACKEND_TARGET ?? "nest";

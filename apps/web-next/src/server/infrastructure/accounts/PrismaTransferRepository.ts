@@ -4,7 +4,7 @@ import {
     TransferRepository,
     TransferResult,
     TransferHistoryItem,
-} from "../../domain/accounts/ports/TransferRepository";
+} from "@proj/domain/accounts/ports/TransferRepository";
 
 export class PrismaTransferRepository implements TransferRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

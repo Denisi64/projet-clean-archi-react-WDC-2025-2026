@@ -3,12 +3,12 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { SearchUsersUseCase } from "@/server/application/users/SearchUsersUseCase";
+import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
-import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
-import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
-import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");

@@ -7,17 +7,17 @@ import { PrismaActionRepository } from "@/server/infrastructure/actions/PrismaAc
 import { PrismaPortfolioRepository } from "@/server/infrastructure/actions/PrismaPortfolioRepository";
 import { PrismaActionTradeRepository } from "@/server/infrastructure/actions/PrismaActionTradeRepository";
 import { LocalSocketActionStockNotifier } from "@/server/infrastructure/notifications/LocalSocketActionStockNotifier";
-import { BuyActionUseCase } from "@/server/application/actions/BuyActionUseCase";
+import { BuyActionUseCase } from "@proj/application/actions/BuyActionUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
-import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
-import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
-import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
-import { ActionNotFoundError } from "@/server/domain/actions/errors/ActionNotFoundError";
-import { ActionUnavailableError } from "@/server/domain/actions/errors/ActionUnavailableError";
-import { InsufficientActionStockError } from "@/server/domain/actions/errors/InsufficientActionStockError";
-import { InvalidActionQuantityError } from "@/server/domain/actions/errors/InvalidActionQuantityError";
+import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
+import { ActionNotFoundError } from "@proj/domain/actions/errors/ActionNotFoundError";
+import { ActionUnavailableError } from "@proj/domain/actions/errors/ActionUnavailableError";
+import { InsufficientActionStockError } from "@proj/domain/actions/errors/InsufficientActionStockError";
+import { InvalidActionQuantityError } from "@proj/domain/actions/errors/InvalidActionQuantityError";
 
 const prisma = new PrismaClient();
 const actionRepo = new PrismaActionRepository(prisma);

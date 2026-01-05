@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { SavingsRateNotifier } from "../../application/accounts/ports/SavingsRateNotifier";
+import { SavingsRateNotifier } from "@proj/application/accounts/ports/SavingsRateNotifier";
 
 export class LocalSocketSavingsRateNotifier implements SavingsRateNotifier {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

@@ -4,12 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
-import { SearchUsersUseCase } from "@/server/application/users/SearchUsersUseCase";
+import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
-import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
-import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

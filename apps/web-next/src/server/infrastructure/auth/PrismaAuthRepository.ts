@@ -5,8 +5,8 @@ import {
     AuthRepository,
     AuthUser,
     CreateUserInput,
-} from "../../domain/auth/ports/AuthRepository";
-import { AccountIbanAllocationError } from "../../domain/accounts/errors/AccountIbanAllocationError";
+} from "@proj/domain/auth/ports/AuthRepository";
+import { AccountIbanAllocationError } from "@proj/domain/accounts/errors/AccountIbanAllocationError";
 
 const prisma = new PrismaClient();
 

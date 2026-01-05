@@ -1,1 +1,1 @@
-// infra adapter: repos-memory
+export { MemoryDbHealthAdapter } from "./DbHealth.memory";

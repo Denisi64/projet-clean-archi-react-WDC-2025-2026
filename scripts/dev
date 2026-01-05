@@ -268,6 +268,14 @@ prisma_seed() {
   esac
 }
 
+build_shared() {
+  command -v pnpm >/dev/null 2>&1 || { echo "✖ pnpm manquant"; exit 2; }
+  [ -d "$ROOT_DIR/node_modules" ] || (cd "$ROOT_DIR" && pnpm install)
+
+  say "→ Build packages (domain + application)"
+  ( cd "$ROOT_DIR" && pnpm --filter @proj/domain --filter @proj/application run build )
+}
+
 kill_tmux() { tmux has-session -t "$SESSION" 2>/dev/null && tmux kill-session -t "$SESSION" || true; }
 
 start_tmux() {
@@ -347,6 +355,7 @@ run_stack() {
   docker_up_ws
 
   [[ "$db" != "memory" ]] && prisma_seed "$db"
+  build_shared
 
   rm -rf "$WEB_DIR/.next" 2>/dev/null || true
 # éviter que l’API charge un vieux client local

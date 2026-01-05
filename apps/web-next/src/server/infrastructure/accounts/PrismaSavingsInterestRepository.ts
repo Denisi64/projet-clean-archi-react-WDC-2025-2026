@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { SavingsInterestRepository } from "../../domain/accounts/ports/SavingsInterestRepository";
+import { SavingsInterestRepository } from "@proj/domain/accounts/ports/SavingsInterestRepository";
 
 export class PrismaSavingsInterestRepository implements SavingsInterestRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

@@ -1,1 +1,1 @@
-// infra adapter: repos-mariadb
+export { PostgresDbHealthAdapter } from "./DbHealth.postgres";

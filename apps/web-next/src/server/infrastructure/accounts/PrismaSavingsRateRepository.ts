@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { SavingsRateRepository } from "../../domain/accounts/ports/SavingsRateRepository";
+import { SavingsRateRepository } from "@proj/domain/accounts/ports/SavingsRateRepository";
 
 const DEFAULT_RATE_ID = "global-rate";
 

@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { PortfolioRepository, PortfolioPosition, PortfolioView } from "../../domain/actions/ports/PortfolioRepository";
+import { PortfolioRepository, PortfolioPosition, PortfolioView } from "@proj/domain/actions/ports/PortfolioRepository";
 
 export class PrismaPortfolioRepository implements PortfolioRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

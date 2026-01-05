@@ -1,7 +1,8 @@
 import { Account, AccountType as PrismaAccountType, PrismaClient } from "@prisma/client";
-import { AccountRepository, AccountSummary, AccountType } from "../../domain/accounts/ports/AccountRepository";
-import { AccountNotFoundError } from "../../domain/accounts/errors/AccountNotFoundError";
-import { AccountIbanAllocationError } from "../../domain/accounts/errors/AccountIbanAllocationError";
+import { AccountType } from "@proj/domain/accounts/AccountType";
+import { AccountRepository, AccountSummary } from "@proj/domain/accounts/ports/AccountRepository";
+import { AccountNotFoundError } from "@proj/domain/accounts/errors/AccountNotFoundError";
+import { AccountIbanAllocationError } from "@proj/domain/accounts/errors/AccountIbanAllocationError";
 
 export class PrismaAccountRepository implements AccountRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

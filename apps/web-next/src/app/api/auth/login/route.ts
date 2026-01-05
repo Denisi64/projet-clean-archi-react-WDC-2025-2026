@@ -6,10 +6,10 @@ import { z } from "zod";
 import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
 import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
 import { JwtTokenManager } from "@/server/infrastructure/auth/JwtTokenManager";
-import { LoginUserUseCase } from "@/server/application/auth/LoginUserUseCase";
-import { InvalidCredentialsError } from "@/server/domain/auth/errors/InvalidCredentialsError";
-import { InactiveAccountError } from "@/server/domain/auth/errors/InactiveAccountError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
+import { InvalidCredentialsError } from "@proj/domain/auth/errors/InvalidCredentialsError";
+import { InactiveAccountError } from "@proj/domain/auth/errors/InactiveAccountError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

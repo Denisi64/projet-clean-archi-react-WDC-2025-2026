@@ -4,9 +4,9 @@ import {
     ActionSnapshot,
     CreateActionInput,
     UpdateActionInput,
-} from "../../domain/actions/ports/ActionRepository";
-import { ActionNotFoundError } from "../../domain/actions/errors/ActionNotFoundError";
-import { ActionInUseError } from "../../domain/actions/errors/ActionInUseError";
+} from "@proj/domain/actions/ports/ActionRepository";
+import { ActionNotFoundError } from "@proj/domain/actions/errors/ActionNotFoundError";
+import { ActionInUseError } from "@proj/domain/actions/errors/ActionInUseError";
 
 export class PrismaActionRepository implements ActionRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

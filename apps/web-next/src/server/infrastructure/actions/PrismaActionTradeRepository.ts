@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { ActionTradeRepository } from "../../domain/actions/ports/ActionTradeRepository";
-import { ActionSnapshot } from "../../domain/actions/ports/ActionRepository";
-import { PortfolioPosition } from "../../domain/actions/ports/PortfolioRepository";
+import { ActionTradeRepository } from "@proj/domain/actions/ports/ActionTradeRepository";
+import { ActionSnapshot } from "@proj/domain/actions/ports/ActionRepository";
+import { PortfolioPosition } from "@proj/domain/actions/ports/PortfolioRepository";
 
 export class PrismaActionTradeRepository implements ActionTradeRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

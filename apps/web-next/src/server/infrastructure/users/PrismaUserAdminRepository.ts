@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { BannedUser, UserAdminRepository } from "../../domain/users/ports/UserAdminRepository";
+import { BannedUser, UserAdminRepository } from "@proj/domain/users/ports/UserAdminRepository";
 
 export class PrismaUserAdminRepository implements UserAdminRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

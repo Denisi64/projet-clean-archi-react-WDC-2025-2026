@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { CreditRepository, CreditDetail } from "../../domain/credits/ports/CreditRepository";
+import { CreditRepository, CreditDetail } from "@proj/domain/credits/ports/CreditRepository";
 
 export class PrismaCreditRepository implements CreditRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}

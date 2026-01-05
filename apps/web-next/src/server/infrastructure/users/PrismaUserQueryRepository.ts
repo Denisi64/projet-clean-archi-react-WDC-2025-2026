@@ -4,7 +4,8 @@ import {
     UserMinimal,
     UserRole,
     UserAccess,
-} from "../../domain/users/ports/UserQueryRepository";
+    UserProfile,
+} from "@proj/domain/users/ports/UserQueryRepository";
 
 export class PrismaUserQueryRepository implements UserQueryRepository {
     constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
@@ -48,5 +49,21 @@ export class PrismaUserQueryRepository implements UserQueryRepository {
 
         if (!user?.role) return null;
         return { role: user.role, bannedAt: user.bannedAt ?? null };
+    }
+
+    async getProfileById(userId: string): Promise<UserProfile | null> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true, name: true, role: true, bannedAt: true },
+        });
+
+        if (!user?.role) return null;
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            bannedAt: user.bannedAt ?? null,
+        };
     }
 }

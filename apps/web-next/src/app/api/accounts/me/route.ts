@@ -1,14 +1,14 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { GetUserAccountsUseCase } from "@/server/application/accounts/GetUserAccountsUseCase";
+import { GetUserAccountsUseCase } from "@proj/application/accounts/GetUserAccountsUseCase";
 import { PrismaAccountRepository } from "@/server/infrastructure/accounts/PrismaAccountRepository";
 import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
-import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
-import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
-import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

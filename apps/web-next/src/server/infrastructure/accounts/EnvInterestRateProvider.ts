@@ -1,4 +1,4 @@
-import { InterestRateProvider } from "../../domain/accounts/ports/InterestRateProvider";
+import { InterestRateProvider } from "@proj/domain/accounts/ports/InterestRateProvider";
 
 export class EnvInterestRateProvider implements InterestRateProvider {
     async getAnnualRate(): Promise<number> {
