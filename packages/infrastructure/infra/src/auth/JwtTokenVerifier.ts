@@ -1,12 +1,12 @@
-import jwt from "jsonwebtoken";
+import { Secret, verify } from "jsonwebtoken";
 import { TokenVerifier } from "@proj/domain/auth/ports/TokenVerifier";
 
 export class JwtTokenVerifier implements TokenVerifier {
-    constructor(private readonly secret: string) {}
+    constructor(private readonly secret: Secret) {}
 
     async verify(token: string): Promise<string | null> {
         try {
-            const payload = jwt.verify(token, this.secret) as any;
+            const payload = verify(token, this.secret) as { sub?: unknown };
             const subject = payload?.sub;
             return typeof subject === "string" ? subject : null;
         } catch {

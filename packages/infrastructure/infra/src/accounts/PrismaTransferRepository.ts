@@ -15,7 +15,7 @@ export class PrismaTransferRepository implements TransferRepository {
             userId: acc.userId,
             name: acc.name,
             iban: acc.iban,
-            type: acc.type,
+            type: acc.type as TransferAccount["type"],
             balance: acc.balance.toString(),
             isActive: acc.isActive,
             createdAt: acc.createdAt,

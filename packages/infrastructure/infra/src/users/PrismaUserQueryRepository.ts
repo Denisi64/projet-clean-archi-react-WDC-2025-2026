@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import {
-    UserQueryRepository,
     UserMinimal,
+    UserQueryRepository,
     UserRole,
     UserAccess,
     UserProfile,
@@ -16,8 +16,8 @@ export class PrismaUserQueryRepository implements UserQueryRepository {
             q.length >= 2
                 ? {
                       OR: [
-                          { email: { contains: q, mode: "insensitive" } },
-                          { name: { contains: q, mode: "insensitive" } },
+                          { email: { contains: q, mode: Prisma.QueryMode.insensitive } },
+                          { name: { contains: q, mode: Prisma.QueryMode.insensitive } },
                       ],
                   }
                 : {};

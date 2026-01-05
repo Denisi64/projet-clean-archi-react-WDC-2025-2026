@@ -5,7 +5,7 @@ import { EmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError"
 export class NodemailerEmailService implements EmailService {
     private readonly host = process.env.SMTP_HOST ?? "mailhog";
     private readonly port = Number(process.env.SMTP_PORT ?? "1025");
-    private readonly from = process.env.SMTP_FROM ?? "no-reply@avenir.bank";
+    private readonly from = process.env.SMTP_FROM ?? "no-reply@example.com";
     private readonly frontUrl = (process.env.FRONT_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
     private readonly ttlHours = Number(process.env.CONFIRMATION_TOKEN_TTL_HOURS ?? "24");
     private transporter = nodemailer.createTransport({

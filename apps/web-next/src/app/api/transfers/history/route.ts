@@ -2,10 +2,10 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { PrismaTransferRepository } from "@/server/infrastructure/accounts/PrismaTransferRepository";
+import { PrismaTransferRepository } from "@proj/infra/accounts/PrismaTransferRepository";
 import { ListTransfersForUserUseCase } from "@proj/application/accounts/ListTransfersForUserUseCase";
-import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
+import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";

@@ -8,9 +8,19 @@ import {
 } from "@proj/domain/auth/ports/AuthRepository";
 import { AccountIbanAllocationError } from "@proj/domain/accounts/errors/AccountIbanAllocationError";
 
-const prisma = new PrismaClient();
+type PrismaAuthRepositoryOptions = {
+    createDefaultAccount?: boolean;
+};
 
 export class PrismaAuthRepository implements AuthRepository {
+    private readonly prisma: PrismaClient;
+    private readonly createDefaultAccount: boolean;
+
+    constructor(prisma?: PrismaClient, options: PrismaAuthRepositoryOptions = {}) {
+        this.prisma = prisma ?? new PrismaClient();
+        this.createDefaultAccount = options.createDefaultAccount ?? false;
+    }
+
     private mapUser(u: any): AuthUser {
         const passwordHash = (u as any).password ?? (u as any).passwordHash;
 
@@ -28,20 +38,20 @@ export class PrismaAuthRepository implements AuthRepository {
     }
 
     async findById(id: string): Promise<AuthUser | null> {
-        const u = await prisma.user.findUnique({ where: { id } });
+        const u = await this.prisma.user.findUnique({ where: { id } });
         if (!u) return null;
         return this.mapUser(u);
     }
 
     async findByEmail(email: string): Promise<AuthUser | null> {
-        const u = await prisma.user.findUnique({ where: { email } });
+        const u = await this.prisma.user.findUnique({ where: { email } });
         if (!u) return null;
 
         return this.mapUser(u);
     }
 
     async findByConfirmationToken(token: string): Promise<AuthUser | null> {
-        const u = await prisma.user.findUnique({ where: { confirmationToken: token } });
+        const u = await this.prisma.user.findUnique({ where: { confirmationToken: token } });
         if (!u) return null;
         return this.mapUser(u);
     }
@@ -68,7 +78,7 @@ export class PrismaAuthRepository implements AuthRepository {
     }
 
     async createUser(data: CreateUserInput): Promise<AuthUser> {
-        const { user } = await prisma.$transaction(async (tx) => {
+        const { user } = await this.prisma.$transaction(async (tx) => {
             const created = await tx.user.create({
                 data: {
                     email: data.email,
@@ -83,16 +93,18 @@ export class PrismaAuthRepository implements AuthRepository {
                 },
             });
 
-            const iban = await this.generateUniqueIban(tx);
-            await tx.account.create({
-                data: {
-                    userId: created.id,
-                    iban,
-                    name: "Compte Courant",
-                    type: "CURRENT",
-                    balance: "0.00",
-                },
-            });
+            if (this.createDefaultAccount) {
+                const iban = await this.generateUniqueIban(tx);
+                await tx.account.create({
+                    data: {
+                        userId: created.id,
+                        iban,
+                        name: "Compte Courant",
+                        type: "CURRENT",
+                        balance: "0.00",
+                    },
+                });
+            }
 
             return { user: created };
         });
@@ -101,7 +113,7 @@ export class PrismaAuthRepository implements AuthRepository {
     }
 
     async confirmUser(userId: string): Promise<void> {
-        await prisma.user.update({
+        await this.prisma.user.update({
             where: { id: userId },
             data: {
                 isActive: true,

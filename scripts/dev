@@ -270,10 +270,19 @@ prisma_seed() {
 
 build_shared() {
   command -v pnpm >/dev/null 2>&1 || { echo "✖ pnpm manquant"; exit 2; }
-  [ -d "$ROOT_DIR/node_modules" ] || (cd "$ROOT_DIR" && pnpm install)
+  if [[ ! -d "$ROOT_DIR/node_modules" ]]; then
+    (cd "$ROOT_DIR" && pnpm install)
+  else
+    local lockfile="$ROOT_DIR/pnpm-lock.yaml"
+    local cached_lock="$ROOT_DIR/node_modules/.pnpm/lock.yaml"
+    if [[ -f "$lockfile" && -f "$cached_lock" && "$lockfile" -nt "$cached_lock" ]]; then
+      say "→ pnpm-lock.yaml mis à jour, installation des dépendances..."
+      (cd "$ROOT_DIR" && pnpm install)
+    fi
+  fi
 
   say "→ Build packages (domain + application)"
-  ( cd "$ROOT_DIR" && pnpm --filter @proj/domain --filter @proj/application run build )
+  ( cd "$ROOT_DIR" && pnpm --filter @proj/domain --filter @proj/application --filter @proj/infra run build )
 }
 
 kill_tmux() { tmux has-session -t "$SESSION" 2>/dev/null && tmux kill-session -t "$SESSION" || true; }

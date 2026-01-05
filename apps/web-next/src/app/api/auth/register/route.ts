@@ -2,13 +2,13 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
-import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
 import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
 import { EmailAlreadyInUseError } from "@proj/domain/auth/errors/EmailAlreadyInUseError";
-import { NodemailerEmailService } from "@/server/infrastructure/auth/NodemailerEmailService";
+import { NodemailerEmailService } from "@proj/infra/auth/NodemailerEmailService";
 import { EmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError";
-import { CryptoActivationTokenGenerator } from "@/server/infrastructure/auth/CryptoActivationTokenGenerator";
+import { CryptoActivationTokenGenerator } from "@proj/infra/auth/CryptoActivationTokenGenerator";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -36,8 +36,8 @@ async function handleUseCase(req: NextRequest) {
     const { email, password, firstName, lastName } = parsed.data;
 
     const uc = new RegisterUserUseCase(
-        new PrismaAuthRepository(),
-        new BCryptPasswordHasher(),
+        new PrismaAuthRepository(undefined, { createDefaultAccount: true }),
+        new BcryptPasswordHasher(),
         new NodemailerEmailService(),
         new CryptoActivationTokenGenerator(),
         ttlHours,

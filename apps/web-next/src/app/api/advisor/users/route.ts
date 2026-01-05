@@ -2,9 +2,9 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
-import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
+import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";

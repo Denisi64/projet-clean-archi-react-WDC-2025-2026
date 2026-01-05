@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { PrismaCreditRepository } from "@/server/infrastructure/credits/PrismaCreditRepository";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
+import { PrismaCreditRepository } from "@proj/infra/credits/PrismaCreditRepository";
 import { ListCreditsForUserUseCase } from "@proj/application/credits/ListCreditsForUserUseCase";
 
 const target = process.env.BACKEND_TARGET ?? "nest";

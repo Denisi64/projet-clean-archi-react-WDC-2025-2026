@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { PrismaActionRepository } from "@/server/infrastructure/actions/PrismaActionRepository";
+import { PrismaActionRepository } from "@proj/infra/actions/PrismaActionRepository";
 import { ListActionsUseCase } from "@proj/application/actions/ListActionsUseCase";
 
 const prisma = new PrismaClient();

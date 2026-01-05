@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

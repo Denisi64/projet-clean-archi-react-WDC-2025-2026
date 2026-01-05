@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
-import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
 import { InvalidConfirmationTokenError } from "@proj/domain/auth/errors/InvalidConfirmationTokenError";
 import { ExpiredConfirmationTokenError } from "@proj/domain/auth/errors/ExpiredConfirmationTokenError";
 
