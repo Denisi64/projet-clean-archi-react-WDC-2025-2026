@@ -3,13 +3,13 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
-import { BCryptPasswordHasher } from "@/server/infrastructure/auth/BCryptPasswordHasher";
-import { JwtTokenManager } from "@/server/infrastructure/auth/JwtTokenManager";
-import { LoginUserUseCase } from "@/server/application/auth/LoginUserUseCase";
-import { InvalidCredentialsError } from "@/server/domain/auth/errors/InvalidCredentialsError";
-import { InactiveAccountError } from "@/server/domain/auth/errors/InactiveAccountError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
+import { JwtTokenManager } from "@proj/infra/auth/JwtTokenManager";
+import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
+import { InvalidCredentialsError } from "@proj/domain/auth/errors/InvalidCredentialsError";
+import { InactiveAccountError } from "@proj/domain/auth/errors/InactiveAccountError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -36,7 +36,7 @@ async function handleUseCase(req: NextRequest) {
 
     const uc = new LoginUserUseCase(
         new PrismaAuthRepository(),
-        new BCryptPasswordHasher(),
+        new BcryptPasswordHasher(),
         new JwtTokenManager(process.env.JWT_SECRET ?? "dev-secret"),
     );
 

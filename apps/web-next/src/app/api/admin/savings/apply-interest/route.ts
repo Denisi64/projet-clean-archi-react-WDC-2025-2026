@@ -1,10 +1,10 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { ApplyDailySavingsInterestUseCase } from "@/server/application/accounts/ApplyDailySavingsInterestUseCase";
-import { PrismaSavingsInterestRepository } from "@/server/infrastructure/accounts/PrismaSavingsInterestRepository";
-import { PrismaInterestRateProvider } from "@/server/infrastructure/accounts/PrismaInterestRateProvider";
-import { PrismaSavingsRateRepository } from "@/server/infrastructure/accounts/PrismaSavingsRateRepository";
+import { ApplyDailySavingsInterestUseCase } from "@proj/application/accounts/ApplyDailySavingsInterestUseCase";
+import { PrismaSavingsInterestRepository } from "@proj/infra/accounts/PrismaSavingsInterestRepository";
+import { PrismaInterestRateProvider } from "@proj/infra/accounts/PrismaInterestRateProvider";
+import { PrismaSavingsRateRepository } from "@proj/infra/accounts/PrismaSavingsRateRepository";
 
 const isDev = process.env.NODE_ENV !== "production";
 

@@ -2,10 +2,10 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { ConfirmUserUseCase } from "@/server/application/auth/ConfirmUserUseCase";
-import { PrismaAuthRepository } from "@/server/infrastructure/auth/PrismaAuthRepository";
-import { InvalidConfirmationTokenError } from "@/server/domain/auth/errors/InvalidConfirmationTokenError";
-import { ExpiredConfirmationTokenError } from "@/server/domain/auth/errors/ExpiredConfirmationTokenError";
+import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { InvalidConfirmationTokenError } from "@proj/domain/auth/errors/InvalidConfirmationTokenError";
+import { ExpiredConfirmationTokenError } from "@proj/domain/auth/errors/ExpiredConfirmationTokenError";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

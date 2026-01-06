@@ -2,17 +2,17 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { JwtTokenVerifier } from "@/server/infrastructure/auth/JwtTokenVerifier";
-import { GrantCreditUseCase } from "@/server/application/credits/GrantCreditUseCase";
-import { PrismaCreditRepository } from "@/server/infrastructure/credits/PrismaCreditRepository";
-import { ListCreditsForUserUseCase } from "@/server/application/credits/ListCreditsForUserUseCase";
-import { PrismaUserQueryRepository } from "@/server/infrastructure/users/PrismaUserQueryRepository";
-import { GetUserRoleFromTokenUseCase } from "@/server/application/auth/GetUserRoleFromTokenUseCase";
-import { UnauthorizedAccessError } from "@/server/domain/auth/errors/UnauthorizedAccessError";
-import { ForbiddenRoleError } from "@/server/domain/auth/errors/ForbiddenRoleError";
-import { BannedAccountError } from "@/server/domain/auth/errors/BannedAccountError";
-import { InvalidCreditInputError } from "@/server/domain/credits/errors/InvalidCreditInputError";
-import { InvalidCreditTermError } from "@/server/domain/credits/errors/InvalidCreditTermError";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
+import { GrantCreditUseCase } from "@proj/application/credits/GrantCreditUseCase";
+import { PrismaCreditRepository } from "@proj/infra/credits/PrismaCreditRepository";
+import { ListCreditsForUserUseCase } from "@proj/application/credits/ListCreditsForUserUseCase";
+import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
+import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
+import { InvalidCreditInputError } from "@proj/domain/credits/errors/InvalidCreditInputError";
+import { InvalidCreditTermError } from "@proj/domain/credits/errors/InvalidCreditTermError";
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");

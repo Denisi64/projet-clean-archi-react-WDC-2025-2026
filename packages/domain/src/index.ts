@@ -1,1 +1,2 @@
-// domain (entities, value objects)
+// domain (entities, value objects, ports)
+export {};
