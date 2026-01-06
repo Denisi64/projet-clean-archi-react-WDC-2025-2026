@@ -19,15 +19,12 @@ export class PrismaAccountRepository implements AccountRepository {
         return remainder;
     }
 
-    // Calcul de la clé RIB (2 chiffres) pour un compte français
     private computeRibKey(bankCode: string, branchCode: string, accountNumber: string): string {
         const base = `${bankCode}${branchCode}${accountNumber}`;
         const remainder = this.mod97(base);
         const key = 97 - remainder;
         return key === 0 ? "97" : key.toString().padStart(2, "0");
     }
-
-    // Calcul de l'IBAN FR avec clé modulo 97
     private computeIban(bankCode: string, branchCode: string, accountNumber: string, ribKey: string): string {
         const bban = `${bankCode}${branchCode}${accountNumber}${ribKey}`;
         const numeric = `${bban}152700`; // "FR00" → F=15, R=27, 00

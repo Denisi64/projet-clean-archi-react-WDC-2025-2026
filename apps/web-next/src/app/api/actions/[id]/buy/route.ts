@@ -44,7 +44,10 @@ async function requireClient(req: NextRequest): Promise<{ userId: string } | Nex
             return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
         }
         if (e instanceof ForbiddenRoleError) {
-            return NextResponse.json({ code: "FORBIDDEN" }, { status: 403 });
+            return NextResponse.json(
+                { code: "ROLE_NOT_ALLOWED", message: "Votre role ne permet pas d'acheter une action." },
+                { status: 403 },
+            );
         }
         if (e instanceof BannedAccountError) {
             return NextResponse.json({ code: "ACCOUNT_BANNED" }, { status: 403 });

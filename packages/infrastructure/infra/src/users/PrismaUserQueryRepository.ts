@@ -16,8 +16,8 @@ export class PrismaUserQueryRepository implements UserQueryRepository {
             q.length >= 2
                 ? {
                       OR: [
-                          { email: { contains: q, mode: Prisma.QueryMode.insensitive } },
-                          { name: { contains: q, mode: Prisma.QueryMode.insensitive } },
+                          { email: { contains: q } },
+                          { name: { contains: q } },
                       ],
                   }
                 : {};
