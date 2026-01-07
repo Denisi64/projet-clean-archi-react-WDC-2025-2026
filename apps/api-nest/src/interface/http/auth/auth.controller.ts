@@ -1,13 +1,17 @@
 import {
     Body,
     Controller,
+    Get,
+    Inject,
     Post,
+    Req,
     Res,
     UseFilters,
     UsePipes,
     ValidationPipe,
 } from "@nestjs/common";
 import { Response } from "express";
+import { Request } from "express";
 import { LoginDto } from "./dto/login.dto";
 import { LoginUserUseCase } from "../../../application/auth/LoginUserUseCase";
 import { DomainExceptionFilter } from "../common/domain-exception.filter";
@@ -15,6 +19,18 @@ import { RegisterUserUseCase } from "../../../application/auth/RegisterUserUseCa
 import { RegisterDto } from "./dto/register.dto";
 import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase";
 import { ConfirmDto } from "./dto/confirm.dto";
+import { TokenVerifier } from "@proj/domain/auth/ports/TokenVerifier";
+import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
+import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
+
+function extractSessionCookie(req: Request): string | null {
+    const raw = req.headers?.cookie ?? "";
+    const cookie = raw
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("session="));
+    return cookie ? decodeURIComponent(cookie.replace("session=", "")) : null;
+}
 
 @Controller("auth")
 @UseFilters(DomainExceptionFilter)
@@ -23,6 +39,8 @@ export class AuthController {
         private readonly loginUC: LoginUserUseCase,
         private readonly registerUC: RegisterUserUseCase,
         private readonly confirmUC: ConfirmUserUseCase,
+        private readonly getProfileUC: GetUserProfileUseCase,
+        @Inject("TokenVerifier") private readonly tokenVerifier: TokenVerifier,
     ) {}
 
     @Post("login")
@@ -58,5 +76,35 @@ export class AuthController {
     async confirm(@Body() dto: ConfirmDto) {
         await this.confirmUC.execute(dto.token);
         return { success: true };
+    }
+
+    @Get("me")
+    async me(@Req() req: Request) {
+        const token = extractSessionCookie(req);
+        if (!token) {
+            throw new UnauthorizedAccessError();
+        }
+
+        const userId = await this.tokenVerifier.verify(token);
+        if (!userId) {
+            throw new UnauthorizedAccessError();
+        }
+
+        const result = await this.getProfileUC.execute(userId);
+        if (!result.ok || !result.value) {
+            throw new UnauthorizedAccessError();
+        }
+
+        const user = result.value;
+        return {
+            ok: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                bannedAt: user.bannedAt ?? null,
+            },
+        };
     }
 }

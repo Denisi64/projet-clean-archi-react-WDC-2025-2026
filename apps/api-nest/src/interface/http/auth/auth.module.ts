@@ -8,6 +8,9 @@ import { JwtTokenManager } from "../../../infrastructure/services/JwtTokenManage
 import { RegisterUserUseCase } from "../../../application/auth/RegisterUserUseCase";
 import { NodemailerEmailService } from "../../../infrastructure/services/NodemailerEmailService";
 import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase";
+import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
+import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
 
 @Module({
     controllers: [AuthController],
@@ -31,8 +34,17 @@ import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase
             useFactory: () => new JwtTokenManager(process.env.JWT_SECRET ?? "dev-secret"),
         },
         {
+            provide: "TokenVerifier",
+            useFactory: () => new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret"),
+        },
+        {
             provide: "CONFIRMATION_TOKEN_TTL_HOURS",
             useValue: Number(process.env.CONFIRMATION_TOKEN_TTL_HOURS ?? "24"),
+        },
+        {
+            provide: "UserQueryRepository",
+            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
+            inject: [PrismaClient],
         },
         {
             provide: LoginUserUseCase,
@@ -50,6 +62,11 @@ import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase
             provide: ConfirmUserUseCase,
             useFactory: (repo) => new ConfirmUserUseCase(repo),
             inject: ["AuthRepository"],
+        },
+        {
+            provide: GetUserProfileUseCase,
+            useFactory: (repo) => new GetUserProfileUseCase(repo),
+            inject: ["UserQueryRepository"],
         },
     ],
     exports: [LoginUserUseCase, RegisterUserUseCase, ConfirmUserUseCase],
