@@ -18,6 +18,11 @@ yarn-error.log*
 dist/
 .turbo/
 
+# fichiers générés par tsc dans les sources des packages
+packages/**/src/**/*.js
+packages/**/src/**/*.d.ts
+packages/**/src/**/*.d.ts.map
+
 # fichiers d'env
 .env
 .env.*
@@ -33,4 +38,3 @@ nest
 docs/*.md
 docs/clean-archi/*.md
 docs/clean-archi-presentation/*.md
-

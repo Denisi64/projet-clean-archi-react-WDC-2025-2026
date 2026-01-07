@@ -1,21 +1,18 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPortfolioRepository } from "@proj/infra/actions/PrismaPortfolioRepository";
+import { createPortfolioRepository, createUserQueryRepository } from "@proj/infra";
 import { GetPortfolioUseCase } from "@proj/application/actions/GetPortfolioUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
-const prisma = new PrismaClient();
-const portfolioRepo = new PrismaPortfolioRepository(prisma);
+const portfolioRepo = createPortfolioRepository();
 const getPortfolioUC = new GetPortfolioUseCase(portfolioRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

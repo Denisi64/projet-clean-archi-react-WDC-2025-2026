@@ -1,10 +1,6 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { ActionsController } from "./actions.controller";
 import { AdminActionsController } from "../admin-actions/admin-actions.controller";
-import { PrismaActionRepository } from "@proj/infra/actions/PrismaActionRepository";
-import { PrismaPortfolioRepository } from "@proj/infra/actions/PrismaPortfolioRepository";
-import { PrismaActionTradeRepository } from "@proj/infra/actions/PrismaActionTradeRepository";
 import { ListActionsUseCase } from "@proj/application/actions/ListActionsUseCase";
 import { CreateActionUseCase } from "@proj/application/actions/CreateActionUseCase";
 import { UpdateActionUseCase } from "@proj/application/actions/UpdateActionUseCase";
@@ -13,16 +9,20 @@ import { BuyActionUseCase } from "@proj/application/actions/BuyActionUseCase";
 import { SellActionUseCase } from "@proj/application/actions/SellActionUseCase";
 import { GetPortfolioUseCase } from "@proj/application/actions/GetPortfolioUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { ClientRoleGuard } from "../common/client-role.guard";
 import { DirectorRoleGuard } from "../common/director-role.guard";
 import { NotificationsGateway } from "../../websocket/notifications.gateway";
 import { SocketActionStockNotifier } from "../../../infrastructure/services/SocketActionStockNotifier";
+import {
+    createActionRepository,
+    createActionTradeRepository,
+    createPortfolioRepository,
+    createUserQueryRepository,
+} from "@proj/infra";
 
 @Module({
     controllers: [ActionsController, AdminActionsController],
     providers: [
-        PrismaClient,
         NotificationsGateway,
         {
             provide: "TokenVerifier",
@@ -30,23 +30,19 @@ import { SocketActionStockNotifier } from "../../../infrastructure/services/Sock
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: "ActionRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaActionRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createActionRepository(),
         },
         {
             provide: "PortfolioRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaPortfolioRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createPortfolioRepository(),
         },
         {
             provide: "ActionTradeRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaActionTradeRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createActionTradeRepository(),
         },
         {
             provide: "ActionStockNotifier",

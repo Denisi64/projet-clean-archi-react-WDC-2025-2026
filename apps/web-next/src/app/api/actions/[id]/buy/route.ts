@@ -1,15 +1,16 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { PrismaActionRepository } from "@proj/infra/actions/PrismaActionRepository";
-import { PrismaPortfolioRepository } from "@proj/infra/actions/PrismaPortfolioRepository";
-import { PrismaActionTradeRepository } from "@proj/infra/actions/PrismaActionTradeRepository";
+import {
+    createActionRepository,
+    createActionTradeRepository,
+    createPortfolioRepository,
+    createUserQueryRepository,
+} from "@proj/infra";
 import { LocalSocketActionStockNotifier } from "@proj/infra/notifications/LocalSocketActionStockNotifier";
 import { BuyActionUseCase } from "@proj/application/actions/BuyActionUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -19,14 +20,13 @@ import { ActionUnavailableError } from "@proj/domain/actions/errors/ActionUnavai
 import { InsufficientActionStockError } from "@proj/domain/actions/errors/InsufficientActionStockError";
 import { InvalidActionQuantityError } from "@proj/domain/actions/errors/InvalidActionQuantityError";
 
-const prisma = new PrismaClient();
-const actionRepo = new PrismaActionRepository(prisma);
-const portfolioRepo = new PrismaPortfolioRepository(prisma);
-const tradeRepo = new PrismaActionTradeRepository(prisma);
+const actionRepo = createActionRepository();
+const portfolioRepo = createPortfolioRepository();
+const tradeRepo = createActionTradeRepository();
 const notifier = new LocalSocketActionStockNotifier();
 const buyActionUC = new BuyActionUseCase(actionRepo, portfolioRepo, tradeRepo, notifier);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

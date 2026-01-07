@@ -1,12 +1,10 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { PrismaActionRepository } from "@proj/infra/actions/PrismaActionRepository";
+import { createActionRepository } from "@proj/infra";
 import { ListActionsUseCase } from "@proj/application/actions/ListActionsUseCase";
 
-const prisma = new PrismaClient();
-const actionRepo = new PrismaActionRepository(prisma);
+const actionRepo = createActionRepository();
 const listActionsUC = new ListActionsUseCase(actionRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

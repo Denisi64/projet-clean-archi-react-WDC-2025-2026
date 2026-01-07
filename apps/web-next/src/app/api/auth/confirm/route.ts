@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
-import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { createAuthRepository } from "@proj/infra";
 import { InvalidConfirmationTokenError } from "@proj/domain/auth/errors/InvalidConfirmationTokenError";
 import { ExpiredConfirmationTokenError } from "@proj/domain/auth/errors/ExpiredConfirmationTokenError";
 
@@ -28,7 +28,7 @@ async function handleUseCase(req: NextRequest) {
 
     const { token } = parsed.data;
 
-    const uc = new ConfirmUserUseCase(new PrismaAuthRepository());
+    const uc = new ConfirmUserUseCase(createAuthRepository());
     const result = await uc.execute(token);
     if (!result.ok) {
         const err = result.error;

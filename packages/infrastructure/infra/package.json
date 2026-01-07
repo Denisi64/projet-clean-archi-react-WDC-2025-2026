@@ -16,11 +16,15 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "seed:drizzle": "node dist/db/drizzle/seed.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "@paralleldrive/cuid2": "^2.2.2",
+    "drizzle-orm": "^0.36.4",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.3",
     "nodemailer": "^6.9.15",
     "@prisma/client": "^6.18.0",
     "@proj/domain": "workspace:*",

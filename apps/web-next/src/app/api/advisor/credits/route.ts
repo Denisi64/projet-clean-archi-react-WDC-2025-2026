@@ -4,9 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { GrantCreditUseCase } from "@proj/application/credits/GrantCreditUseCase";
-import { PrismaCreditRepository } from "@proj/infra/credits/PrismaCreditRepository";
 import { ListCreditsForUserUseCase } from "@proj/application/credits/ListCreditsForUserUseCase";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { createCreditRepository, createUserQueryRepository } from "@proj/infra";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -16,7 +15,7 @@ import { InvalidCreditTermError } from "@proj/domain/credits/errors/InvalidCredi
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository();
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {
@@ -62,7 +61,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ code: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const uc = new GrantCreditUseCase(new PrismaCreditRepository());
+    const uc = new GrantCreditUseCase(createCreditRepository());
     const result = await uc.execute(parsed.data);
     if (!result.ok) {
         const e = result.error;
@@ -92,7 +91,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ credits: [] });
     }
 
-    const uc = new ListCreditsForUserUseCase(new PrismaCreditRepository());
+    const uc = new ListCreditsForUserUseCase(createCreditRepository());
     const result = await uc.execute(userId);
     if (!result.ok) {
         if (isDev) console.error("[advisor credits list] unexpected:", result.error?.message);

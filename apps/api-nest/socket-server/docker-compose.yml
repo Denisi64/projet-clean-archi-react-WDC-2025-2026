@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  notifications-ws:
+    build:
+      context: .
+    ports:
+      - "4001:4001"

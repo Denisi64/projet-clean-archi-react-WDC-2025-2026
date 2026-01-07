@@ -2,12 +2,10 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
-import { PrismaAccountRepository } from "@proj/infra/accounts/PrismaAccountRepository";
+import { createAccountRepository, createUserQueryRepository } from "@proj/infra";
 import { CreateAccountForUserUseCase } from "@proj/application/accounts/CreateAccountForUserUseCase";
 import { GetUserAccountsUseCase } from "@proj/application/accounts/GetUserAccountsUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -17,11 +15,10 @@ import { AccountType } from "@proj/domain/accounts/AccountType";
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-const prisma = new PrismaClient();
-const accountRepo = new PrismaAccountRepository(prisma);
+const accountRepo = createAccountRepository();
 const createAccountUC = new CreateAccountForUserUseCase(accountRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 const createSchema = z.object({

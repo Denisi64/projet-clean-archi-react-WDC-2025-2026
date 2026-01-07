@@ -2,9 +2,8 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { GetUserAccountsUseCase } from "@proj/application/accounts/GetUserAccountsUseCase";
-import { PrismaAccountRepository } from "@proj/infra/accounts/PrismaAccountRepository";
+import { createAccountRepository, createUserQueryRepository } from "@proj/infra";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -13,7 +12,7 @@ import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError"
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository();
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireClient(req: NextRequest): Promise<{ userId: string } | NextResponse> {
@@ -46,7 +45,7 @@ async function handleUseCase(req: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const { userId } = auth;
 
-    const repo = new PrismaAccountRepository();
+    const repo = createAccountRepository();
     const uc = new GetUserAccountsUseCase(repo);
     const result = await uc.execute(userId);
     if (!result.ok) {

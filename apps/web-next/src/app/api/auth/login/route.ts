@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { createAuthRepository } from "@proj/infra";
 import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
 import { JwtTokenManager } from "@proj/infra/auth/JwtTokenManager";
 import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
@@ -35,7 +35,7 @@ async function handleUseCase(req: NextRequest) {
     const { email, password, remember } = parsed.data;
 
     const uc = new LoginUserUseCase(
-        new PrismaAuthRepository(),
+        createAuthRepository(),
         new BcryptPasswordHasher(),
         new JwtTokenManager(process.env.JWT_SECRET ?? "dev-secret"),
     );

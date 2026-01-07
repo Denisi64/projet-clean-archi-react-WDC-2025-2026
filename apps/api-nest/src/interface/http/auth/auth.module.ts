@@ -1,26 +1,22 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { AuthController } from "./auth.controller";
 import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
 import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
 import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
 import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
-import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
 import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
 import { JwtTokenManager } from "@proj/infra/auth/JwtTokenManager";
 import { NodemailerEmailService } from "@proj/infra/auth/NodemailerEmailService";
 import { CryptoActivationTokenGenerator } from "@proj/infra/auth/CryptoActivationTokenGenerator";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { createAuthRepository, createUserQueryRepository } from "@proj/infra";
 
 @Module({
     controllers: [AuthController],
     providers: [
-        PrismaClient,
         {
             provide: "AuthRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaAuthRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createAuthRepository(),
         },
         {
             provide: "PasswordHasher",
@@ -48,8 +44,7 @@ import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepo
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: LoginUserUseCase,

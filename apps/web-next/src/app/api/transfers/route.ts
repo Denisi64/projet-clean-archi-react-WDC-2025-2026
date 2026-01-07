@@ -1,26 +1,23 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { TransferBetweenAccountsUseCase } from "@proj/application/accounts/TransferBetweenAccountsUseCase";
-import { PrismaTransferRepository } from "@proj/infra/accounts/PrismaTransferRepository";
+import { createTransferRepository, createUserQueryRepository } from "@proj/infra";
 import { AccountNotFoundError } from "@proj/domain/accounts/errors/AccountNotFoundError";
 import { AccountInactiveError } from "@proj/domain/accounts/errors/AccountInactiveError";
 import { SameAccountTransferError } from "@proj/domain/accounts/errors/SameAccountTransferError";
 import { InvalidTransferAmountError } from "@proj/domain/accounts/errors/InvalidTransferAmountError";
 import { InsufficientFundsError } from "@proj/domain/accounts/errors/InsufficientFundsError";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
-const prisma = new PrismaClient();
-const transferUC = new TransferBetweenAccountsUseCase(new PrismaTransferRepository(prisma));
+const transferUC = new TransferBetweenAccountsUseCase(createTransferRepository());
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

@@ -1,22 +1,20 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { SavingsController } from "./savings.controller";
-import { PrismaSavingsInterestRepository } from "@proj/infra/accounts/PrismaSavingsInterestRepository";
 import { ApplyDailySavingsInterestUseCase } from "@proj/application/accounts/ApplyDailySavingsInterestUseCase";
-import { PrismaSavingsRateRepository } from "@proj/infra/accounts/PrismaSavingsRateRepository";
 import { PrismaInterestRateProvider } from "@proj/infra/accounts/PrismaInterestRateProvider";
 import { UpdateSavingsRateUseCase } from "@proj/application/accounts/UpdateSavingsRateUseCase";
 import { GetActiveSavingsRateUseCase } from "@proj/application/accounts/GetActiveSavingsRateUseCase";
 import { NotificationsGateway } from "../../websocket/notifications.gateway";
 import { SocketSavingsRateNotifier } from "../../../infrastructure/services/SocketSavingsRateNotifier";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { DirectorRoleGuard } from "../common/director-role.guard";
+import { PrismaClient } from "@prisma/client";
+import { resolveDbDriver } from "@proj/infra";
+import { createSavingsInterestRepository, createSavingsRateRepository, createUserQueryRepository } from "@proj/infra";
 
 @Module({
     controllers: [SavingsController],
     providers: [
-        PrismaClient,
         NotificationsGateway,
         {
             provide: "TokenVerifier",
@@ -24,18 +22,15 @@ import { DirectorRoleGuard } from "../common/director-role.guard";
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: "SavingsInterestRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaSavingsInterestRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createSavingsInterestRepository(),
         },
         {
             provide: "SavingsRateRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaSavingsRateRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createSavingsRateRepository(),
         },
         {
             provide: "InterestRateProvider",
@@ -55,9 +50,12 @@ import { DirectorRoleGuard } from "../common/director-role.guard";
         },
         {
             provide: "SavingsRateNotifier",
-            useFactory: (prisma: PrismaClient, gateway: NotificationsGateway) =>
-                new SocketSavingsRateNotifier(prisma, gateway),
-            inject: [PrismaClient, NotificationsGateway],
+            useFactory: (gateway: NotificationsGateway) => {
+                const driver = resolveDbDriver();
+                const prisma = driver === "postgres" ? new PrismaClient() : null;
+                return new SocketSavingsRateNotifier(prisma, gateway);
+            },
+            inject: [NotificationsGateway],
         },
         {
             provide: GetActiveSavingsRateUseCase,

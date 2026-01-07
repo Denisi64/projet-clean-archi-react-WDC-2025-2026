@@ -2,12 +2,10 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
-import { PrismaActionRepository } from "@proj/infra/actions/PrismaActionRepository";
+import { createActionRepository, createUserQueryRepository } from "@proj/infra";
 import { UpdateActionUseCase } from "@proj/application/actions/UpdateActionUseCase";
 import { DeleteActionUseCase } from "@proj/application/actions/DeleteActionUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -19,12 +17,11 @@ import { ActionInUseError } from "@proj/domain/actions/errors/ActionInUseError";
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-const prisma = new PrismaClient();
-const actionRepo = new PrismaActionRepository(prisma);
+const actionRepo = createActionRepository();
 const updateActionUC = new UpdateActionUseCase(actionRepo);
 const deleteActionUC = new DeleteActionUseCase(actionRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 const updateSchema = z.object({

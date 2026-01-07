@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaCreditRepository } from "@proj/infra/credits/PrismaCreditRepository";
+import { createCreditRepository } from "@proj/infra";
 import { ListCreditsForUserUseCase } from "@proj/application/credits/ListCreditsForUserUseCase";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
@@ -21,7 +21,7 @@ async function handleUseCase(req: NextRequest) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const uc = new ListCreditsForUserUseCase(new PrismaCreditRepository());
+    const uc = new ListCreditsForUserUseCase(createCreditRepository());
     const result = await uc.execute(userId);
     if (!result.ok) {
         if (isDev) console.error("[credits/me] unexpected:", result.error?.message);
