@@ -2,10 +2,16 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
     "module": "Node16",
     "moduleResolution": "node16",
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@proj/domain/*": ["../domain/dist/*"],
+      "@proj/application/*": ["../application/dist/*"]
+    }
   },
   "include": ["src"]
 }

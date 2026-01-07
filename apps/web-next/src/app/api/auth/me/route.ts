@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { createAuthRepository } from "@proj/infra";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
@@ -20,7 +20,7 @@ async function handleUseCase(req: NextRequest) {
         return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
     }
 
-    const repo = new PrismaAuthRepository();
+    const repo = createAuthRepository();
     const user = await repo.findById(userId);
     if (!user) return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
 

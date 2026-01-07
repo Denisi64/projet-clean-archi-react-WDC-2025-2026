@@ -254,10 +254,14 @@ prisma_seed() {
   local db=$1
 
   case "$db" in
-    postgres|pg|mariadb|mysql)
+    postgres|pg)
       # PRISMA_SCHEMA et DATABASE_URL sont déjà définis par prisma_sync
       say "→ Prisma db seed ($db)"
       ( cd "$ROOT_DIR" && pnpm -w prisma db seed --schema "$PRISMA_SCHEMA" )
+      ;;
+    mariadb|mysql)
+      say "→ Drizzle db seed (mariadb)"
+      ( cd "$ROOT_DIR" && pnpm --filter @proj/infra run seed:drizzle )
       ;;
     memory)
       echo "→ Pas de seed (memory)"
@@ -281,7 +285,7 @@ build_shared() {
     fi
   fi
 
-  say "→ Build packages (domain + application)"
+  say "→ Build packages (domain + application + infra)"
   ( cd "$ROOT_DIR" && pnpm --filter @proj/domain --filter @proj/application --filter @proj/infra run build )
 }
 
@@ -363,8 +367,8 @@ run_stack() {
   [[ "$db" != "memory" ]] && docker_up_db "$db" && prisma_sync "$db"
   docker_up_ws
 
-  [[ "$db" != "memory" ]] && prisma_seed "$db"
   build_shared
+  [[ "$db" != "memory" ]] && prisma_seed "$db"
 
   rm -rf "$WEB_DIR/.next" 2>/dev/null || true
 # éviter que l’API charge un vieux client local

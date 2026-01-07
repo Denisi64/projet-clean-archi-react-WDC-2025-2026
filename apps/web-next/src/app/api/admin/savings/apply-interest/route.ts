@@ -2,9 +2,8 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { ApplyDailySavingsInterestUseCase } from "@proj/application/accounts/ApplyDailySavingsInterestUseCase";
-import { PrismaSavingsInterestRepository } from "@proj/infra/accounts/PrismaSavingsInterestRepository";
 import { PrismaInterestRateProvider } from "@proj/infra/accounts/PrismaInterestRateProvider";
-import { PrismaSavingsRateRepository } from "@proj/infra/accounts/PrismaSavingsRateRepository";
+import { createSavingsInterestRepository, createSavingsRateRepository } from "@proj/infra";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -23,8 +22,8 @@ export async function POST(req: NextRequest) {
     const modeParam = req.nextUrl.searchParams.get("mode");
     const mode = modeParam === "annual" ? "annual" : "daily";
     const uc = new ApplyDailySavingsInterestUseCase(
-        new PrismaSavingsInterestRepository(),
-        new PrismaInterestRateProvider(new PrismaSavingsRateRepository()),
+        createSavingsInterestRepository(),
+        new PrismaInterestRateProvider(createSavingsRateRepository()),
     );
     const result = await uc.execute({ mode });
     if (!result.ok) {

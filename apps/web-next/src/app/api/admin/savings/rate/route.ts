@@ -2,10 +2,8 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
-import { PrismaSavingsRateRepository } from "@proj/infra/accounts/PrismaSavingsRateRepository";
+import { createSavingsRateRepository, createUserQueryRepository } from "@proj/infra";
 import { GetActiveSavingsRateUseCase } from "@proj/application/accounts/GetActiveSavingsRateUseCase";
 import { UpdateSavingsRateUseCase } from "@proj/application/accounts/UpdateSavingsRateUseCase";
 import { LocalSocketSavingsRateNotifier } from "@proj/infra/notifications/LocalSocketSavingsRateNotifier";
@@ -14,11 +12,10 @@ import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAc
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
 
-const prisma = new PrismaClient();
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const rateRepo = new PrismaSavingsRateRepository(prisma);
-const notifier = new LocalSocketSavingsRateNotifier(prisma);
-const userRepo = new PrismaUserQueryRepository(prisma);
+const rateRepo = createSavingsRateRepository();
+const notifier = new LocalSocketSavingsRateNotifier();
+const userRepo = createUserQueryRepository();
 const getRateUC = new GetActiveSavingsRateUseCase(rateRepo);
 const updateRateUC = new UpdateSavingsRateUseCase(rateRepo, notifier);
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);

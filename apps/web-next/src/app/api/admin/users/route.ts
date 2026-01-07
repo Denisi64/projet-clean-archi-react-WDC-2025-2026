@@ -2,8 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { createUserQueryRepository } from "@proj/infra";
 import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
@@ -14,8 +13,7 @@ import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError"
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 
-const prisma = new PrismaClient();
-const userRepo = new PrismaUserQueryRepository(prisma);
+const userRepo = createUserQueryRepository();
 const searchUsersUC = new SearchUsersUseCase(userRepo);
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
+import { createUserQueryRepository } from "@proj/infra";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -12,7 +12,7 @@ import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError"
 
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository();
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 async function requireAdvisor(req: NextRequest): Promise<NextResponse | null> {

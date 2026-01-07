@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { createAuthRepository } from "@proj/infra";
 import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
 import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
 import { EmailAlreadyInUseError } from "@proj/domain/auth/errors/EmailAlreadyInUseError";
@@ -36,7 +36,7 @@ async function handleUseCase(req: NextRequest) {
     const { email, password, firstName, lastName } = parsed.data;
 
     const uc = new RegisterUserUseCase(
-        new PrismaAuthRepository(undefined, { createDefaultAccount: true }),
+        createAuthRepository(undefined, { createDefaultAccount: true }),
         new BcryptPasswordHasher(),
         new NodemailerEmailService(),
         new CryptoActivationTokenGenerator(),

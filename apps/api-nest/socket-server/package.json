@@ -1,0 +1,10 @@
+{
+  "name": "notifications-ws",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  }
+}

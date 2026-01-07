@@ -1,30 +1,25 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { TransfersController } from "./transfers.controller";
 import { TransferBetweenAccountsUseCase } from "@proj/application/accounts/TransferBetweenAccountsUseCase";
-import { PrismaTransferRepository } from "@proj/infra/accounts/PrismaTransferRepository";
 import { ListTransfersForUserUseCase } from "@proj/application/accounts/ListTransfersForUserUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { ClientRoleGuard } from "../common/client-role.guard";
+import { createTransferRepository, createUserQueryRepository } from "@proj/infra";
 
 @Module({
     controllers: [TransfersController],
     providers: [
-        PrismaClient,
         {
             provide: "TokenVerifier",
             useFactory: () => new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret"),
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: "TransferRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaTransferRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createTransferRepository(),
         },
         {
             provide: TransferBetweenAccountsUseCase,

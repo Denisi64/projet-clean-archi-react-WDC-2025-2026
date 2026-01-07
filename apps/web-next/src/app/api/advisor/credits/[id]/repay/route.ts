@@ -4,12 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { RepayCreditUseCase } from "@proj/application/credits/RepayCreditUseCase";
-import { PrismaCreditRepository } from "@proj/infra/credits/PrismaCreditRepository";
+import { createCreditRepository, createUserQueryRepository } from "@proj/infra";
 import { CreditNotFoundError } from "@proj/domain/credits/errors/CreditNotFoundError";
 import { CreditInactiveError } from "@proj/domain/credits/errors/CreditInactiveError";
 import { InvalidCreditAmountError } from "@proj/domain/credits/errors/InvalidCreditAmountError";
 import { InvalidCreditRepaymentError } from "@proj/domain/credits/errors/InvalidCreditRepaymentError";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { GetUserRoleFromTokenUseCase } from "@proj/application/auth/GetUserRoleFromTokenUseCase";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
@@ -18,7 +17,7 @@ import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError"
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";
 const tokenVerifier = new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret");
-const userRepo = new PrismaUserQueryRepository();
+const userRepo = createUserQueryRepository();
 const getUserRoleUC = new GetUserRoleFromTokenUseCase(tokenVerifier, userRepo);
 
 const paramsSchema = z.object({ id: z.string().min(1) });
@@ -49,7 +48,7 @@ async function handleUseCase(id: string) {
         return NextResponse.json({ code: "DB_URL_MISSING" }, { status: 500 });
     }
 
-    const uc = new RepayCreditUseCase(new PrismaCreditRepository());
+    const uc = new RepayCreditUseCase(createCreditRepository());
     const result = await uc.execute(id);
     if (!result.ok) {
         const e = result.error;

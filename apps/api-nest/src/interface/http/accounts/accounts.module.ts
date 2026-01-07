@@ -1,32 +1,27 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { AccountsController } from "./accounts.controller";
-import { PrismaAccountRepository } from "@proj/infra/accounts/PrismaAccountRepository";
+import { createAccountRepository, createUserQueryRepository } from "@proj/infra";
 import { GetUserAccountsUseCase } from "@proj/application/accounts/GetUserAccountsUseCase";
 import { CreateAccountForUserUseCase } from "@proj/application/accounts/CreateAccountForUserUseCase";
 import { RenameAccountUseCase } from "@proj/application/accounts/RenameAccountUseCase";
 import { CloseAccountUseCase } from "@proj/application/accounts/CloseAccountUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
 import { ClientRoleGuard } from "../common/client-role.guard";
 
 @Module({
     controllers: [AccountsController],
     providers: [
-        PrismaClient,
         {
             provide: "TokenVerifier",
             useFactory: () => new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret"),
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: "AccountRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaAccountRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createAccountRepository(),
         },
         {
             provide: GetUserAccountsUseCase,

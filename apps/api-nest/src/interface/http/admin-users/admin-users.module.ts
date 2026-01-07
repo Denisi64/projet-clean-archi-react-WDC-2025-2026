@@ -1,30 +1,25 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { AdminUsersController } from "./admin-users.controller";
-import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
-import { PrismaUserAdminRepository } from "@proj/infra/users/PrismaUserAdminRepository";
 import { SearchUsersUseCase } from "@proj/application/users/SearchUsersUseCase";
 import { BanUserUseCase } from "@proj/application/users/BanUserUseCase";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { DirectorRoleGuard } from "../common/director-role.guard";
+import { createUserAdminRepository, createUserQueryRepository } from "@proj/infra";
 
 @Module({
     controllers: [AdminUsersController],
     providers: [
-        PrismaClient,
         {
             provide: "TokenVerifier",
             useFactory: () => new JwtTokenVerifier(process.env.JWT_SECRET ?? "dev-secret"),
         },
         {
             provide: "UserQueryRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserQueryRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserQueryRepository(),
         },
         {
             provide: "UserAdminRepository",
-            useFactory: (prisma: PrismaClient) => new PrismaUserAdminRepository(prisma),
-            inject: [PrismaClient],
+            useFactory: () => createUserAdminRepository(),
         },
         {
             provide: SearchUsersUseCase,
