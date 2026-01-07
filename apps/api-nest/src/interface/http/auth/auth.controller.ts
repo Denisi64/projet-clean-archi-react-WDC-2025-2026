@@ -13,11 +13,11 @@ import {
 import { Response } from "express";
 import { Request } from "express";
 import { LoginDto } from "./dto/login.dto";
-import { LoginUserUseCase } from "../../../application/auth/LoginUserUseCase";
+import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
 import { DomainExceptionFilter } from "../common/domain-exception.filter";
-import { RegisterUserUseCase } from "../../../application/auth/RegisterUserUseCase";
+import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
 import { RegisterDto } from "./dto/register.dto";
-import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase";
+import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
 import { ConfirmDto } from "./dto/confirm.dto";
 import { TokenVerifier } from "@proj/domain/auth/ports/TokenVerifier";
 import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
@@ -46,7 +46,11 @@ export class AuthController {
     @Post("login")
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-        const { token, ttl } = await this.loginUC.execute(dto);
+        const result = await this.loginUC.execute(dto);
+        if (!result.ok) {
+            throw result.error;
+        }
+        const { token, ttl } = result.value;
 
         res.cookie("session", token, {
             httpOnly: true,
@@ -63,18 +67,25 @@ export class AuthController {
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     async register(@Body() dto: RegisterDto) {
         const name = [dto.firstName, dto.lastName].filter(Boolean).join(" ").trim() || undefined;
-        const { expiresAt } = await this.registerUC.execute({
+        const result = await this.registerUC.execute({
             email: dto.email,
             password: dto.password,
             name,
         });
+        if (!result.ok) {
+            throw result.error;
+        }
+        const { expiresAt } = result.value;
         return { ok: true, confirmationExpiresAt: expiresAt.toISOString() };
     }
 
     @Post("confirm")
     @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
     async confirm(@Body() dto: ConfirmDto) {
-        await this.confirmUC.execute(dto.token);
+        const result = await this.confirmUC.execute(dto.token);
+        if (!result.ok) {
+            throw result.error;
+        }
         return { success: true };
     }
 

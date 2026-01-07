@@ -1,42 +1,36 @@
 // apps/api-nest/src/interface/http/common/domain-exception.filter.ts
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from "@nestjs/common";
-import { InvalidCredentialsError as SharedInvalidCredentialsError } from "@proj/domain/auth/errors/InvalidCredentialsError";
-import { EmailAlreadyInUseError as SharedEmailAlreadyInUseError } from "@proj/domain/auth/errors/EmailAlreadyInUseError";
-import { InactiveAccountError as SharedInactiveAccountError } from "@proj/domain/auth/errors/InactiveAccountError";
-import { InvalidConfirmationTokenError as SharedInvalidConfirmationTokenError } from "@proj/domain/auth/errors/InvalidConfirmationTokenError";
-import { ExpiredConfirmationTokenError as SharedExpiredConfirmationTokenError } from "@proj/domain/auth/errors/ExpiredConfirmationTokenError";
-import { EmailDeliveryError as SharedEmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError";
+import { InvalidCredentialsError } from "@proj/domain/auth/errors/InvalidCredentialsError";
+import { EmailAlreadyInUseError } from "@proj/domain/auth/errors/EmailAlreadyInUseError";
+import { InactiveAccountError } from "@proj/domain/auth/errors/InactiveAccountError";
+import { InvalidConfirmationTokenError } from "@proj/domain/auth/errors/InvalidConfirmationTokenError";
+import { ExpiredConfirmationTokenError } from "@proj/domain/auth/errors/ExpiredConfirmationTokenError";
+import { EmailDeliveryError } from "@proj/domain/auth/errors/EmailDeliveryError";
 import { UnauthorizedAccessError } from "@proj/domain/auth/errors/UnauthorizedAccessError";
 import { ForbiddenRoleError } from "@proj/domain/auth/errors/ForbiddenRoleError";
 import { BannedAccountError } from "@proj/domain/auth/errors/BannedAccountError";
-import { InvalidCredentialsError as LegacyInvalidCredentialsError } from "../../../domain/auth/errors/InvalidCredentialsError";
-import { EmailAlreadyInUseError as LegacyEmailAlreadyInUseError } from "../../../domain/auth/errors/EmailAlreadyInUseError";
-import { InactiveAccountError as LegacyInactiveAccountError } from "../../../domain/auth/errors/InactiveAccountError";
-import { InvalidConfirmationTokenError as LegacyInvalidConfirmationTokenError } from "../../../domain/auth/errors/InvalidConfirmationTokenError";
-import { ExpiredConfirmationTokenError as LegacyExpiredConfirmationTokenError } from "../../../domain/auth/errors/ExpiredConfirmationTokenError";
-import { EmailDeliveryError as LegacyEmailDeliveryError } from "../../../domain/auth/errors/EmailDeliveryError";
 
 @Catch(Error)
 export class DomainExceptionFilter implements ExceptionFilter {
     catch(exception: Error, host: ArgumentsHost) {
         const res = host.switchToHttp().getResponse();
 
-        if (exception instanceof SharedInvalidCredentialsError || exception instanceof LegacyInvalidCredentialsError) {
+        if (exception instanceof InvalidCredentialsError) {
             return res.status(HttpStatus.UNAUTHORIZED).json({ code: "INVALID_CREDENTIALS" });
         }
-        if (exception instanceof SharedInactiveAccountError || exception instanceof LegacyInactiveAccountError) {
+        if (exception instanceof InactiveAccountError) {
             return res.status(HttpStatus.FORBIDDEN).json({ code: "ACCOUNT_INACTIVE" });
         }
-        if (exception instanceof SharedEmailAlreadyInUseError || exception instanceof LegacyEmailAlreadyInUseError) {
+        if (exception instanceof EmailAlreadyInUseError) {
             return res.status(HttpStatus.CONFLICT).json({ code: "EMAIL_ALREADY_USED" });
         }
-        if (exception instanceof SharedInvalidConfirmationTokenError || exception instanceof LegacyInvalidConfirmationTokenError) {
+        if (exception instanceof InvalidConfirmationTokenError) {
             return res.status(HttpStatus.BAD_REQUEST).json({ code: "CONFIRMATION_TOKEN_INVALID" });
         }
-        if (exception instanceof SharedExpiredConfirmationTokenError || exception instanceof LegacyExpiredConfirmationTokenError) {
+        if (exception instanceof ExpiredConfirmationTokenError) {
             return res.status(HttpStatus.GONE).json({ code: "CONFIRMATION_TOKEN_EXPIRED" });
         }
-        if (exception instanceof SharedEmailDeliveryError || exception instanceof LegacyEmailDeliveryError) {
+        if (exception instanceof EmailDeliveryError) {
             return res.status(HttpStatus.BAD_GATEWAY).json({ code: "EMAIL_DELIVERY_FAILED" });
         }
         if (exception instanceof UnauthorizedAccessError) {
