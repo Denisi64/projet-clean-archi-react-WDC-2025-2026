@@ -37,7 +37,7 @@ async function handleProxy(req: NextRequest) {
     }
 
     const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
-    const url = `${base}/advisor/credits/me`;
+    const url = `${base}/credits/me`;
 
     try {
         const resp = await fetch(url, {
