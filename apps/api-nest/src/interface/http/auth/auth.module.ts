@@ -1,16 +1,17 @@
 import { Module } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 import { AuthController } from "./auth.controller";
-import { LoginUserUseCase } from "../../../application/auth/LoginUserUseCase";
-import { PrismaAuthRepository } from "../../../infrastructure/repositories/PrismaAuthRepository";
-import { BcryptPasswordHasher } from "../../../infrastructure/services/BcryptPasswordHasher";
-import { JwtTokenManager } from "../../../infrastructure/services/JwtTokenManager";
-import { RegisterUserUseCase } from "../../../application/auth/RegisterUserUseCase";
-import { NodemailerEmailService } from "../../../infrastructure/services/NodemailerEmailService";
-import { ConfirmUserUseCase } from "../../../application/auth/ConfirmUserUseCase";
+import { LoginUserUseCase } from "@proj/application/auth/LoginUserUseCase";
+import { RegisterUserUseCase } from "@proj/application/auth/RegisterUserUseCase";
+import { ConfirmUserUseCase } from "@proj/application/auth/ConfirmUserUseCase";
+import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
+import { PrismaAuthRepository } from "@proj/infra/auth/PrismaAuthRepository";
+import { BcryptPasswordHasher } from "@proj/infra/auth/BcryptPasswordHasher";
+import { JwtTokenManager } from "@proj/infra/auth/JwtTokenManager";
+import { NodemailerEmailService } from "@proj/infra/auth/NodemailerEmailService";
+import { CryptoActivationTokenGenerator } from "@proj/infra/auth/CryptoActivationTokenGenerator";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { PrismaUserQueryRepository } from "@proj/infra/users/PrismaUserQueryRepository";
-import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUseCase";
 
 @Module({
     controllers: [AuthController],
@@ -28,6 +29,10 @@ import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUse
         {
             provide: "EmailService",
             useClass: NodemailerEmailService,
+        },
+        {
+            provide: "ActivationTokenGenerator",
+            useClass: CryptoActivationTokenGenerator,
         },
         {
             provide: "TokenManager",
@@ -54,9 +59,15 @@ import { GetUserProfileUseCase } from "@proj/application/users/GetUserProfileUse
         },
         {
             provide: RegisterUserUseCase,
-            useFactory: (repo, hasher, emailService, ttlHours) =>
-                new RegisterUserUseCase(repo, hasher, emailService, ttlHours),
-            inject: ["AuthRepository", "PasswordHasher", "EmailService", "CONFIRMATION_TOKEN_TTL_HOURS"],
+            useFactory: (repo, hasher, emailService, tokenGenerator, ttlHours) =>
+                new RegisterUserUseCase(repo, hasher, emailService, tokenGenerator, ttlHours),
+            inject: [
+                "AuthRepository",
+                "PasswordHasher",
+                "EmailService",
+                "ActivationTokenGenerator",
+                "CONFIRMATION_TOKEN_TTL_HOURS",
+            ],
         },
         {
             provide: ConfirmUserUseCase,
