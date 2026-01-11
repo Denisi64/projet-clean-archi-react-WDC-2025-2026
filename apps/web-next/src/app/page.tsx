@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -128,6 +129,27 @@ function deriveDbLabel(): string {
 /* -------------------------------------------------------------------------- */
 /*                                    PAGE                                    */
 /* -------------------------------------------------------------------------- */
+
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations("homeMeta");
+    const locale = await getLocale();
+    const ogLocale = locale === "en" ? "en_US" : "fr_FR";
+
+    return {
+        title: t("title"),
+        description: t("description"),
+        alternates: { canonical: "/" },
+        keywords: t.raw("keywords") as string[],
+        openGraph: {
+            title: t("title"),
+            description: t("description"),
+            url: "/",
+            siteName: t("siteName"),
+            locale: ogLocale,
+            type: "website",
+        },
+    };
+}
 
 export default async function Home() {
     const t = await getTranslations("home");

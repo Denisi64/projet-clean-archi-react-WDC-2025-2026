@@ -37,6 +37,21 @@
     "actionsLink": "Avenir Bank stocks",
     "transfersLink": "Transfers list"
   },
+  "homeMeta": {
+    "title": "Avenir Bank - Online banking",
+    "description": "Open and manage your Avenir Bank accounts with a simple, secure, and fast experience.",
+    "siteName": "Avenir Bank",
+    "keywords": [
+      "avenir bank",
+      "online banking",
+      "current account",
+      "savings",
+      "transfer",
+      "security",
+      "nextjs",
+      "nestjs"
+    ]
+  },
   "actionsPage": {
     "title": "Avenir Bank Stocks",
     "subtitle": "Buy and sell stocks with real-time stock updates.",

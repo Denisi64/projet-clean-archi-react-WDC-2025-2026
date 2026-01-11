@@ -37,6 +37,21 @@
     "actionsLink": "Actions Avenir Bank",
     "transfersLink": "Liste des transferts"
   },
+  "homeMeta": {
+    "title": "Avenir Bank - Banque en ligne",
+    "description": "Ouvrez et gerez vos comptes Avenir Bank avec une experience simple, securisee et rapide.",
+    "siteName": "Avenir Bank",
+    "keywords": [
+      "avenir bank",
+      "banque en ligne",
+      "compte courant",
+      "epargne",
+      "virement",
+      "securite",
+      "nextjs",
+      "nestjs"
+    ]
+  },
   "actionsPage": {
     "title": "Actions Avenir Bank",
     "subtitle": "Achat et vente d'actions avec stock mis a jour en temps reel.",
