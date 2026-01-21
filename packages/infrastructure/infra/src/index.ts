@@ -33,6 +33,10 @@ export { PrismaUserQueryRepository } from "./users/PrismaUserQueryRepository";
 export { DrizzleUserAdminRepository } from "./users/DrizzleUserAdminRepository";
 export { DrizzleUserQueryRepository } from "./users/DrizzleUserQueryRepository";
 
+export { PrismaNotificationRepository } from "./notifications/PrismaNotificationRepository";
+export { DrizzleNotificationRepository } from "./notifications/DrizzleNotificationRepository";
+export { InMemoryNotificationStream, createNotificationStream } from "./notifications/InMemoryNotificationStream";
+
 export { LocalSocketActionStockNotifier } from "./notifications/LocalSocketActionStockNotifier";
 export { LocalSocketSavingsRateNotifier } from "./notifications/LocalSocketSavingsRateNotifier";
 

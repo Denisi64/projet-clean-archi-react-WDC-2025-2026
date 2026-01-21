@@ -18,6 +18,15 @@
       ],
       "@/features/*": [
         "src/features/*"
+      ],
+      "@proj/domain/*": [
+        "../../packages/domain/src/*"
+      ],
+      "@proj/application/*": [
+        "../../packages/application/src/*"
+      ],
+      "@proj/infra/*": [
+        "../../packages/infrastructure/infra/src/*"
       ]
     },
     "allowJs": true,

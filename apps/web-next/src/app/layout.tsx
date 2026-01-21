@@ -5,6 +5,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { NotificationsListener } from "./components/NotificationsListener";
 import { ToastProvider } from "./components/ToastProvider";
+import { PersonalNotificationsListener } from "./components/PersonalNotificationsListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ToastProvider>
             <NotificationsListener />
+            <PersonalNotificationsListener />
             {children}
           </ToastProvider>
         </NextIntlClientProvider>
