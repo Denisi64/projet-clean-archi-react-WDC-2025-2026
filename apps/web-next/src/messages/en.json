@@ -21,6 +21,8 @@
     "sseConnected": "SSE connected",
     "sseDisconnected": "SSE disconnected",
     "sseConnecting": "SSE connecting...",
+    "newsFeed": "News feed",
+    "newsCreate": "Publish news",
     "title": "My bank accounts",
     "subtitle": "Each user gets a current account at signup. This section shows IBAN, balance and status.",
     "logout": "Sign out",
@@ -40,6 +42,32 @@
     "thActions": "Actions",
     "actionsLink": "Avenir Bank stocks",
     "transfersLink": "Transfers list"
+  },
+  "newsFeed": {
+    "kicker": "Client space",
+    "title": "Bank news",
+    "subtitle": "Real-time feed of announcements from your advisor.",
+    "back": "Back to home",
+    "empty": "No news yet."
+  },
+  "newsCreatorPage": {
+    "kicker": "Advisor",
+    "title": "Publish a news item",
+    "subtitle": "Clients receive updates in real time via SSE.",
+    "back": "Back to home"
+  },
+  "newsCreator": {
+    "title": "New announcement",
+    "titleLabel": "Title",
+    "titlePlaceholder": "New branch hours",
+    "bodyLabel": "Content (optional)",
+    "bodyPlaceholder": "Announcement text...",
+    "send": "Publish",
+    "sending": "Publishing...",
+    "success": "News published.",
+    "serverError": "Server error.",
+    "errorPrefix": "Error:",
+    "titleRequired": "Title required"
   },
   "homeMeta": {
     "title": "Avenir Bank - Online banking",

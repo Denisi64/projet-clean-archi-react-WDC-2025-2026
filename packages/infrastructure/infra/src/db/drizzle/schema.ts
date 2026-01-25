@@ -285,6 +285,21 @@ export const notifications = mysqlTable(
     }),
 );
 
+export const news = mysqlTable(
+    "News",
+    {
+        id: varchar("id", { length: 191 }).primaryKey(),
+        title: varchar("title", { length: 191 }).notNull(),
+        body: text("body"),
+        createdById: varchar("createdById", { length: 191 }).notNull(),
+        createdAt: datetime("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
+    },
+    (t) => ({
+        createdAtIdx: index("News_createdAt_idx").on(t.createdAt),
+        createdByIdx: index("News_createdById_idx").on(t.createdById),
+    }),
+);
+
 export type DbSchema = {
     users: typeof users;
     emailConfirmationTokens: typeof emailConfirmationTokens;
@@ -301,4 +316,5 @@ export type DbSchema = {
     discussionParticipants: typeof discussionParticipants;
     messages: typeof messages;
     notifications: typeof notifications;
+    news: typeof news;
 };

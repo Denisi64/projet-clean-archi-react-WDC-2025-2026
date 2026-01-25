@@ -21,6 +21,8 @@
     "sseConnected": "SSE connecte",
     "sseDisconnected": "SSE deconnecte",
     "sseConnecting": "SSE connexion...",
+    "newsFeed": "Actualites",
+    "newsCreate": "Publier actualite",
     "title": "Mes comptes bancaires",
     "subtitle": "Chaque utilisateur recoit un compte courant des l'inscription. Cette section affiche IBAN, solde et statut.",
     "logout": "Se deconnecter",
@@ -40,6 +42,32 @@
     "thActions": "Actions",
     "actionsLink": "Actions Avenir Bank",
     "transfersLink": "Liste des transferts"
+  },
+  "newsFeed": {
+    "kicker": "Espace client",
+    "title": "Actualites de la banque",
+    "subtitle": "Fil temps reel des annonces publiees par votre conseiller.",
+    "back": "Retour accueil",
+    "empty": "Aucune actualite pour le moment."
+  },
+  "newsCreatorPage": {
+    "kicker": "Conseiller",
+    "title": "Publier une actualite",
+    "subtitle": "Les clients recoivent la mise a jour en temps reel via SSE.",
+    "back": "Retour accueil"
+  },
+  "newsCreator": {
+    "title": "Nouvelle actualite",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Nouveaux horaires d'agence",
+    "bodyLabel": "Contenu (optionnel)",
+    "bodyPlaceholder": "Texte de l'annonce...",
+    "send": "Publier",
+    "sending": "Publication...",
+    "success": "Actualite publiee.",
+    "serverError": "Erreur serveur.",
+    "errorPrefix": "Erreur:",
+    "titleRequired": "Titre requis"
   },
   "homeMeta": {
     "title": "Avenir Bank - Banque en ligne",

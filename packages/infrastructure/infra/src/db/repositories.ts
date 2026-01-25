@@ -11,6 +11,7 @@ import { ActionRepository } from "@proj/domain/actions/ports/ActionRepository";
 import { PortfolioRepository } from "@proj/domain/actions/ports/PortfolioRepository";
 import { ActionTradeRepository } from "@proj/domain/actions/ports/ActionTradeRepository";
 import { NotificationRepository } from "@proj/domain/notifications/ports/NotificationRepository";
+import { NewsRepository } from "@proj/domain/news/ports/NewsRepository";
 
 import { PrismaAuthRepository } from "../auth/PrismaAuthRepository";
 import { PrismaUserAdminRepository } from "../users/PrismaUserAdminRepository";
@@ -24,6 +25,7 @@ import { PrismaActionRepository } from "../actions/PrismaActionRepository";
 import { PrismaPortfolioRepository } from "../actions/PrismaPortfolioRepository";
 import { PrismaActionTradeRepository } from "../actions/PrismaActionTradeRepository";
 import { PrismaNotificationRepository } from "../notifications/PrismaNotificationRepository";
+import { PrismaNewsRepository } from "../news/PrismaNewsRepository";
 
 import { DrizzleAuthRepository } from "../auth/DrizzleAuthRepository";
 import { DrizzleUserAdminRepository } from "../users/DrizzleUserAdminRepository";
@@ -37,6 +39,7 @@ import { DrizzleActionRepository } from "../actions/DrizzleActionRepository";
 import { DrizzlePortfolioRepository } from "../actions/DrizzlePortfolioRepository";
 import { DrizzleActionTradeRepository } from "../actions/DrizzleActionTradeRepository";
 import { DrizzleNotificationRepository } from "../notifications/DrizzleNotificationRepository";
+import { DrizzleNewsRepository } from "../news/DrizzleNewsRepository";
 import { resolveDbDriver } from "./driver";
 
 function normalize(driver?: DbDriver): DbDriver {
@@ -116,4 +119,10 @@ export function createNotificationRepository(driver?: DbDriver): NotificationRep
     const db = normalize(driver);
     if (db === "mariadb") return new DrizzleNotificationRepository();
     return new PrismaNotificationRepository();
+}
+
+export function createNewsRepository(driver?: DbDriver): NewsRepository {
+    const db = normalize(driver);
+    if (db === "mariadb") return new DrizzleNewsRepository();
+    return new PrismaNewsRepository();
 }

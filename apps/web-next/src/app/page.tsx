@@ -324,6 +324,22 @@ export default async function Home() {
                                 {t("advisorCredits")}
                             </Link>
                         )}
+                        {currentUser?.role === "CLIENT" && (
+                            <Link
+                                href="/feed"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("newsFeed")}
+                            </Link>
+                        )}
+                        {currentUser?.role === "ADVISOR" && (
+                            <Link
+                                href="/advisor/news"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("newsCreate")}
+                            </Link>
+                        )}
                         {currentUser?.role === "ADVISOR" && (
                             <Link
                                 href="/advisor/notifications"
