@@ -9,8 +9,8 @@
 
 */
 -- AlterTable
-ALTER TABLE `Credit` ADD COLUMN `initialPrincipal` DECIMAL(19, 4) NOT NULL,
-    ADD COLUMN `insuranceRate` DECIMAL(9, 6) NOT NULL,
-    ADD COLUMN `monthlyInsurance` DECIMAL(19, 4) NOT NULL,
-    ADD COLUMN `remainingPrincipal` DECIMAL(19, 4) NOT NULL,
-    ADD COLUMN `remainingTermMonths` INTEGER NOT NULL;
+ALTER TABLE "Credit" ADD COLUMN     "initialPrincipal" DECIMAL(19,4) NOT NULL,
+ADD COLUMN     "insuranceRate" DECIMAL(9,6) NOT NULL,
+ADD COLUMN     "monthlyInsurance" DECIMAL(19,4) NOT NULL,
+ADD COLUMN     "remainingPrincipal" DECIMAL(19,4) NOT NULL,
+ADD COLUMN     "remainingTermMonths" INTEGER NOT NULL;

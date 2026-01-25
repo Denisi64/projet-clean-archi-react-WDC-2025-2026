@@ -23,6 +23,7 @@
     "sseConnecting": "SSE connexion...",
     "newsFeed": "Actualites",
     "newsCreate": "Publier actualite",
+    "groupChat": "Chat conseiller",
     "title": "Mes comptes bancaires",
     "subtitle": "Chaque utilisateur recoit un compte courant des l'inscription. Cette section affiche IBAN, solde et statut.",
     "logout": "Se deconnecter",
@@ -68,6 +69,20 @@
     "serverError": "Erreur serveur.",
     "errorPrefix": "Erreur:",
     "titleRequired": "Titre requis"
+  },
+  "groupChatPage": {
+    "kicker": "Espace conseiller",
+    "title": "Chat de groupe",
+    "subtitle": "Echange en temps reel entre conseillers et direction.",
+    "back": "Retour accueil"
+  },
+  "groupChat": {
+    "title": "Discussion conseillers",
+    "inputPlaceholder": "Votre message...",
+    "send": "Envoyer",
+    "empty": "Aucun message pour le moment.",
+    "serverError": "Erreur serveur.",
+    "directorBadge": "Directeur"
   },
   "homeMeta": {
     "title": "Avenir Bank - Banque en ligne",

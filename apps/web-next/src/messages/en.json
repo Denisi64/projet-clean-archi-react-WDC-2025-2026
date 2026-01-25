@@ -23,6 +23,7 @@
     "sseConnecting": "SSE connecting...",
     "newsFeed": "News feed",
     "newsCreate": "Publish news",
+    "groupChat": "Advisor chat",
     "title": "My bank accounts",
     "subtitle": "Each user gets a current account at signup. This section shows IBAN, balance and status.",
     "logout": "Sign out",
@@ -68,6 +69,20 @@
     "serverError": "Server error.",
     "errorPrefix": "Error:",
     "titleRequired": "Title required"
+  },
+  "groupChatPage": {
+    "kicker": "Advisor space",
+    "title": "Group chat",
+    "subtitle": "Real-time discussion between advisors and management.",
+    "back": "Back to home"
+  },
+  "groupChat": {
+    "title": "Advisors discussion",
+    "inputPlaceholder": "Your message...",
+    "send": "Send",
+    "empty": "No messages yet.",
+    "serverError": "Server error.",
+    "directorBadge": "Director"
   },
   "homeMeta": {
     "title": "Avenir Bank - Online banking",

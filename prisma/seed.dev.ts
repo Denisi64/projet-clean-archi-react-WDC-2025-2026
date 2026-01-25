@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
     const passwordHash = await bcrypt.hash("Password123!", 10);
 
-    // Create two demo users: one client, one advisor
+    // Create demo users: one client, two advisors
     const users = await prisma.user.createMany({
         data: [
             {
@@ -19,6 +19,13 @@ async function main() {
             {
                 email: "advisor1@demo.local",
                 name: "Advisor One",
+                password: passwordHash,
+                role: "ADVISOR",
+                isActive: true,
+            },
+            {
+                email: "advisor2@demo.local",
+                name: "Advisor Two",
                 password: passwordHash,
                 role: "ADVISOR",
                 isActive: true,
