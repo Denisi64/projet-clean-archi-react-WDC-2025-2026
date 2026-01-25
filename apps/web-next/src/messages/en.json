@@ -9,6 +9,7 @@
     "actions": "Stocks",
     "savingsRate": "Set savings rate",
     "about": "About",
+    "personalNotifications": "Client notifications",
     "featureSecurityTitle": "Maximum Security",
     "featureSecurityDesc": "Top banking standards.",
     "featureTransfersTitle": "Instant Transfers",
@@ -17,6 +18,11 @@
     "featureTransparencyDesc": "Real-time tracking.",
     "welcome": "Welcome to Avenir Bank - backend: {backend} | database: {db}",
     "helloUser": "Hello {name} ({role})",
+    "sseConnected": "SSE connected",
+    "sseDisconnected": "SSE disconnected",
+    "sseConnecting": "SSE connecting...",
+    "newsFeed": "News feed",
+    "newsCreate": "Publish news",
     "title": "My bank accounts",
     "subtitle": "Each user gets a current account at signup. This section shows IBAN, balance and status.",
     "logout": "Sign out",
@@ -36,6 +42,32 @@
     "thActions": "Actions",
     "actionsLink": "Avenir Bank stocks",
     "transfersLink": "Transfers list"
+  },
+  "newsFeed": {
+    "kicker": "Client space",
+    "title": "Bank news",
+    "subtitle": "Real-time feed of announcements from your advisor.",
+    "back": "Back to home",
+    "empty": "No news yet."
+  },
+  "newsCreatorPage": {
+    "kicker": "Advisor",
+    "title": "Publish a news item",
+    "subtitle": "Clients receive updates in real time via SSE.",
+    "back": "Back to home"
+  },
+  "newsCreator": {
+    "title": "New announcement",
+    "titleLabel": "Title",
+    "titlePlaceholder": "New branch hours",
+    "bodyLabel": "Content (optional)",
+    "bodyPlaceholder": "Announcement text...",
+    "send": "Publish",
+    "sending": "Publishing...",
+    "success": "News published.",
+    "serverError": "Server error.",
+    "errorPrefix": "Error:",
+    "titleRequired": "Title required"
   },
   "homeMeta": {
     "title": "Avenir Bank - Online banking",
@@ -334,6 +366,26 @@
   "notifications": {
     "savingsRateUpdated": "New savings rate: {rate}%",
     "close": "OK"
+  },
+  "personalNotifications": {
+    "title": "Personal notification",
+    "searchLabel": "Search client",
+    "searchPlaceholder": "Name or email...",
+    "searching": "Searching...",
+    "userIdLabel": "Client",
+    "selectPlaceholder": "- Select -",
+    "noUsers": "No clients found.",
+    "notifTitleLabel": "Title",
+    "notifTitlePlaceholder": "Important update",
+    "bodyLabel": "Message (optional)",
+    "bodyPlaceholder": "Your advisor sent you...",
+    "send": "Send",
+    "sending": "Sending...",
+    "success": "Notification sent.",
+    "serverError": "Server error.",
+    "errorPrefix": "Error:",
+    "userIdRequired": "Client ID required",
+    "titleRequired": "Title required"
   },
   "advisorCredits": {
     "userRequired": "Client required",

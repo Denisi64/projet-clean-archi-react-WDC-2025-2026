@@ -39,6 +39,7 @@ import AccountTable from "./components/AccountTable";
 import AccountCreatorCard from "./components/AccountCreatorCard";
 import TransferCard from "./components/TransferCard";
 import { LanguageSwitch } from "./components/LanguageSwitch";
+import { SseStatusBadge } from "./components/SseStatusBadge";
 
 /* -------------------------------------------------------------------------- */
 /*                                    TYPES                                   */
@@ -299,14 +300,17 @@ export default async function Home() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div>
-                        <p className="text-sm text-muted-foreground">
-                            {t("welcome", { backend, db: dbLabel })}{" "}
-                            {currentUser &&
-                                `— ${t("helloUser", {
-                                    name: currentUser.name ?? currentUser.email,
-                                    role: currentUser.role ?? "client",
-                                })}`}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <span>
+                                {t("welcome", { backend, db: dbLabel })}{" "}
+                                {currentUser &&
+                                    `— ${t("helloUser", {
+                                        name: currentUser.name ?? currentUser.email,
+                                        role: currentUser.role ?? "client",
+                                    })}`}
+                            </span>
+                            <SseStatusBadge />
+                        </div>
                         <h1 className="text-3xl font-bold">{t("title")}</h1>
                         <p className="text-muted-foreground">{t("subtitle")}</p>
                     </div>
@@ -318,6 +322,38 @@ export default async function Home() {
                                 className={cn(buttonVariants({ variant: "secondary" }))}
                             >
                                 {t("advisorCredits")}
+                            </Link>
+                        )}
+                        {currentUser?.role === "CLIENT" && (
+                            <Link
+                                href="/feed"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("newsFeed")}
+                            </Link>
+                        )}
+                        {currentUser?.role === "ADVISOR" && (
+                            <Link
+                                href="/advisor/news"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("newsCreate")}
+                            </Link>
+                        )}
+                        {currentUser?.role === "ADVISOR" && (
+                            <Link
+                                href="/advisor/notifications"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("personalNotifications")}
+                            </Link>
+                        )}
+                        {currentUser?.role === "DIRECTOR" && (
+                            <Link
+                                href="/director/notifications"
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("personalNotifications")}
                             </Link>
                         )}
                         {currentUser?.role === "DIRECTOR" && (
