@@ -340,6 +340,14 @@ export default async function Home() {
                                 {t("newsCreate")}
                             </Link>
                         )}
+                        {(currentUser?.role === "ADVISOR" || currentUser?.role === "DIRECTOR") && (
+                            <Link
+                                href={currentUser.role === "DIRECTOR" ? "/director/group-chat" : "/advisor/group-chat"}
+                                className={cn(buttonVariants({ variant: "secondary" }))}
+                            >
+                                {t("groupChat")}
+                            </Link>
+                        )}
                         {currentUser?.role === "ADVISOR" && (
                             <Link
                                 href="/advisor/notifications"

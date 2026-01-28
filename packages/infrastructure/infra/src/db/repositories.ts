@@ -12,6 +12,7 @@ import { PortfolioRepository } from "@proj/domain/actions/ports/PortfolioReposit
 import { ActionTradeRepository } from "@proj/domain/actions/ports/ActionTradeRepository";
 import { NotificationRepository } from "@proj/domain/notifications/ports/NotificationRepository";
 import { NewsRepository } from "@proj/domain/news/ports/NewsRepository";
+import { GroupChatRepository } from "@proj/domain/chat/ports/GroupChatRepository";
 
 import { PrismaAuthRepository } from "../auth/PrismaAuthRepository";
 import { PrismaUserAdminRepository } from "../users/PrismaUserAdminRepository";
@@ -26,6 +27,7 @@ import { PrismaPortfolioRepository } from "../actions/PrismaPortfolioRepository"
 import { PrismaActionTradeRepository } from "../actions/PrismaActionTradeRepository";
 import { PrismaNotificationRepository } from "../notifications/PrismaNotificationRepository";
 import { PrismaNewsRepository } from "../news/PrismaNewsRepository";
+import { PrismaGroupChatRepository } from "../chat/PrismaGroupChatRepository";
 
 import { DrizzleAuthRepository } from "../auth/DrizzleAuthRepository";
 import { DrizzleUserAdminRepository } from "../users/DrizzleUserAdminRepository";
@@ -40,6 +42,7 @@ import { DrizzlePortfolioRepository } from "../actions/DrizzlePortfolioRepositor
 import { DrizzleActionTradeRepository } from "../actions/DrizzleActionTradeRepository";
 import { DrizzleNotificationRepository } from "../notifications/DrizzleNotificationRepository";
 import { DrizzleNewsRepository } from "../news/DrizzleNewsRepository";
+import { DrizzleGroupChatRepository } from "../chat/DrizzleGroupChatRepository";
 import { resolveDbDriver } from "./driver";
 
 function normalize(driver?: DbDriver): DbDriver {
@@ -125,4 +128,10 @@ export function createNewsRepository(driver?: DbDriver): NewsRepository {
     const db = normalize(driver);
     if (db === "mariadb") return new DrizzleNewsRepository();
     return new PrismaNewsRepository();
+}
+
+export function createGroupChatRepository(driver?: DbDriver): GroupChatRepository {
+    const db = normalize(driver);
+    if (db === "mariadb") return new DrizzleGroupChatRepository();
+    return new PrismaGroupChatRepository();
 }
