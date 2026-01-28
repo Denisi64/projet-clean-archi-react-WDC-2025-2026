@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { JwtTokenVerifier } from "@proj/infra/auth/JwtTokenVerifier";
 import { createCreditRepository } from "@proj/infra";
-import { ListCreditsForUserUseCase } from "@proj/application/credits/ListCreditsForUserUseCase";
+import { ListCreditsForUserUseCase } from '@proj/application/credits/ListCreditsForUserUseCase';
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const isDev = process.env.NODE_ENV !== "production";

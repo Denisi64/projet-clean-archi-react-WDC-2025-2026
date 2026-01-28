@@ -44,6 +44,18 @@ enum CreditStatus {
   CANCELED
 }
 
+enum DiscussionStatus {
+  OPEN
+  ASSIGNED
+  CLOSED
+}
+
+enum MessageAuthorRole {
+  CLIENT
+  ADVISOR
+}
+
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -244,14 +256,15 @@ model Credit {
 
 model Discussion {
   id      String @id @default(cuid())
-  ownerId String // par ex. client initiateur
+  ownerId String
   owner   User   @relation("DiscussionOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
-  // Le premier conseiller qui répond devient responsable
   assignedAdvisorId String?
   assignedAdvisor   User?   @relation(fields: [assignedAdvisorId], references: [id])
 
+  status    DiscussionStatus @default(OPEN)
   title     String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -259,6 +272,7 @@ model Discussion {
   participants DiscussionParticipant[]
 
   @@index([assignedAdvisorId])
+  @@index([status])
 }
 
 model DiscussionParticipant {
@@ -282,7 +296,9 @@ model Message {
   senderId String
   sender   User   @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
-  content                String
+  authorRole MessageAuthorRole
+  content    String
+
   createdAt              DateTime @default(now())
   transferredToAdvisorId String?
 }
