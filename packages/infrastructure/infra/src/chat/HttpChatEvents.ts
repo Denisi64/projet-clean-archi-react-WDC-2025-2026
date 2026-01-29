@@ -31,6 +31,10 @@ export class HttpChatEvents implements ChatEventsPort {
         await this.post("/broadcast-discussion-removed", { discussionId: payload.discussionId });
     }
 
+    async discussionCreated(payload: { discussionId: string; ownerId: string }): Promise<void> {
+        await this.post("/broadcast-discussion-created", payload);
+    }
+
     async discussionTransferred(payload: { discussionId: string; fromAdvisorId: string; toAdvisorId: string }): Promise<void> {
         await this.post("/broadcast-discussion-transferred", payload);
     }

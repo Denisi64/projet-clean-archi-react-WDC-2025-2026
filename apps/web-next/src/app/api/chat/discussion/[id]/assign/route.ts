@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { AssignDiscussionUseCase } from "@proj/application/chat/AssignDiscussionUseCase";
 import { createDiscussionRepository } from "@proj/infra";
 import { HttpChatEvents } from "@proj/infra/chat/HttpChatEvents";
-import { requireChatRole } from "../../../../_auth";
+import { requireChatRole } from "../../../_auth";
+import { AlreadyAssigned } from "@proj/domain/chat/error/errors";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const assignUC = new AssignDiscussionUseCase(createDiscussionRepository(), new HttpChatEvents());
@@ -22,6 +23,9 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
         await assignUC.execute({ discussionId: context.params.id, advisorId: auth.userId });
         return NextResponse.json({ ok: true });
     } catch (e: any) {
+        if (e instanceof AlreadyAssigned) {
+            return NextResponse.json({ code: "DISCUSSION_ALREADY_ASSIGNED" }, { status: 409 });
+        }
         if (isDev) console.error("[chat assign] error:", e?.message);
         return NextResponse.json({ code: "UNEXPECTED_ERROR" }, { status: 500 });
     }

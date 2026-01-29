@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { apiPost } from "@/lib/api";
-import styles from "../../../app/page.module.css";
+import { Button } from "@/components/ui/button";
 
 type Discussion = {
   id: string;
@@ -21,8 +21,8 @@ export function CreateDiscussionButton() {
   };
 
   return (
-    <button onClick={createDiscussion} className={styles.link}>
+    <Button onClick={createDiscussion} className="w-full">
       Contacter un conseiller
-    </button>
+    </Button>
   );
 }

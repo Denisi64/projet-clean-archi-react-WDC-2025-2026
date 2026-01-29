@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Avenir Bank — Espace client",
+  title: "Avenir Bank -- Espace client",
   description: "Ouvrez et pilotez vos comptes bancaires en ligne.",
 };
 

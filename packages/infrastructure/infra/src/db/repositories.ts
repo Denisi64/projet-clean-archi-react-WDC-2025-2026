@@ -18,6 +18,7 @@ import { MessageRepository } from "@proj/domain/chat/ports/MessageRepository";
 import { AdvisorRepository } from "@proj/domain/chat/ports/AdvisorRepository";
 
 import { PrismaAuthRepository } from "../auth/PrismaAuthRepository";
+import { PrismaClient } from "@prisma/client";
 import { PrismaUserAdminRepository } from "../users/PrismaUserAdminRepository";
 import { PrismaUserQueryRepository } from "../users/PrismaUserQueryRepository";
 import { PrismaAccountRepository } from "../accounts/PrismaAccountRepository";
@@ -70,7 +71,7 @@ export function createAuthRepository(
 export function createUserQueryRepository(driver?: DbDriver): UserQueryRepository {
     const db = normalize(driver);
     if (db === "mariadb") return new DrizzleUserQueryRepository();
-    return new PrismaUserQueryRepository();
+    return new PrismaUserQueryRepository(new PrismaClient());
 }
 
 export function createUserAdminRepository(driver?: DbDriver): UserAdminRepository {

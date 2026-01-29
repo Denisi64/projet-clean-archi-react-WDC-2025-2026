@@ -19,7 +19,7 @@ export default function DiscussionList() {
     <ul>
       {discussions.map((c) => (
         <li key={c.id}>
-          {c.id} — {c.status}
+          {c.id} -- {c.status}
         </li>
       ))}
     </ul>

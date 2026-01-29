@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { CloseDiscussionUseCase } from "@proj/application/chat/CloseDiscussionUseCase";
 import { createDiscussionRepository } from "@proj/infra";
 import { HttpChatEvents } from "@proj/infra/chat/HttpChatEvents";
-import { requireChatRole } from "../../../../_auth";
+import { requireChatRole } from "../../../_auth";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const closeUC = new CloseDiscussionUseCase(createDiscussionRepository(), new HttpChatEvents());

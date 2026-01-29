@@ -1,6 +1,7 @@
 import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
 import { ChatEventsPort } from "@proj/domain/chat/ports/ChatEventsPort";
 import { AssignDiscussionInput } from "./inputs/AssignDiscussionInput";
+import { AlreadyAssigned } from "@proj/domain/chat/error/errors";
 
 export class AssignDiscussionUseCase {
     constructor(
@@ -17,6 +18,10 @@ export class AssignDiscussionUseCase {
 
         if (discussion.status === "CLOSED") {
             throw new Error("Discussion is closed");
+        }
+
+        if (discussion.assignedAdvisorId) {
+            throw new AlreadyAssigned();
         }
 
         discussion.assignedAdvisorId = input.advisorId;

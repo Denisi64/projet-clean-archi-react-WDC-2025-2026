@@ -5,12 +5,12 @@ import { useParams } from 'next/navigation'
 import { DiscussionView } from '@/features/chat/components/DiscussionView'
 
 export default function ClientDiscussionPage() {
-    const { discussionId } = useParams<{ discussionId: string }>()
+    const { discussionid } = useParams<{ discussionid: string }>()
     
 
     return (
         <DiscussionView
-            discussionId={discussionId}
+            discussionId={discussionid}
             mode="CLIENT"
         />
     )

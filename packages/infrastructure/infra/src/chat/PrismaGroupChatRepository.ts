@@ -33,11 +33,13 @@ export class PrismaGroupChatRepository implements GroupChatRepository {
             data: {
                 discussionId: discussion.id,
                 senderId: input.senderId,
+                authorRole: "ADVISOR",
                 content: input.content,
             },
-            include: {
-                sender: { select: { id: true, name: true, role: true, email: true } },
-            },
+        });
+        const sender = await this.prisma.user.findUnique({
+            where: { id: input.senderId },
+            select: { id: true, name: true, role: true, email: true },
         });
 
         return {
@@ -45,8 +47,8 @@ export class PrismaGroupChatRepository implements GroupChatRepository {
             content: message.content,
             createdAt: message.createdAt,
             senderId: message.senderId,
-            senderName: message.sender?.name ?? message.sender?.email ?? "User",
-            senderRole: message.sender?.role === "DIRECTOR" ? "DIRECTOR" : "ADVISOR",
+            senderName: sender?.name ?? sender?.email ?? "User",
+            senderRole: sender?.role === "DIRECTOR" ? "DIRECTOR" : "ADVISOR",
         };
     }
 

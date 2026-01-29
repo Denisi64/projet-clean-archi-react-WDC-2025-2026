@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSocket } from '@/providers/SocketProvider'
 import { apiPost } from '@/lib/api'
+import Link from 'next/link'
 
 type Message = {
   id: string
@@ -79,6 +80,7 @@ export default function AdvisorPage() {
   return (
     <div>
       <h1>Advisor dashboard</h1>
+      <Link href="/advisor/inbox">Voir les demandes clients</Link>
 
       <button
         onClick={() =>
