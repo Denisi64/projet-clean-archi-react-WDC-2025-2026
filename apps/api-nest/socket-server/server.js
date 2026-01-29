@@ -54,6 +54,109 @@ const server = createServer((req, res) => {
     });
     return;
   }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-message") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        if (payload?.discussionId) {
+          io.to(`discussion:${payload.discussionId}`).emit("discussion.newMessage", payload);
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-assigned") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        io.to("advisor-inbox").emit("discussion.assigned", payload);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-created") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        io.to("advisor-inbox").emit("discussion.created", payload);
+        console.log("[ws] http relay discussion.created", payload);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-removed") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        io.to("advisor-inbox").emit("discussion.removed", payload);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-transferred") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        if (payload?.discussionId) {
+          io.to(`discussion:${payload.discussionId}`).emit("discussion.transferred", payload);
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-closed") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        if (payload?.discussionId) {
+          io.to(`discussion:${payload.discussionId}`).emit("discussion.closed", payload);
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
   res.writeHead(404);
   res.end();
 });
@@ -81,6 +184,17 @@ io.on("connection", (socket) => {
     io.to("group-chat").emit("group-message", payload);
     console.log("[ws] relay group-message", payload);
   });
+
+  socket.on("discussion.join", (payload) => {
+    if (!payload?.discussionId) return;
+    socket.join(`discussion:${payload.discussionId}`);
+    console.log("[ws] join discussion", payload.discussionId);
+  });
+
+  socket.on("advisor.join", () => {
+    socket.join("advisor-inbox");
+    console.log("[ws] join advisor-inbox");
+  });
 });
 
 function broadcastSavingsRate(payload) {
@@ -98,7 +212,13 @@ function broadcastGroupMessage(payload) {
   console.log("[ws] broadcast group-message", payload);
 }
 
-module.exports = { server, io, broadcastSavingsRate, broadcastActionStock, broadcastGroupMessage };
+module.exports = {
+  server,
+  io,
+  broadcastSavingsRate,
+  broadcastActionStock,
+  broadcastGroupMessage,
+};
 
 if (require.main === module) {
   server.listen(PORT, () => {
