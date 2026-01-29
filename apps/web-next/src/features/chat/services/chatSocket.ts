@@ -1,14 +1,16 @@
 import { io, Socket } from "socket.io-client";
-console.log(">>> PRIVATE CHAT SOCKET LOADED");
+
 let socket: Socket | null = null;
 
 export function getPrivateChatSocket(token?: string) {
-    if (!socket) {
-      socket = io("http://localhost:3001/private-chat", {
-        transports: ["websocket"],
-        auth: token ? { token } : undefined,
-      });
-    }
-    return socket;
+  if (!socket) {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:4001";
+    socket = io(wsUrl, {
+      transports: ["websocket"],
+      auth: token ? { token } : undefined,
+      timeout: 2000,
+    });
   }
+  return socket;
+}
   

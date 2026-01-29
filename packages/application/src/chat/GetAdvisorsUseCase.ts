@@ -1,4 +1,4 @@
-import { AdvisorRepository } from '@domain/src/chat/ports/AdvisorRepository';
+import { AdvisorRepository } from '@proj/domain/chat/ports/AdvisorRepository';
 
 export class GetAdvisorsUseCase {
     constructor(

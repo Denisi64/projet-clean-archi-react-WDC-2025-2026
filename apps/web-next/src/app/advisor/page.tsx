@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSocket } from '@/providers/SocketProvider'
+import { apiPost } from '@/lib/api'
 
 type Message = {
   id: string
@@ -41,7 +42,7 @@ export default function AdvisorPage() {
   useEffect(() => {
     if (!ready || !socket) return
 
-    socket.emit('join', { discussionId })
+    socket.emit('discussion.join', { discussionId })
   }, [ready, socket, discussionId])
 
   useEffect(() => {
@@ -51,10 +52,13 @@ export default function AdvisorPage() {
       setMessages((prev) => [...prev, message])
     }
 
-    socket.on('chat:message', handler)
+    socket.on('discussion.newMessage', (payload: { discussionId: string; message: Message }) => {
+      if (payload.discussionId !== discussionId) return
+      handler(payload.message)
+    })
 
     return () => {
-      socket.off('chat:message', handler)
+      socket.off('discussion.newMessage')
     }
   }, [ready, socket])
 
@@ -78,10 +82,9 @@ export default function AdvisorPage() {
 
       <button
         onClick={() =>
-          socket!.emit('advisor:send', {
-            discussionId,
+          apiPost(`/chat/discussion/${discussionId}/message`, {
             content: 'Hello from advisor',
-          })
+          }).catch(console.error)
         }
       >
         Send test message

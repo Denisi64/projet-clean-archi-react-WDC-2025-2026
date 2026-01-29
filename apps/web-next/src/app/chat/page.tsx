@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { usePrivateChat } from "hooks/usePrivateChat";
+import { usePrivateChat } from "@/hooks/usePrivateChat";
 
 export default function ChatPage() {
   const discussionId = "client-1-advisor-1";

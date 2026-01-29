@@ -1,4 +1,4 @@
-import { DiscussionRepository } from "@domain/src/chat/ports/DiscussionRepository";
+import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
 
 export class GetPendingDiscussionsUseCase {
     constructor(

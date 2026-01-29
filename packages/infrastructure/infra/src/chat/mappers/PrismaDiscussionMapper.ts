@@ -1,4 +1,4 @@
-import { Discussion } from "@proj/application/domain/src/chat/Discussion";
+import { Discussion } from "@proj/domain/chat/Discussion";
 import { DiscussionStatus, Discussion as PrismaDiscussion } from "@prisma/client";
 
 export class PrismaDiscussionMapper {

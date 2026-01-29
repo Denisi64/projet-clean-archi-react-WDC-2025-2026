@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { DiscussionRepository } from "@proj/application/domain/src/chat/ports/DiscussionRepository";
+import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
 import { Discussion } from "@proj/domain/chat/Discussion";
 import { PrismaDiscussionMapper } from "./mappers/PrismaDiscussionMapper";
 
 export class PrismaDiscussionRepository implements DiscussionRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
 
   async findById(id: string): Promise<Discussion | null> {
     const raw = await this.prisma.discussion.findUnique({

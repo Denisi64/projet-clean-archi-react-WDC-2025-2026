@@ -10,7 +10,7 @@ export function usePendingDiscussions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiGet<Discussion[]>("/api/chat/advisor/pending")
+    apiGet<Discussion[]>("/chat/advisor/pending")
       .then(setData)
       .finally(() => setLoading(false));
   }, []);

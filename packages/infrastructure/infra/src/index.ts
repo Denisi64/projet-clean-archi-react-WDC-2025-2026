@@ -42,6 +42,13 @@ export { InMemoryNotificationStream, createNotificationStream } from "./notifica
 
 export { PrismaGroupChatRepository } from "./chat/PrismaGroupChatRepository";
 export { DrizzleGroupChatRepository } from "./chat/DrizzleGroupChatRepository";
+export { PrismaDiscussionRepository } from "./chat/PrismaDiscussionRepository";
+export { DrizzleDiscussionRepository } from "./chat/DrizzleDiscussionRepository";
+export { PrismaMessageRepository } from "./chat/PrismaMessageRepository";
+export { DrizzleMessageRepository } from "./chat/DrizzleMessageRepository";
+export { PrismaAdvisorRepository } from "./chat/PrismaAdvisorRepository";
+export { DrizzleAdvisorRepository } from "./chat/DrizzleAdvisorRepository";
+export { HttpChatEvents } from "./chat/HttpChatEvents";
 
 export { LocalSocketActionStockNotifier } from "./notifications/LocalSocketActionStockNotifier";
 export { LocalSocketSavingsRateNotifier } from "./notifications/LocalSocketSavingsRateNotifier";

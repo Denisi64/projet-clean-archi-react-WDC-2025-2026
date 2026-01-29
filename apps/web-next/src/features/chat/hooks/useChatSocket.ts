@@ -5,6 +5,7 @@ export function useChatSocket() {
   const socket = useSocketClient();
 
   useEffect(() => {
+    if (!socket) return;
     socket.on("discussion.assigned", (payload) => {
       console.log("Assigned:", payload);
     });
@@ -14,6 +15,7 @@ export function useChatSocket() {
     });
 
     return () => {
+      if (!socket) return;
       socket.off("discussion.assigned");
       socket.off("discussion.removed");
     };

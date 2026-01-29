@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSocket } from "@/providers/SocketProvider";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 type Message = {
@@ -46,16 +46,17 @@ export function DiscussionView({ discussionId, mode }: Props) {
   useEffect(() => {
     if (!ready || !socket) return;
 
-    socket.emit("join", { discussionId });
+    socket.emit("discussion.join", { discussionId });
 
-    const onMessage = (message: Message) => {
-      setMessages((prev) => [...prev, message]);
+    const onMessage = (payload: { discussionId: string; message: Message }) => {
+      if (payload.discussionId !== discussionId) return;
+      setMessages((prev) => [...prev, payload.message]);
     };
 
-    socket.on("chat:message", onMessage);
+    socket.on("discussion.newMessage", onMessage);
 
     return () => {
-      socket.off("chat:message", onMessage);
+      socket.off("discussion.newMessage", onMessage);
     };
   }, [ready, socket, discussionId]);
 
@@ -65,13 +66,12 @@ export function DiscussionView({ discussionId, mode }: Props) {
     apiGet<Advisor[]>("/chat/advisors").then(setAdvisors);
   }, [mode]);
 
-  const handleTransfer = () => {
-    if (!socket || !selectedAdvisorId) return;
+  const handleTransfer = async () => {
+    if (!selectedAdvisorId) return;
 
-    socket.emit("discussion:transfer", {
-      discussionId,
+    await apiPost(`/chat/discussion/${discussionId}/transfer`, {
       toAdvisorId: selectedAdvisorId,
-    });
+    }).catch(console.error);
 
     setShowTransfer(false);
     setSelectedAdvisorId(null);
@@ -80,7 +80,7 @@ export function DiscussionView({ discussionId, mode }: Props) {
   };
 
   const closeDiscussion = () => {
-    socket?.emit("discussion:close", { discussionId });
+    apiPost(`/chat/discussion/${discussionId}/close`).catch(console.error);
   };
 
   useEffect(() => {
@@ -121,12 +121,9 @@ export function DiscussionView({ discussionId, mode }: Props) {
     if (!socket) return;
     if (!messageInput.trim()) return;
 
-    const event = mode === "ADVISOR" ? "advisor:send" : "client:send";
-
-    socket.emit(event, {
-      discussionId,
+    apiPost(`/chat/discussion/${discussionId}/message`, {
       content: messageInput,
-    });
+    }).catch(console.error);
 
     setMessageInput("");
   };

@@ -1,9 +1,9 @@
-import { DiscussionRepository } from '@domain/src/chat/ports/DiscussionRepository';
-import { ChatEventsPort } from '@domain/src/chat/ports/ChatEventsPort';
+import { DiscussionRepository } from '@proj/domain/chat/ports/DiscussionRepository';
+import { ChatEventsPort } from '@proj/domain/chat/ports/ChatEventsPort';
 import {
     DiscussionNotFound,
     ForbiddenDiscussionAccess,
-} from '@domain/src/chat/error/errors';
+} from '@proj/domain/chat/error/errors';
 
 interface Input {
     fromAdvisorId: string;

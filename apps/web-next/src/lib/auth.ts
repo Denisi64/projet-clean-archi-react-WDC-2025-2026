@@ -4,11 +4,12 @@ export type AuthMe = {
 };
 
 export async function getAuthMe(): Promise<AuthMe | null> {
-    const res = await fetch("http://localhost:3001/auth/me", {
-      credentials: "include",
-      cache: "no-store",
+    const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
     });
-  
+
     if (!res.ok) return null;
-    return res.json();
-  }
+    const data = await res.json().catch(() => null);
+    return data?.user ?? null;
+}

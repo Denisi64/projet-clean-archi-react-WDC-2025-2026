@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSocket } from "@/providers/SocketProvider";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { getAuthMe } from "@/lib/auth";
 
@@ -33,6 +33,7 @@ export default function AdvisorInboxPage() {
 
   useEffect(() => {
     if (!ready || !socket) return
+    socket.emit("advisor.join");
     const onAssigned = (payload: {
       discussionId: string
       advisorId: string
@@ -82,9 +83,7 @@ export default function AdvisorInboxPage() {
             <span>Client: {conv.ownerId} ; {conv.status}</span>
             <button
               onClick={() =>
-                socket?.emit("discussion:assign", {
-                  discussionId: conv.id,
-                })
+                apiPost(`/chat/discussion/${conv.id}/assign`).catch(console.error)
               }
             >
               Prendre en charge

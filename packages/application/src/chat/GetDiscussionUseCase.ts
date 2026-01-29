@@ -1,10 +1,10 @@
 // apps/api-nest/src/application/chat/usecases/GetDiscussionUseCase.ts
-import { DiscussionRepository } from '@domain/src/chat/ports/DiscussionRepository';
+import { DiscussionRepository } from '@proj/domain/chat/ports/DiscussionRepository';
 import {
     DiscussionNotFound,
     ForbiddenDiscussionAccess,
-} from '@domain/src/chat/error/errors';
-import { Discussion } from '@domain/src/chat/Discussion';
+} from '@proj/domain/chat/error/errors';
+import { Discussion } from '@proj/domain/chat/Discussion';
 
 interface Input {
     discussionId: string;

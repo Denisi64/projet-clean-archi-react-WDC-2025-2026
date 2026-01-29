@@ -1,4 +1,4 @@
-import { UserRole } from "@domain/src/auth/UserRole";
+import { UserRole } from "@proj/domain/users/ports/UserQueryRepository";
 
 export interface Advisor {
     id: string;

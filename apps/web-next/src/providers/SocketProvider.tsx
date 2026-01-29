@@ -17,9 +17,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const socketConnection = io("http://localhost:3001/chat", {
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:4001";
+    const socketConnection = io(wsUrl, {
       transports: ["websocket"],
       withCredentials: true,
+      timeout: 2000,
     });
 
     setSocketInstance(socketConnection);

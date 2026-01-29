@@ -1,10 +1,10 @@
-import { Message } from "@domain/src/chat/Message";
+import { Message } from "@proj/domain/chat/Message";
 import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
 import {
     DiscussionNotFound,
     ForbiddenDiscussionAccess,
-} from '@domain/src/chat/error/errors';
-import { MessageRepository } from '@domain/src/chat/ports/MessageRepository';
+} from '@proj/domain/chat/error/errors';
+import { MessageRepository } from '@proj/domain/chat/ports/MessageRepository';
 
 interface Input {
     userId: string;

@@ -1,5 +1,5 @@
 import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
-import { Discussion } from "@domain/src/chat/Discussion";
+import { Discussion } from "@proj/domain/chat/Discussion";
 
 interface Input {
     ownerId: string;

@@ -1,12 +1,12 @@
-import { DiscussionRepository } from '@domain/src/chat/ports/DiscussionRepository';
-import { MessageRepository } from '@domain/src/chat/ports/MessageRepository';
-import { ChatEventsPort } from '@domain/src/chat/ports/ChatEventsPort';
-import { Message } from '@domain/src/chat/Message';
+import { DiscussionRepository } from '@proj/domain/chat/ports/DiscussionRepository';
+import { MessageRepository } from '@proj/domain/chat/ports/MessageRepository';
+import { ChatEventsPort } from '@proj/domain/chat/ports/ChatEventsPort';
+import { Message } from '@proj/domain/chat/Message';
 import {
     DiscussionClosed,
     DiscussionNotFound,
     ForbiddenDiscussionAccess,
-} from '@domain/src/chat/error/errors';
+} from '@proj/domain/chat/error/errors';
 
 interface Input {
     advisorId: string;

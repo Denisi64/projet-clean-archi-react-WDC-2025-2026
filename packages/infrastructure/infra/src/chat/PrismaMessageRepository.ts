@@ -3,7 +3,7 @@ import { MessageRepository } from "@proj/domain/chat/ports/MessageRepository";
 import { Message } from "@proj/domain/chat/Message";
 
 export class PrismaMessageRepository implements MessageRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient = new PrismaClient()) {}
 
   private toDomain(prismaMessage: PrismaMessage): Message {
     return {
