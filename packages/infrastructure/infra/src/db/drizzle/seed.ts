@@ -152,13 +152,18 @@ async function main(): Promise<void> {
         { email: "advisor@avenir.bank", name: "Conseiller Démo", role: "ADVISOR" },
         hash,
     );
+    const advisorTwoId = await upsertUser(
+        db,
+        { email: "advisor2@avenir.bank", name: "Conseiller Deux", role: "ADVISOR" },
+        hash,
+    );
     const directorId = await upsertUser(
         db,
         { email: "director@avenir.bank", name: "Directeur Démo", role: "DIRECTOR" },
         hash,
     );
 
-    if (!advisorId || !directorId) {
+    if (!advisorId || !advisorTwoId || !directorId) {
         // keep lint happy, ids are used by side effects
     }
 
@@ -292,7 +297,9 @@ async function main(): Promise<void> {
         });
     }
 
-    console.log("Seed Drizzle OK (users: client@avenir.bank / advisor@avenir.bank / director@avenir.bank, mdp: demo12345)");
+    console.log(
+        "Seed Drizzle OK (users: client@avenir.bank / advisor@avenir.bank / advisor2@avenir.bank / director@avenir.bank, mdp: demo12345)",
+    );
     await closeDrizzleDb();
 }
 

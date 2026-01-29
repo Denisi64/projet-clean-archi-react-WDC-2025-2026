@@ -9,6 +9,7 @@
     "actions": "Actions",
     "savingsRate": "Fixer taux epargne",
     "about": "A propos",
+    "personalNotifications": "Notifications clients",
     "featureSecurityTitle": "Securite Maximale",
     "featureSecurityDesc": "Standards bancaires les plus eleves.",
     "featureTransfersTitle": "Virements Instantanes",
@@ -17,6 +18,12 @@
     "featureTransparencyDesc": "Suivi en temps reel.",
     "welcome": "Bienvenue sur Avenir Bank - backend : {backend} | base : {db}",
     "helloUser": "Bonjour {name} ({role})",
+    "sseConnected": "SSE connecte",
+    "sseDisconnected": "SSE deconnecte",
+    "sseConnecting": "SSE connexion...",
+    "newsFeed": "Actualites",
+    "newsCreate": "Publier actualite",
+    "groupChat": "Chat conseiller",
     "title": "Mes comptes bancaires",
     "subtitle": "Chaque utilisateur recoit un compte courant des l'inscription. Cette section affiche IBAN, solde et statut.",
     "logout": "Se deconnecter",
@@ -36,6 +43,46 @@
     "thActions": "Actions",
     "actionsLink": "Actions Avenir Bank",
     "transfersLink": "Liste des transferts"
+  },
+  "newsFeed": {
+    "kicker": "Espace client",
+    "title": "Actualites de la banque",
+    "subtitle": "Fil temps reel des annonces publiees par votre conseiller.",
+    "back": "Retour accueil",
+    "empty": "Aucune actualite pour le moment."
+  },
+  "newsCreatorPage": {
+    "kicker": "Conseiller",
+    "title": "Publier une actualite",
+    "subtitle": "Les clients recoivent la mise a jour en temps reel via SSE.",
+    "back": "Retour accueil"
+  },
+  "newsCreator": {
+    "title": "Nouvelle actualite",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "Nouveaux horaires d'agence",
+    "bodyLabel": "Contenu (optionnel)",
+    "bodyPlaceholder": "Texte de l'annonce...",
+    "send": "Publier",
+    "sending": "Publication...",
+    "success": "Actualite publiee.",
+    "serverError": "Erreur serveur.",
+    "errorPrefix": "Erreur:",
+    "titleRequired": "Titre requis"
+  },
+  "groupChatPage": {
+    "kicker": "Espace conseiller",
+    "title": "Chat de groupe",
+    "subtitle": "Echange en temps reel entre conseillers et direction.",
+    "back": "Retour accueil"
+  },
+  "groupChat": {
+    "title": "Discussion conseillers",
+    "inputPlaceholder": "Votre message...",
+    "send": "Envoyer",
+    "empty": "Aucun message pour le moment.",
+    "serverError": "Erreur serveur.",
+    "directorBadge": "Directeur"
   },
   "homeMeta": {
     "title": "Avenir Bank - Banque en ligne",
@@ -334,6 +381,26 @@
   "notifications": {
     "savingsRateUpdated": "Nouveau taux d'epargne : {rate}%",
     "close": "OK"
+  },
+  "personalNotifications": {
+    "title": "Notification personnalisee",
+    "searchLabel": "Rechercher un client",
+    "searchPlaceholder": "Nom ou email...",
+    "searching": "Recherche...",
+    "userIdLabel": "Client",
+    "selectPlaceholder": "- Selectionner -",
+    "noUsers": "Aucun client trouve.",
+    "notifTitleLabel": "Titre",
+    "notifTitlePlaceholder": "Mise a jour importante",
+    "bodyLabel": "Message (optionnel)",
+    "bodyPlaceholder": "Votre conseiller vous a envoye...",
+    "send": "Envoyer",
+    "sending": "Envoi...",
+    "success": "Notification envoyee.",
+    "serverError": "Erreur serveur.",
+    "errorPrefix": "Erreur:",
+    "userIdRequired": "ID client requis",
+    "titleRequired": "Titre requis"
   },
   "advisorCredits": {
     "userRequired": "Client requis",

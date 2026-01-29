@@ -33,6 +33,16 @@ export { PrismaUserQueryRepository } from "./users/PrismaUserQueryRepository";
 export { DrizzleUserAdminRepository } from "./users/DrizzleUserAdminRepository";
 export { DrizzleUserQueryRepository } from "./users/DrizzleUserQueryRepository";
 
+export { PrismaNewsRepository } from "./news/PrismaNewsRepository";
+export { DrizzleNewsRepository } from "./news/DrizzleNewsRepository";
+
+export { PrismaNotificationRepository } from "./notifications/PrismaNotificationRepository";
+export { DrizzleNotificationRepository } from "./notifications/DrizzleNotificationRepository";
+export { InMemoryNotificationStream, createNotificationStream } from "./notifications/InMemoryNotificationStream";
+
+export { PrismaGroupChatRepository } from "./chat/PrismaGroupChatRepository";
+export { DrizzleGroupChatRepository } from "./chat/DrizzleGroupChatRepository";
+
 export { LocalSocketActionStockNotifier } from "./notifications/LocalSocketActionStockNotifier";
 export { LocalSocketSavingsRateNotifier } from "./notifications/LocalSocketSavingsRateNotifier";
 

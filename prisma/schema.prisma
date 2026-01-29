@@ -78,6 +78,7 @@ model User {
   messages      Message[]                @relation("UserMessages")
   participants  DiscussionParticipant[]
   notifications Notification[]
+  news         News[]
   emailTokens   EmailConfirmationToken[]
   Discussion    Discussion[]
 
@@ -313,4 +314,16 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+}
+
+model News {
+  id          String   @id @default(cuid())
+  title       String
+  body        String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([createdById])
 }

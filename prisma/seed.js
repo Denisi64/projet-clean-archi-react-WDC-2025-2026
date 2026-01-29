@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
     const hash = await bcrypt.hash("demo12345", 10);
 
-    const [client, advisor, director] = await Promise.all([
+    const [client, advisor, advisorTwo, director] = await Promise.all([
         prisma.user.upsert({
             where: { email: "client@avenir.bank" },
             update: {
@@ -34,6 +34,22 @@ async function main() {
             create: {
                 email: "advisor@avenir.bank",
                 name: "Conseiller Démo",
+                password: hash,
+                role: "ADVISOR",
+                isActive: true,
+            },
+        }),
+        prisma.user.upsert({
+            where: { email: "advisor2@avenir.bank" },
+            update: {
+                password: hash,
+                isActive: true,
+                confirmationToken: null,
+                confirmationTokenExpiresAt: null,
+            },
+            create: {
+                email: "advisor2@avenir.bank",
+                name: "Conseiller Deux",
                 password: hash,
                 role: "ADVISOR",
                 isActive: true,
@@ -151,8 +167,11 @@ async function main() {
 
     await prisma.interestAccrual.create({ data: { accountId: savings.id, rateId: rate.id, amount: "0.86" } });
 
+    if (!advisorTwo) {
+        // keep lint happy, advisorTwo is used by side effects
+    }
     console.log(
-        "Seed OK (users: client@avenir.bank / advisor@avenir.bank / director@avenir.bank, mdp: demo12345)"
+        "Seed OK (users: client@avenir.bank / advisor@avenir.bank / advisor2@avenir.bank / director@avenir.bank, mdp: demo12345)"
     );
 }
 
