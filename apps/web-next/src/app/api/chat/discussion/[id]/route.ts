@@ -15,12 +15,14 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
         return NextResponse.json({ code: "NOT_SUPPORTED" }, { status: 501 });
     }
 
-    const auth = await requireChatRole(req, ["CLIENT", "ADVISOR", "DIRECTOR"]);
+    const params = await context.params;
+    const auth = await requireChatRole(req, ["CLIENT", "ADVISOR"]);
     if (auth instanceof NextResponse) return auth;
+
 
     try {
         const discussion = await getUC.execute({
-            discussionId: context.params.id,
+            discussionId: params.id,
             userId: auth.userId,
             role: auth.role,
         });

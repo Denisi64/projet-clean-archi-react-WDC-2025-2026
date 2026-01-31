@@ -25,13 +25,15 @@ const schema = z.object({
     content: z.string().trim().min(1).max(2000),
 });
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     if (target !== "next") {
         return NextResponse.json({ code: "NOT_SUPPORTED" }, { status: 501 });
     }
 
     const auth = await requireChatRole(req, ["CLIENT", "ADVISOR"]);
     if (auth instanceof NextResponse) return auth;
+
+    const params = await context.params;
 
     const raw = await req.json().catch(() => ({}));
     const parsed = schema.safeParse(raw);
@@ -43,12 +45,12 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
         const message =
             auth.role === "CLIENT"
                 ? await sendClientUC.execute({
-                      discussionId: context.params.id,
+                      discussionId: params.id,
                       ownerId: auth.userId,
                       content: parsed.data.content,
                   })
                 : await sendAdvisorUC.execute({
-                      discussionId: context.params.id,
+                      discussionId: params.id,
                       advisorId: auth.userId,
                       content: parsed.data.content,
                   });

@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { AssignDiscussionUseCase } from "@proj/application/chat/AssignDiscussionUseCase";
 import { createDiscussionRepository } from "@proj/infra";
 import { HttpChatEvents } from "@proj/infra/chat/HttpChatEvents";
-import { requireChatRole } from "../../../../_auth";
+import { requireChatRole } from "../../../_auth";
 
 const target = process.env.BACKEND_TARGET ?? "nest";
 const assignUC = new AssignDiscussionUseCase(createDiscussionRepository(), new HttpChatEvents());
 const isDev = process.env.NODE_ENV !== "production";
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     if (target !== "next") {
         return NextResponse.json({ code: "NOT_SUPPORTED" }, { status: 501 });
     }
@@ -18,8 +18,10 @@ export async function POST(req: NextRequest, context: { params: { id: string } }
     const auth = await requireChatRole(req, ["ADVISOR"]);
     if (auth instanceof NextResponse) return auth;
 
+    const params = await context.params;
+
     try {
-        await assignUC.execute({ discussionId: context.params.id, advisorId: auth.userId });
+        await assignUC.execute({ discussionId: params.id, advisorId: auth.userId });
         return NextResponse.json({ ok: true });
     } catch (e: any) {
         if (isDev) console.error("[chat assign] error:", e?.message);

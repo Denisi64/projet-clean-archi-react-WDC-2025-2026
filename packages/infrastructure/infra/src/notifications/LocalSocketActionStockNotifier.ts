@@ -1,5 +1,4 @@
-import { ActionStockNotifier } from "@proj/application/actions/ports/ActionStockNotifier";
-import { ActionStockPayload } from "@proj/application/actions/ports/ActionStockNotifier";
+import type { ActionStockNotifier, ActionStockPayload } from "@proj/application";
 
 export class LocalSocketActionStockNotifier implements ActionStockNotifier {
   async notifyActionStockChanged(payload: ActionStockPayload): Promise<void> {

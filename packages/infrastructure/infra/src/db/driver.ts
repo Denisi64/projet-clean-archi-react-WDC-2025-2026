@@ -1,4 +1,4 @@
-import { DbDriver } from "@proj/application/ports/DbHealth.port";
+import type { DbHealthPort, DbDriver } from "@proj/application";
 
 export function resolveDbDriver(raw: string | undefined = process.env.DB_DRIVER): DbDriver {
     const value = (raw ?? "postgres").toLowerCase();

@@ -1,4 +1,4 @@
-import { DbDriver } from "@proj/application/ports/DbHealth.port";
+import type { DbHealthPort, DbDriver } from "@proj/application";
 import { AuthRepository } from "@proj/domain/auth/ports/AuthRepository";
 import { UserAdminRepository } from "@proj/domain/users/ports/UserAdminRepository";
 import { UserQueryRepository } from "@proj/domain/users/ports/UserQueryRepository";

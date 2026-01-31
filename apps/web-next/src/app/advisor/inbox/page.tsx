@@ -82,9 +82,15 @@ export default function AdvisorInboxPage() {
           <li key={conv.id}>
             <span>Client: {conv.ownerId} ; {conv.status}</span>
             <button
-              onClick={() =>
-                apiPost(`/chat/discussion/${conv.id}/assign`).catch(console.error)
-              }
+              onClick={async () => {
+                try {
+                  await apiPost(`/chat/discussion/${conv.id}/assign`);
+                  // Redirige immédiatement après l'assignation
+                  router.push(`/advisor/discussion/${conv.id}`);
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
             >
               Prendre en charge
             </button>

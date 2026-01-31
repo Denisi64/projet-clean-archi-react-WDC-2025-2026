@@ -13,17 +13,18 @@ const getMessagesUC = new GetDiscussionMessagesUseCase(
 );
 const isDev = process.env.NODE_ENV !== "production";
 
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
     if (target !== "next") {
         return NextResponse.json({ code: "NOT_SUPPORTED" }, { status: 501 });
     }
 
-    const auth = await requireChatRole(req, ["CLIENT", "ADVISOR", "DIRECTOR"]);
+    const params = await context.params;
+    const auth = await requireChatRole(req, ["CLIENT", "ADVISOR"]);
     if (auth instanceof NextResponse) return auth;
 
     try {
         const messages = await getMessagesUC.execute({
-            discussionId: context.params.id,
+            discussionId: params.id,
             userId: auth.userId,
             role: auth.role,
         });

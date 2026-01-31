@@ -7,11 +7,18 @@
     "moduleResolution": "node16",
     "declaration": true,
     "declarationMap": true,
+    "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@proj/domain/*": ["../domain/dist/*"],
-      "@proj/application/*": ["../application/dist/*"]
+      "@proj/domain": ["../../domain/src"],
+      "@proj/domain/*": ["../../domain/src/*"],
+      "@proj/application": ["../../application/src"],
+      "@proj/application/*": ["../../application/src/*"]
     }
   },
+  "references": [
+    { "path": "../../domain" },
+    { "path": "../../application" }
+  ],
   "include": ["src"]
 }

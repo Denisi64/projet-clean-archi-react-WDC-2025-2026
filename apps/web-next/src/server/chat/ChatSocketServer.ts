@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 
-export const io = new Server(3001, {
+export const io = new Server(4001, {
   cors: {
     origin: "http://localhost:3000",
     credentials: true,
