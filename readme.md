@@ -1,9 +1,12 @@
 # Démarrer le projet
 
+## Equipe
+- Prenom NOM - Classe: A_COMPLETER
+- Prenom NOM - Classe: A_COMPLETER
+
 Monorepo TypeScript :
-- API NestJS `apps/api-nest` (port 3001)
-- Front Next.js `apps/web-next` (port 3000) avec API routes pour un mode “Next-only”
-- Base Postgres ou MariaDB via Docker
+- Front Next.js `apps/web-next` (port 3000) avec API routes
+- Base Postgres via Docker
 
 Tout se pilote avec `./scripts/dev`.
 
@@ -21,12 +24,23 @@ npm install
 ```
 Ports : Next 3000, Nest 3001, Postgres 5432, MariaDB 3306.
 
+## Fixtures / jeux de donnees
+Le seed est automatique lors du lancement via `./scripts/dev up ...`.
+
+Comptes de test (seed):
+- Client: `client@avenir.bank` / `demo12345`
+- Conseiller: `advisor@avenir.bank` / `demo12345`
+- Conseiller 2: `advisor2@avenir.bank` / `demo12345`
+- Directeur (admin): `director@avenir.bank` / `demo12345`
+
+Si besoin de relancer le seed manuellement:
+```
+pnpm -w prisma db seed
+```
+
 ## Lancer / arrêter
 ```
-./scripts/dev up nest postgres   # cible principale
-./scripts/dev up nest mariadb
-./scripts/dev up next postgres   # mode Next-only
-./scripts/dev up next mariadb
+./scripts/dev up next postgres   # cible principale
 
 ./scripts/dev down               # stoppe tmux + docker
 ./scripts/dev attach             # se rattacher à tmux
@@ -34,12 +48,11 @@ Ports : Next 3000, Nest 3001, Postgres 5432, MariaDB 3306.
 ```
 
 ## Santé
-- Nest DB : http://localhost:3001/health/db
 - Next : http://localhost:3000 et http://localhost:3000/api/health
 
 ## Variables utiles
-- `BACKEND_TARGET=nest|next` (par défaut nest)
-- `DATABASE_URL=...` (Postgres ou Maria)
+- `BACKEND_TARGET=next`
+- `DATABASE_URL=...` (Postgres)
 - `JWT_SECRET=...` (même valeur pour login/lecture du cookie)
 - `CONFIRMATION_TOKEN_TTL_HOURS=24` (optionnel)
 
@@ -55,10 +68,7 @@ docker-compose.yml   # services DB + mailhog
 ## Rappel commandes
 | Commande                         | Description              |
 |----------------------------------|--------------------------|
-| `./scripts/dev up nest postgres` | Nest + Postgres          |
-| `./scripts/dev up nest mariadb`  | Nest + MariaDB           |
-| `./scripts/dev up next postgres` | Next-only + Postgres     |
-| `./scripts/dev up next mariadb`  | Next-only + MariaDB      |
+| `./scripts/dev up next postgres` | Next + Postgres          |
 | `./scripts/dev down`             | stoppe tout              |
 | `./scripts/dev attach`           | se rattacher à tmux      |
 | `./scripts/dev stop`             | ferme tmux, garde Docker |
@@ -71,14 +81,10 @@ Taux annuel via `SAVINGS_INTEREST_RATE` (défaut 0.02) ou via l’UI Directeur (
 curl -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin"
 curl -X POST "http://localhost:3000/api/admin/savings/apply-interest?mode=annual" -H "x-admin-token: dev-admin"   # applique le taux annuel en une fois
 
-# Backend Nest (port 3001)
-curl -X POST http://localhost:3001/admin/savings/apply-interest -H "x-admin-token: dev-admin"
-curl -X POST "http://localhost:3001/admin/savings/apply-interest?mode=annual" -H "x-admin-token: dev-admin"   # applique le taux annuel en une fois
-
-# Backend Nest – lire et mettre à jour le taux (en %) pour le stocker en base
-curl -H "x-admin-token: dev-admin" http://localhost:3001/admin/savings/rate
+# Lire et mettre à jour le taux (en %) pour le stocker en base
+curl -H "x-admin-token: dev-admin" http://localhost:3000/api/admin/savings/rate
 curl -X POST -H "x-admin-token: dev-admin" -H "content-type: application/json" \
-  -d '{"ratePercent":2.5}' http://localhost:3001/admin/savings/rate   # met 2.5%
+  -d '{"ratePercent":2.5}' http://localhost:3000/api/admin/savings/rate   # met 2.5%
 
 # Exemple cron local (intérêts journaliers à 01h00, backend Next)
 # 0 1 * * * curl -s -X POST http://localhost:3000/api/admin/savings/apply-interest -H "x-admin-token: dev-admin" >/tmp/interest.log 2>&1
@@ -96,16 +102,8 @@ curl -X POST http://localhost:3000/api/advisor/credits \
   -H "content-type: application/json" \
   -d '{"userId":"cmj68d7kb0000ee8x66ih6p9b","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
 
-# Backend Nest (port 3001)
-curl -X POST http://localhost:3001/advisor/credits \
-  -H "content-type: application/json" \
-  -d '{"userId":"cmj68d7kb0000ee8x66ih6p9b","principal":10000,"annualRate":0.03,"insuranceRate":0.002,"termMonths":36}'
-
 # Rembourser une mensualité (conseiller)
-# Next
 curl -X POST http://localhost:3000/api/advisor/credits/<creditId>/repay
-# Nest
-curl -X POST http://localhost:3001/advisor/credits/<creditId>/repay
 
 # Vérifier la langue UI (fr/en) :
 # http://localhost:3000/?lang=fr
@@ -117,4 +115,3 @@ curl -X POST http://localhost:3001/advisor/credits/<creditId>/repay
 
 ## Migrations Prisma (schéma crédit mis à jour)
 - Postgres : `make db-reset-postgres` (ou `pnpm -w prisma migrate dev --schema=prisma/schema.prisma`)
-- MariaDB : `make db-reset-mariadb` (ou `pnpm -w prisma migrate dev --schema=prisma/schema.maria.prisma`)
