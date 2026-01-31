@@ -1,8 +1,9 @@
 # Démarrer le projet
 
 ## Equipe
-- Prenom NOM - Classe: A_COMPLETER
-- Prenom NOM - Classe: A_COMPLETER
+- DENIS Simon 5IW
+- CHAN Francis 5IW
+- WARTNER Grégoire 5IW
 
 Monorepo TypeScript :
 - Front Next.js `apps/web-next` (port 3000) avec API routes
