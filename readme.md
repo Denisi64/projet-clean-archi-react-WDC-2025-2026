@@ -17,6 +17,18 @@ Tout se pilote avec `./scripts/dev`.
 - Node.js 18+
 - npm ou pnpm
 
+## macOS
+- Installer Docker Desktop
+- Installer Homebrew si besoin
+- Installer tmux : `brew install tmux`
+- Node.js 18+ (via nvm ou brew)
+
+## Windows
+- Installer Docker Desktop
+- Installer WSL2 + Ubuntu
+- Dans WSL : installer Node.js 18+ et tmux
+- Lancer les scripts depuis le terminal WSL
+
 ## Installation
 ```
 git clone projet-clean-archi-react-WDC-2025-2026
