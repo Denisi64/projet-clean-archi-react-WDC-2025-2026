@@ -233,6 +233,7 @@ export const discussions = mysqlTable(
         id: varchar("id", { length: 191 }).primaryKey(),
         ownerId: varchar("ownerId", { length: 191 }).notNull(),
         assignedAdvisorId: varchar("assignedAdvisorId", { length: 191 }),
+        status: varchar("status", { length: 20 }).notNull().default("OPEN"),
         title: varchar("title", { length: 255 }),
         createdAt: datetime("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
         updatedAt: datetime("updatedAt")
@@ -264,6 +265,7 @@ export const messages = mysqlTable(
         id: varchar("id", { length: 191 }).primaryKey(),
         discussionId: varchar("discussionId", { length: 191 }).notNull(),
         senderId: varchar("senderId", { length: 191 }).notNull(),
+        authorRole: varchar("authorRole", { length: 20 }).notNull().default("CLIENT"),
         content: text("content").notNull(),
         createdAt: datetime("createdAt").notNull().default(sql`CURRENT_TIMESTAMP`),
         transferredToAdvisorId: varchar("transferredToAdvisorId", { length: 191 }),

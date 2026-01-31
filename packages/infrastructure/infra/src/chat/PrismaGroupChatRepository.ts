@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { MessageAuthorRole, PrismaClient } from "@prisma/client";
 import { GroupChatMessage, GroupChatRepository } from "@proj/domain/chat/ports/GroupChatRepository";
 
 const GROUP_TITLE = "ADVISOR_DIRECTOR_GROUP";
@@ -29,10 +29,20 @@ export class PrismaGroupChatRepository implements GroupChatRepository {
 
     async createMessage(input: { senderId: string; content: string }): Promise<GroupChatMessage> {
         const discussion = await this.findOrCreateDiscussion(input.senderId);
+
+        const sender = await this.prisma.user.findUnique({
+            where: { id: input.senderId },
+            select: { role: true, name: true, email: true },
+        });
+
+        const authorRole: MessageAuthorRole =
+            sender?.role === "CLIENT" ? "CLIENT" : "ADVISOR";
+
         const message = await this.prisma.message.create({
             data: {
                 discussionId: discussion.id,
                 senderId: input.senderId,
+                authorRole,
                 content: input.content,
             },
             include: {

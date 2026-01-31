@@ -54,6 +54,29 @@ const server = createServer((req, res) => {
     });
     return;
   }
+  if (req.method === "POST" && req.url === "/broadcast-discussion-message") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        const { discussionId, message } = payload;
+        
+        io.to(`discussion-${discussionId}`).emit("discussion.newMessage", {
+          discussionId,
+          message
+        });
+        
+        console.log(`[ws] http relay discussion-${discussionId}`, message);
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "INVALID_PAYLOAD" }));
+      }
+    });
+    return;
+  }
   res.writeHead(404);
   res.end();
 });
@@ -80,6 +103,18 @@ io.on("connection", (socket) => {
   socket.on("group-message", (payload) => {
     io.to("group-chat").emit("group-message", payload);
     console.log("[ws] relay group-message", payload);
+  });
+
+  socket.on("discussion.join", (payload) => {
+    const { discussionId } = payload;
+    socket.join(`discussion-${discussionId}`);
+    console.log(`[ws] joined discussion-${discussionId}`);
+  });
+
+  socket.on("discussion.newMessage", (payload) => {
+    const { discussionId, message } = payload;
+    io.to(`discussion-${discussionId}`).emit("discussion.newMessage", payload);
+    console.log(`[ws] relay message to discussion-${discussionId}`, message);
   });
 });
 

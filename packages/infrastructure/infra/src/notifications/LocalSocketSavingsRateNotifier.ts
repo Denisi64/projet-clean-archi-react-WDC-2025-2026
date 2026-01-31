@@ -1,4 +1,4 @@
-import { SavingsRateNotifier } from "@proj/application/accounts/ports/SavingsRateNotifier";
+import type { SavingsRateNotifier } from "@proj/application";
 import { resolveDbDriver } from "../db/driver";
 import { getDrizzleDb } from "../db/drizzle/client";
 import { accounts, notifications } from "../db/drizzle/schema";

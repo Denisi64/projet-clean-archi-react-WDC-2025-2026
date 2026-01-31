@@ -83,6 +83,10 @@ async function handleProxy(req: NextRequest) {
     const base = (process.env.NEST_API_URL ?? "http://localhost:3001").replace(/\/$/, "");
     const url = `${base}/accounts`;
 
+    process.on("unhandledRejection", (reason) => {
+        console.error("UNHANDLED REJECTION →", reason, typeof reason);
+      });
+
     try {
         const resp = await fetch(url, {
             method: "POST",
