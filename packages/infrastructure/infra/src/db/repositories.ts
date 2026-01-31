@@ -13,8 +13,12 @@ import { ActionTradeRepository } from "@proj/domain/actions/ports/ActionTradeRep
 import { NotificationRepository } from "@proj/domain/notifications/ports/NotificationRepository";
 import { NewsRepository } from "@proj/domain/news/ports/NewsRepository";
 import { GroupChatRepository } from "@proj/domain/chat/ports/GroupChatRepository";
+import { DiscussionRepository } from "@proj/domain/chat/ports/DiscussionRepository";
+import { MessageRepository } from "@proj/domain/chat/ports/MessageRepository";
+import { AdvisorRepository } from "@proj/domain/chat/ports/AdvisorRepository";
 
 import { PrismaAuthRepository } from "../auth/PrismaAuthRepository";
+import { PrismaClient } from "@prisma/client";
 import { PrismaUserAdminRepository } from "../users/PrismaUserAdminRepository";
 import { PrismaUserQueryRepository } from "../users/PrismaUserQueryRepository";
 import { PrismaAccountRepository } from "../accounts/PrismaAccountRepository";
@@ -28,6 +32,9 @@ import { PrismaActionTradeRepository } from "../actions/PrismaActionTradeReposit
 import { PrismaNotificationRepository } from "../notifications/PrismaNotificationRepository";
 import { PrismaNewsRepository } from "../news/PrismaNewsRepository";
 import { PrismaGroupChatRepository } from "../chat/PrismaGroupChatRepository";
+import { PrismaDiscussionRepository } from "../chat/PrismaDiscussionRepository";
+import { PrismaMessageRepository } from "../chat/PrismaMessageRepository";
+import { PrismaAdvisorRepository } from "../chat/PrismaAdvisorRepository";
 
 import { DrizzleAuthRepository } from "../auth/DrizzleAuthRepository";
 import { DrizzleUserAdminRepository } from "../users/DrizzleUserAdminRepository";
@@ -43,6 +50,9 @@ import { DrizzleActionTradeRepository } from "../actions/DrizzleActionTradeRepos
 import { DrizzleNotificationRepository } from "../notifications/DrizzleNotificationRepository";
 import { DrizzleNewsRepository } from "../news/DrizzleNewsRepository";
 import { DrizzleGroupChatRepository } from "../chat/DrizzleGroupChatRepository";
+import { DrizzleDiscussionRepository } from "../chat/DrizzleDiscussionRepository";
+import { DrizzleMessageRepository } from "../chat/DrizzleMessageRepository";
+import { DrizzleAdvisorRepository } from "../chat/DrizzleAdvisorRepository";
 import { resolveDbDriver } from "./driver";
 
 function normalize(driver?: DbDriver): DbDriver {
@@ -61,7 +71,7 @@ export function createAuthRepository(
 export function createUserQueryRepository(driver?: DbDriver): UserQueryRepository {
     const db = normalize(driver);
     if (db === "mariadb") return new DrizzleUserQueryRepository();
-    return new PrismaUserQueryRepository();
+    return new PrismaUserQueryRepository(new PrismaClient());
 }
 
 export function createUserAdminRepository(driver?: DbDriver): UserAdminRepository {
@@ -134,4 +144,22 @@ export function createGroupChatRepository(driver?: DbDriver): GroupChatRepositor
     const db = normalize(driver);
     if (db === "mariadb") return new DrizzleGroupChatRepository();
     return new PrismaGroupChatRepository();
+}
+
+export function createDiscussionRepository(driver?: DbDriver): DiscussionRepository {
+    const db = normalize(driver);
+    if (db === "mariadb") return new DrizzleDiscussionRepository();
+    return new PrismaDiscussionRepository();
+}
+
+export function createMessageRepository(driver?: DbDriver): MessageRepository {
+    const db = normalize(driver);
+    if (db === "mariadb") return new DrizzleMessageRepository();
+    return new PrismaMessageRepository();
+}
+
+export function createAdvisorRepository(driver?: DbDriver): AdvisorRepository {
+    const db = normalize(driver);
+    if (db === "mariadb") return new DrizzleAdvisorRepository();
+    return new PrismaAdvisorRepository();
 }

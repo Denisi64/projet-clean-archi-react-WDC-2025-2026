@@ -6,6 +6,7 @@ import "./globals.css";
 import { NotificationsListener } from "./components/NotificationsListener";
 import { ToastProvider } from "./components/ToastProvider";
 import { PersonalNotificationsListener } from "./components/PersonalNotificationsListener";
+import { SocketProvider } from "@/providers/SocketProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Avenir Bank — Espace client",
+  title: "Avenir Bank -- Espace client",
   description: "Ouvrez et pilotez vos comptes bancaires en ligne.",
 };
 
@@ -34,9 +35,11 @@ export default async function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ToastProvider>
-            <NotificationsListener />
-            <PersonalNotificationsListener />
-            {children}
+            <SocketProvider>
+              <NotificationsListener />
+              <PersonalNotificationsListener />
+              {children}
+            </SocketProvider>
           </ToastProvider>
         </NextIntlClientProvider>
       </body>

@@ -40,6 +40,7 @@ import AccountCreatorCard from "./components/AccountCreatorCard";
 import TransferCard from "./components/TransferCard";
 import { LanguageSwitch } from "./components/LanguageSwitch";
 import { SseStatusBadge } from "./components/SseStatusBadge";
+import { CreateDiscussionButton } from "@/features/chat/components/CreateDiscussionButton";
 
 /* -------------------------------------------------------------------------- */
 /*                                    TYPES                                   */
@@ -304,7 +305,7 @@ export default async function Home() {
                             <span>
                                 {t("welcome", { backend, db: dbLabel })}{" "}
                                 {currentUser &&
-                                    `— ${t("helloUser", {
+                                    `-- ${t("helloUser", {
                                         name: currentUser.name ?? currentUser.email,
                                         role: currentUser.role ?? "client",
                                     })}`}
@@ -430,6 +431,11 @@ export default async function Home() {
                                 {t("helpDesc")}
                             </CardDescription>
                         </CardHeader>
+                        {currentUser?.role === "CLIENT" && (
+                            <CardContent>
+                                <CreateDiscussionButton />
+                            </CardContent>
+                        )}
                     </Card>
                 </div>
 
@@ -487,6 +493,14 @@ export default async function Home() {
                         >
                             {t("transfersLink")} <ArrowRight className="h-4 w-4" />
                         </Link>
+                        {currentUser?.role === "ADVISOR" && (
+                            <Link
+                                href="/advisor/inbox"
+                                className={cn(buttonVariants({ variant: "secondary" }), "w-full justify-between")}
+                            >
+                                Voir les demandes clients <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

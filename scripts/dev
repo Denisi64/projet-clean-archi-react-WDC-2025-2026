@@ -348,7 +348,7 @@ start_tmux() {
 run_stack() {
   local target="$1" db="$2"
   unset DOCKER_HOST || true
-  export DOCKER_CONTEXT=system
+  export DOCKER_CONTEXT=default
   sudo systemctl start docker || true
 
   # avant de démarrer

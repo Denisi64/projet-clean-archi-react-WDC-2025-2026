@@ -10,5 +10,5 @@
     "experimentalDecorators": true,
     "strict": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "../../packages/domain/src/chat/Discussion.ts", "../../packages/domain/src/chat/error/errors.ts", "../../packages/domain/src/chat/Message.ts", "../../packages/infrastructure/infra/src/chat/PrismaDiscussionRepository.ts", "../../packages/infrastructure/infra/src/chat/PrismaMessageRepository.ts", "../../packages/infrastructure/infra/src/chat/mappers/PrismaDiscussionMapper.ts"]
 }

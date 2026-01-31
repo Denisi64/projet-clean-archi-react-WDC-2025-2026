@@ -44,6 +44,17 @@ enum CreditStatus {
   CANCELED
 }
 
+enum DiscussionStatus {
+  OPEN
+  ASSIGNED
+  CLOSED
+}
+
+enum MessageAuthorRole {
+  CLIENT
+  ADVISOR
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -252,6 +263,7 @@ model Discussion {
   assignedAdvisorId String?
   assignedAdvisor   User?   @relation(fields: [assignedAdvisorId], references: [id])
 
+  status    DiscussionStatus @default(OPEN)
   title     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -283,6 +295,7 @@ model Message {
   senderId String
   sender   User   @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
+  authorRole MessageAuthorRole
   content                String
   createdAt              DateTime @default(now())
   transferredToAdvisorId String?
