@@ -9,8 +9,8 @@
     "declarationMap": true,
     "baseUrl": ".",
     "paths": {
-      "@proj/domain/*": ["../domain/dist/*"],
-      "@proj/application/*": ["../application/dist/*"]
+      "@proj/domain/*": ["../../domain/dist/*"],
+      "@proj/application/*": ["../../application/dist/application/src/*"]
     }
   },
   "include": ["src"]
