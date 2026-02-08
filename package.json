@@ -14,7 +14,9 @@
     "env:maria": "cp apps/api-nest/.env.maria apps/api-nest/.env",
     "db:pg": "docker compose --profile pg up -d postgres",
     "db:maria": "docker compose --profile maria up -d mariadb",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "dev:projet-next-final": "docker compose -f docker-compose.projet-next-final.yml up --build",
+    "dev:projet-next-final:down": "docker compose -f docker-compose.projet-next-final.yml down -v"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

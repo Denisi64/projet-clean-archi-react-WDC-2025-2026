@@ -1,0 +1,69 @@
+name: projet-next-final
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: bank
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d bank"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  notifications-ws:
+    image: node:20-bullseye-slim
+    working_dir: /work/apps/api-nest/socket-server
+    volumes:
+      - .:/work
+    ports:
+      - "4001:4001"
+    command: >
+      bash -lc "npm install --silent && node server.js"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+  web-next:
+    image: node:20-bullseye-slim
+    working_dir: /work
+    volumes:
+      - .:/work
+      - web_node_modules:/work/node_modules
+      - pnpm_store:/root/.local/share/pnpm/store
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --dns-result-order=ipv4first
+      BACKEND_TARGET: next
+      NEXT_PUBLIC_BACKEND_TARGET: next
+      CHOKIDAR_USEPOLLING: "1"
+      WATCHPACK_POLLING: "true"
+      DATABASE_URL: postgresql://user:pass@postgres:5432/bank?schema=public
+      PRISMA_SCHEMA: prisma/schema.prisma
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_WS_URL: http://localhost:4001
+      NOTIFICATIONS_WS_URL: http://notifications-ws:4001
+    command: >
+      bash -lc "chmod +x /work/apps/web-next/projet-next-final.sh && /work/apps/web-next/projet-next-final.sh"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notifications-ws:
+        condition: service_started
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+volumes:
+  pg_data:
+  web_node_modules:
+  pnpm_store:
